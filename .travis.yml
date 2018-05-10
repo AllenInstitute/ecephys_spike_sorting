@@ -1,0 +1,64 @@
+env:
+ global:
+   - PIPENV_VENV_IN_PROJECT=1
+   - PIPENV_IGNORE_VIRTUALENVS=1
+
+matrix:
+  include:
+    - os: linux
+      sudo: required
+      python: 2.7
+      env: TEST_PYTHON_VERSION=2.7
+    - os: linux
+      sudo: required
+      python: 3.5
+      env: TEST_PYTHON_VERSION=3.5
+    - os: linux
+      sudo: required
+      python: 3.6
+      env: TEST_PYTHON_VERSION=3.6
+    - os: osx
+      language: generic
+      env: TEST_PYTHON_VERSION=2.7
+    - os: osx
+      languageL: generic
+      env: TEST_PYTHON_VERSION=3.5
+    - os: osx
+      language: generic
+      env: TEST_PYTHON_VERSION=3.6
+
+install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      brew update;
+      if [[ "$TEST_PYTHON_VERSION" == "2.7" ]]; then
+        wget https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh -O miniconda.sh;
+      else
+        wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+      fi
+    else
+      sudo apt-get update;
+      if [[ "$TEST_PYTHON_VERSION" == "2.7" ]]; then
+        wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+      else
+        wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+      fi
+    fi
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda create -q -n test-environment python=$TEST_PYTHON_VERSION
+  - source activate test-environment
+  - if [[ "$TRAVIS_OS_NAME" == "osx" && "$TEST_PYTHON_VERSION" == "2.7" ]]; then
+      conda install virtualenv;
+    fi
+  - pip install pipenv
+  - pipenv --update
+  - pipenv --python ${TEST_PYTHON_VERSION}
+  - pipenv install --dev
+  - pipenv run pip install .
+
+script:
+  - pipenv run coverage run --source ecephys_spike_sorting -m pytest
+  - pipenv run codecov

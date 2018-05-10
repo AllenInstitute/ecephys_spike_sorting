@@ -1,0 +1,24 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[dev-packages]
+
+bumpversion = "*"
+tox = "*"
+coverage = "*"
+sphinx = "*"
+cookiecutter = "*"
+sphinx-gallery = "*"
+pytest = "*"
+"ruamel.yaml" = "*"
+
+
+[packages]
+
+matplotlib = "*"
+pillow = "*"
+argschema = "*"

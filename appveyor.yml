@@ -1,0 +1,27 @@
+build: false
+
+environment:
+  PIPENV_VENV_IN_PROJECT: 1
+  PIPENV_IGNORE_VIRTUALENVS: 1
+  matrix:
+    - MINICONDA: "C:\\Miniconda-x64"
+      PYTHON: 2.7
+    - MINICONDA: "C:\\Miniconda35-x64"
+      PYTHON: 3.5
+    - MINICONDA: "C:\\Miniconda36-x64"
+      PYTHON: 3.6
+
+install:
+  - set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%
+  - conda config --set always_yes yes --set changeps1 no
+  - conda create -q -n test-environment python=%PYTHON%
+  - activate test-environment
+  - pip install pipenv
+  - pipenv --update
+  - pipenv --python %PYTHON%
+  - pipenv install --dev
+  - pipenv run pip install .
+
+test_script:
+  - pipenv run coverage run --source ecephys_spike_sorting -m pytest
+  - pipenv run codecov

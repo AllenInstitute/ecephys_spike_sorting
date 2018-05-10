@@ -1,0 +1,22 @@
+{
+  "name": "aibs_sphinx",
+  "version": "1.0.0",
+  "description": "theme.conf, static, and template files for aibs-style sphinx documentation",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AllenInstitute/aibs_sphinx.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AllenInstitute/aibs_sphinx/issues"
+  },
+  "homepage": "https://github.com/AllenInstitute/aibs_sphinx#readme",
+  "dependencies": {
+    "aibs-portal-assets": "0.0.24"
+  }
+}

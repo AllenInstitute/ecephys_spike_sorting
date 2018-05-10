@@ -1,0 +1,15 @@
+{
+    "_copy_without_render": [
+        "docs/aibs_sphinx"
+    ],
+    "_template": "pyproject_template/",
+    "email": "joshs@alleninstitute.org",
+    "full_name": "josh siegle",
+    "project_name": "ecephys spike sorting",
+    "project_namespace": "",
+    "project_short_description": "Tools for spike-sorting Allen Insitute Neuropixels data",
+    "project_slug": "ecephys_spike_sorting",
+    "repo_url": "https://github.com/AllenInstitute/ecephys_spike_sorting",
+    "user_name": "joshs",
+    "version": "0.1.0"
+}
