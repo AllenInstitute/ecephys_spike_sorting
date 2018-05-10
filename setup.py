@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name = 'ecephys_spike_sorting',
     version = '0.1.0',
-    description = """Tools for spike-sorting Allen Insitute Neuropixels data""",
+    description = """Tools for spike-sorting Allen Institute Neuropixels data""",
     author = "josh siegle",
     author_email = "joshs@alleninstitute.org",
     url = 'https://github.com/AllenInstitute/ecephys_spike_sorting',
