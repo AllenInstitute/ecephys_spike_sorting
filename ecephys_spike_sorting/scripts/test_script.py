@@ -1,45 +1,90 @@
 import os
 import subprocess
+import glob
+import time
+import matlab.engine
+import shutil
 
-ssds = ['L:\\','J:\\','J:\\','J:\\','K:\\','K:\\','K:\\','K:\\','L:\\','L:\\']
+from compute_offset_and_surface_channel import compute_offset_and_surface_channel, read_probe_json
+import matlab_file_generator
+from postprocessing import postprocessing
 
-input_files = ['704514354_380485_20180601_probeF',
-				'703640904_380483_20180530_probeD',
-			   '703270608_380480_20180529_probeD',
-			   '704166722_380486_20180531_probeD',
+ssds = ['J:\\','K:\\','L:\\','J:\\','K:\\','J:\\','K:\\','L:\\']
+
+input_files = ['706875901_388187_20180607_probeD',
+			   '706875901_388187_20180607_probeE',
+			   '706875901_388187_20180607_probeF',
+			   '705847873_388186_20180605_probeD',
+			   '705847873_388186_20180605_probeE',
 			   '704514354_380485_20180601_probeD',
-			   '703270608_380480_20180529_probeE',
-			   '703640904_380483_20180530_probeE',
-			   '704166722_380486_20180531_probeE',
 			   '704514354_380485_20180601_probeE',
-			   '703640904_380483_20180530_probeF',
+			   '704514354_380485_20180601_probeF'
 			   ]
 
-recordings = ['1','2','1','3','1','3','1','4','1','2','2']
+recordings = ['1','1','1','1','1','1','1','1']
 
 npx_executable = r'C:\Users\svc_neuropix\Documents\GitHub\npxextractor\Release\NpxExtractor.exe'
 med_sub_executable = r'C:\Users\svc_neuropix\Documents\GitHub\spikebandmediansubtraction\Builds\VisualStudio2013\Release\SpikeBandMedianSubtraction.exe'
+kilosort_location = r'C:\Users\svc_neuropix\Documents\MATLAB'
 
 for idx, input_file in enumerate(input_files):
 
-	npx_file = os.path.join(ssds[idx], 
-						input_file, 
-						'recording' + recordings[idx] + '.npx')
+	try:
 
-	output_directory = os.path.join('E:\\',input_file +'_sorted')
+		npx_file = os.path.join(ssds[idx], 
+							input_file, 
+							'recording' + recordings[idx] + '.npx')
 
-	if not os.path.exists(output_directory):
+		output_directory = os.path.join('C:\\data',input_file +'_sorted')
+		output_directory_E = os.path.join('E:\\',input_file +'_sorted')
 
-		os.mkdir(output_directory)
+		if not os.path.exists(output_directory):
 
-	subprocess.check_call([npx_executable, npx_file, output_directory, str(30)])
+			os.mkdir(output_directory)
 
-	stop
+		# convert from NPX
+		subprocess.check_call([npx_executable, npx_file, output_directory])
 
-	# compute top channel + offsets
+		# compute surface channel + offsets
+		compute_offset_and_surface_channel(output_directory)
+		json_file = os.path.join(output_directory, 'probe_info.json')
+		full_mask, offset, scaling, surface_channel, air_channel = read_probe_json(json_file)
+		continuous_directory = os.path.join(output_directory, os.path.join('continuous','Neuropix*.0'))
+		ap_directory = glob.glob(continuous_directory)[0]
+		spikes_file = os.path.join(ap_directory, 'continuous.dat')
 
-	# median subtraction
+		# median subtraction
+		subprocess.check_call([med_sub_executable, json_file, spikes_file, str(int(air_channel))])
+		
+		# run kilosort
+		top_channel = int(surface_channel) + 15
+		num_templates = top_channel * 3
+		num_templates = num_templates - (num_templates % 32)
 
-	# run kilosort
+		matlab_file_generator.create_chanmap(kilosort_location, int(surface_channel) + 15)
+		matlab_file_generator.create_config(kilosort_location, \
+	    									ap_directory.replace('\\','/'), \
+	    									'continuous.dat', \
+	    									Nfilt = num_templates, \
+	    									Threshold = [4, 10, 10], \
+	    									lam = [5, 20, 20], \
+	    									IntitalizeTh = -4, \
+	    									InitializeNfilt=10000)
+	    
+		start = time.time()
+		eng = matlab.engine.start_matlab()
+		eng.createChannelMapFile(nargout=0)
+		eng.kilosort_config_file(nargout=0)
+		eng.kilosort_master_file(nargout=0)
+	  
+		execution_time = time.time() - start
 
-	# automated post-processing
+		# automerging
+		postprocessing(ap_directory)
+
+		print("Copying to E: drive")
+		shutil.move(output_directory, output_directory_E)
+		print("Finished copying.")
+
+	except:
+		print("Something went wrong with " + output_directory)
