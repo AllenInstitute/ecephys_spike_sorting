@@ -80,7 +80,7 @@ def read_probe_json(input_file):
         
         full_mask[ok_chans,ch] = True 
 
-    return full_mask, offset, scaling, surface_channel, air_channel
+    return mask, offset, scaling, surface_channel, air_channel
 
 # %%
     
@@ -110,7 +110,7 @@ def find_surface_channel(lfp_data, show_figure = False):
     nchannels = 384
     sample_frequency = 2500
     smoothing_amount = 5
-    power_thresh = 2.0
+    power_thresh = 2.5
     diff_thresh = -0.07
     freq_range = [0,10]
     channel_range = [370,380]
@@ -154,9 +154,11 @@ def find_surface_channel(lfp_data, show_figure = False):
         values = gaussian_filter1d(values,smoothing_amount)
                         
         try:
-            surface_chan = np.max(np.where((np.diff(values) < diff_thresh) * (values[:-1] < power_thresh) )[0])
+           #print(np.where(np.diff(values) < diff_thresh))
+           #print(np.where(values < power_thresh))
+           surface_chan = np.max(np.where((np.diff(values) < diff_thresh) * (values[:-1] < power_thresh) )[0])
         except ValueError:
-            surface_chan = 384
+           surface_chan = 384
             
         candidates[p] = surface_chan
         
@@ -178,7 +180,7 @@ def find_surface_channel(lfp_data, show_figure = False):
             plt.plot(np.diff(values))
             plt.plot([0,384],[diff_thresh,diff_thresh],'--k')
             
-            plt.plot([surface_chan, surface_chan],[-0.2, 0.07],'--r')
+            plt.plot([surface_chan, surface_chan],[-0.2, diff_thresh],'--r')
             plt.title(surface_chan)
             plt.show()
             

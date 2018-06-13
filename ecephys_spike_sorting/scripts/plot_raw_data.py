@@ -35,8 +35,8 @@ def plot_raw_data(dataFolder):
 
 	mask_chans = np.array([37, 76, 113, 152, 189, 228, 265, 304, 341, 380]) - 1
 
-	start_time = 30000*2
-	recording_time = 5000
+	start_time = 30000*2000
+	recording_time = 30000
 	median_subtr = np.zeros((recording_time,numChannels))
 
 	medians = np.zeros((384,))

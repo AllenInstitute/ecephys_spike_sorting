@@ -5,6 +5,8 @@ import time
 import matlab.engine
 import shutil
 
+import numpy as np
+
 from compute_offset_and_surface_channel import compute_offset_and_surface_channel, read_probe_json
 import matlab_file_generator
 from postprocessing import postprocessing
@@ -29,62 +31,61 @@ kilosort_location = r'C:\Users\svc_neuropix\Documents\MATLAB'
 
 for idx, input_file in enumerate(input_files):
 
-	try:
+	#try:
 
-		npx_file = os.path.join(ssds[idx], 
-							input_file, 
-							'recording' + recordings[idx] + '.npx')
+		if idx > 0:
 
-		output_directory = os.path.join('C:\\data',input_file +'_sorted')
-		output_directory_E = os.path.join('E:\\',input_file +'_sorted')
+			npx_file = os.path.join(ssds[idx], 
+								input_file, 
+								'recording' + recordings[idx] + '.npx')
 
-		if not os.path.exists(output_directory):
+			output_directory = os.path.join('C:\\data',input_file +'_sorted')
+			output_directory_E = os.path.join('E:\\',input_file +'_sorted')
 
-			os.mkdir(output_directory)
+			if not os.path.exists(output_directory):
 
-		# convert from NPX
-		subprocess.check_call([npx_executable, npx_file, output_directory])
+				os.mkdir(output_directory)
 
-		# compute surface channel + offsets
-		compute_offset_and_surface_channel(output_directory)
-		json_file = os.path.join(output_directory, 'probe_info.json')
-		full_mask, offset, scaling, surface_channel, air_channel = read_probe_json(json_file)
-		continuous_directory = os.path.join(output_directory, os.path.join('continuous','Neuropix*.0'))
-		ap_directory = glob.glob(continuous_directory)[0]
-		spikes_file = os.path.join(ap_directory, 'continuous.dat')
+			# convert from NPX
+			if idx > 1:
+				subprocess.check_call([npx_executable, npx_file, output_directory])
 
-		# median subtraction
-		subprocess.check_call([med_sub_executable, json_file, spikes_file, str(int(air_channel))])
-		
-		# run kilosort
-		top_channel = int(surface_channel) + 15
-		num_templates = top_channel * 3
-		num_templates = num_templates - (num_templates % 32)
+			# compute surface channel + offsets
+			compute_offset_and_surface_channel(output_directory)
+			json_file = os.path.join(output_directory, 'probe_info.json')
+			mask, offset, scaling, surface_channel, air_channel = read_probe_json(json_file)
+			continuous_directory = os.path.join(output_directory, os.path.join('continuous','Neuropix*.0'))
+			ap_directory = glob.glob(continuous_directory)[0]
+			spikes_file = os.path.join(ap_directory, 'continuous.dat')
 
-		matlab_file_generator.create_chanmap(kilosort_location, int(surface_channel) + 15)
-		matlab_file_generator.create_config(kilosort_location, \
-	    									ap_directory.replace('\\','/'), \
-	    									'continuous.dat', \
-	    									Nfilt = num_templates, \
-	    									Threshold = [4, 10, 10], \
-	    									lam = [5, 20, 20], \
-	    									IntitalizeTh = -4, \
-	    									InitializeNfilt=10000)
-	    
-		start = time.time()
-		eng = matlab.engine.start_matlab()
-		eng.createChannelMapFile(nargout=0)
-		eng.kilosort_config_file(nargout=0)
-		eng.kilosort_master_file(nargout=0)
-	  
-		execution_time = time.time() - start
+			# median subtraction
+			if idx > 1:
+				subprocess.check_call([med_sub_executable, json_file, spikes_file, str(int(air_channel))])
+				
+			if True:
+				# run kilosort
+				top_channel = int(surface_channel) + 15
+				num_templates = top_channel * 3
+				num_templates = num_templates - (num_templates % 32)
 
-		# automerging
-		postprocessing(ap_directory)
+				matlab_file_generator.create_chanmap(kilosort_location, \
+					                                 EndChan = int(surface_channel) + 15, \
+					                                 BadChannels = np.where(mask == False)[0])
+				matlab_file_generator.create_config2(kilosort_location, \
+			    									ap_directory.replace('\\','/'))
+			    
+				start = time.time()
+				eng = matlab.engine.start_matlab()
+				eng.kilosort2_master_file(nargout=0)
+			  
+				execution_time = time.time() - start
 
-		print("Copying to E: drive")
-		shutil.move(output_directory, output_directory_E)
-		print("Finished copying.")
+				# automerging
+				#postprocessing(ap_directory)
 
-	except:
-		print("Something went wrong with " + output_directory)
+				print("Copying to E: drive")
+				shutil.move(output_directory, output_directory_E)
+				print("Finished copying.")
+
+	#except:
+#		print("Something went wrong with " + output_directory)
