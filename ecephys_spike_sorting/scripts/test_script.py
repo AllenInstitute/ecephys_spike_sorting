@@ -11,19 +11,17 @@ from compute_offset_and_surface_channel import compute_offset_and_surface_channe
 import matlab_file_generator
 from postprocessing import postprocessing
 
-ssds = ['J:\\','K:\\','L:\\','J:\\','K:\\','J:\\','K:\\','L:\\']
+ssds = ['J:\\','K:\\','L:\\','J:\\','K:\\','L:\\']
 
-input_files = ['706875901_388187_20180607_probeD',
-			   '706875901_388187_20180607_probeE',
-			   '706875901_388187_20180607_probeF',
-			   '705847873_388186_20180605_probeD',
-			   '705847873_388186_20180605_probeE',
-			   '704514354_380485_20180601_probeD',
-			   '704514354_380485_20180601_probeE',
-			   '704514354_380485_20180601_probeF'
+input_files = ['706875901_388187_20180607_probeA',
+			   '706875901_388187_20180607_probeB',
+			   '706875901_388187_20180607_probeC',
+			   '706424491_388184_20180606_probeA',
+			   '706424491_388184_20180606_probeB',
+			   '706424491_388184_20180606_probeC'
 			   ]
 
-recordings = ['1','1','1','1','1','1','1','1']
+recordings = ['1','1','1','1','2','2']
 
 npx_executable = r'C:\Users\svc_neuropix\Documents\GitHub\npxextractor\Release\NpxExtractor.exe'
 med_sub_executable = r'C:\Users\svc_neuropix\Documents\GitHub\spikebandmediansubtraction\Builds\VisualStudio2013\Release\SpikeBandMedianSubtraction.exe'
@@ -33,8 +31,7 @@ for idx, input_file in enumerate(input_files):
 
 	#try:
 
-		if idx > 0:
-
+			
 			npx_file = os.path.join(ssds[idx], 
 								input_file, 
 								'recording' + recordings[idx] + '.npx')
@@ -46,8 +43,8 @@ for idx, input_file in enumerate(input_files):
 
 				os.mkdir(output_directory)
 
-			# convert from NPX
-			if idx > 1:
+				# convert from NPX
+			if idx > 0:
 				subprocess.check_call([npx_executable, npx_file, output_directory])
 
 			# compute surface channel + offsets
@@ -58,8 +55,8 @@ for idx, input_file in enumerate(input_files):
 			ap_directory = glob.glob(continuous_directory)[0]
 			spikes_file = os.path.join(ap_directory, 'continuous.dat')
 
-			# median subtraction
-			if idx > 1:
+				# median subtraction
+			if idx > 0:
 				subprocess.check_call([med_sub_executable, json_file, spikes_file, str(int(air_channel))])
 				
 			if True:
@@ -69,7 +66,7 @@ for idx, input_file in enumerate(input_files):
 				num_templates = num_templates - (num_templates % 32)
 
 				matlab_file_generator.create_chanmap(kilosort_location, \
-					                                 EndChan = int(surface_channel) + 15, \
+					                                 EndChan = np.min([384,int(surface_channel) + 15]), \
 					                                 BadChannels = np.where(mask == False)[0])
 				matlab_file_generator.create_config2(kilosort_location, \
 			    									ap_directory.replace('\\','/'))
