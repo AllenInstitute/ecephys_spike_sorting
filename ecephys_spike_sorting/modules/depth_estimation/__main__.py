@@ -60,13 +60,10 @@ def find_surface_channel(lfp_data, figure_location = None):
             sample_frequencies, Pxx_den = welch(chunk[:,channel], fs=sample_frequency, nfft=nfft)
             power[:,channel] = Pxx_den
         
-        in_range = find_range(sample_frequencies, 0, 150)
-        
         mask_chans = np.array([37, 76, 113, 152, 189, 228, 265, 304, 341, 380]) - 1
         
-        in_range_gamma = find_range(sample_frequencies, freq_range[0],freq_range[1])
-        
-        values = np.log10(np.mean(power[in_range_gamma,:],0))
+        in_range = find_range(sample_frequencies, freq_range[0],freq_range[1])
+        values = np.log10(np.mean(power[in_range,:],0))
         values[mask_chans] = values[mask_chans-1]
         values = gaussian_filter1d(values,smoothing_amount)
                         
@@ -83,6 +80,7 @@ def find_surface_channel(lfp_data, figure_location = None):
             plt.imshow(np.flipud((chunk).T), aspect='auto',vmin=-1000,vmax=1000)
             
             plt.subplot(4,1,2)
+            in_range = find_range(sample_frequencies, 0, 150)
             plt.imshow(np.flipud(np.log10(power[in_range,:]).T), aspect='auto')
             
             plt.subplot(4,1,3)
