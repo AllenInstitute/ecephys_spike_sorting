@@ -20,5 +20,9 @@ pytest = "*"
 [packages]
 
 matplotlib = "*"
+scipy = "*"
+numpy = "*"
+pandas = "*"
+GitPython = "*"
 pillow = "*"
 argschema = "*"
