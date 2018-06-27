@@ -11,8 +11,8 @@ import pandas as pd
 import numpy as np
 
 from ecephys_spike_sorting.common.utils import read_cluster_group_tsv
-from metrics import compare_templates, make_interp_temp, compute_isi_score, compute_isi_score
-from merges import ID_merge_groups, make_interp_temp
+from ecephys_spike_sorting.modules.automerging.metrics import compare_templates, make_interp_temp, compute_isi_score, compute_isi_score
+from ecephys_spike_sorting.modules.automerging.merges import ID_merge_groups, make_merges
 
 
 def automerging(folder, sample_rate):
@@ -25,7 +25,7 @@ def automerging(folder, sample_rate):
                     
     templates = templates[:,21:,:] # remove zeros
     spike_templates = np.squeeze(spike_templates) # fix dimensions
-    spike_times = np.squeeze(spike_times) / args['sample_rate'] # fix dimensions and convert to seconds
+    spike_times = np.squeeze(spike_times) / sample_rate # fix dimensions and convert to seconds
                     
     unwhitened_temps = np.zeros((templates.shape))
     

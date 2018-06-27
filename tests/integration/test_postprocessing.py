@@ -6,7 +6,8 @@ import pandas as pd
 
 from ecephys_spike_sorting.modules.noise_templates.__main__ import classify_noise_templates
 from ecephys_spike_sorting.modules.automerging.__main__ import run_automerging
-from ecephys_spike_sorting.modules.median_subtraction.__main__ import run_median_subtraction
+from ecephys_spike_sorting.modules.mean_waveforms.__main__ import calculate_mean_waveforms
+from ecephys_spike_sorting.modules.quality_metrics.__main__ import calculate_quality_metrics
 
 DATA_DIR = r'C:\Users\joshs\Documents\GitHub\ecephys_spike_sorting\test_data'
 #os.environ.get('ECEPHYS_SPIKE_SORTING_DATA', False)
@@ -20,7 +21,9 @@ def test_postprocessing(tmpdir_factory):
 
     args = {
         'extracted_data_directory': os.path.join(DATA_DIR, 'output'),
-        'kilosort_data_directory': os.path.join(DATA_DIR, 'kilosort')
+        'kilosort_output_directory': os.path.join(DATA_DIR, 'kilosort'),
+        'num_channels': 384,
+        'sample_rate': 30000.0
     }
 
     output = classify_noise_templates(args)
@@ -30,6 +33,12 @@ def test_postprocessing(tmpdir_factory):
     output = run_automerging(args)
 
     args.update(output)
+
+    output = calculate_mean_waveforms(args)
+
+    args.update(output)
+
+    output = calculate_quality_metrics(args)
 
     # make sure output is correct
 

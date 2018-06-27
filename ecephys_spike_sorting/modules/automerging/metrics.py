@@ -9,7 +9,7 @@ Created on Thu Feb  1 19:00:45 2018
 from scipy.interpolate import griddata
 from scipy.signal import correlate
 import numpy as np
-from ephys_pipeline.spike_sorting.spike_ISI import *    
+from ecephys_spike_sorting.modules.automerging.spike_ISI import *    
 
 # %%
 

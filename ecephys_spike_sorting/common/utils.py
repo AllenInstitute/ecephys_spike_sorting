@@ -94,7 +94,7 @@ def write_cluster_group_tsv(IDs, quality, output_directory):
     df.to_csv(os.path.join(output_directory, 'cluster_group.tsv'), sep='\t', index=False)
 
 
-def read_cluster_group_tsv(IDs, quality, output_directory):
+def read_cluster_group_tsv(filename):
 
     cluster_quality = []
     cluster_index = []

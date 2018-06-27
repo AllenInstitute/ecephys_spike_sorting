@@ -6,7 +6,7 @@ import time
 
 import numpy as np
 
-from id_noise_templates import id_noise_templates
+from ecephys_spike_sorting.modules.noise_templates.id_noise_templates import id_noise_templates
 from ecephys_spike_sorting.common.utils import write_cluster_group_tsv
 
 def classify_noise_templates(args):

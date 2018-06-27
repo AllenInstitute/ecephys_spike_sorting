@@ -6,7 +6,7 @@ import time
 
 import numpy as np
 
-from automerging import automerging
+from ecephys_spike_sorting.modules.automerging.automerging import automerging
 
 def run_automerging(args):
 
@@ -14,7 +14,7 @@ def run_automerging(args):
     
     start = time.time()
     
-    automerging(args['kilosort_location'], args['sample_rate'])
+    automerging(args['kilosort_output_directory'], args['sample_rate'])
 
     execution_time = time.time() - start
     

@@ -46,7 +46,7 @@ def id_noise_templates(spike_templates, unwhitened_temps, spike_times):
         
         H = np.mean(h[:3])/np.max(h)
     
-        if ((np.max(S) < std_thresh or np.argmax(wv) < 10 or np.argmin(wv) < 10) and H > 0.01) or len(b) > 0 or np.min(wv) > -5:
+        if False: #((np.max(S) < std_thresh or np.argmax(wv) < 10 or np.argmin(wv) < 10) and H > 0.01) or len(b) > 0 or np.min(wv) > -5:
             auto_noise[idx] = True;
         else:
             auto_noise[idx] = False

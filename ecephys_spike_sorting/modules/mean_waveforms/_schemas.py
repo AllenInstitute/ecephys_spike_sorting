@@ -5,9 +5,8 @@ from argschema.fields import Nested, InputDir, String, Float, Dict, Int
 
 class InputParameters(ArgSchema):
     
-    raw_data_location = String()
-    spike_times_location = String()
-    spike_clusters_location = String()
+    kilosort_output_directory = String()
+    extracted_data_directory = String()
     num_channels = Int()
     
 
