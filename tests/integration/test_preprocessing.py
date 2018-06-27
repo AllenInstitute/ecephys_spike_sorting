@@ -19,17 +19,17 @@ def test_preprocessing(tmpdir_factory):
     #base_path = tmpdir_factory.mktemp('npx_extractor_integration')
 
     args = {
-        'npx_file' : os.path.join(DATA_DIR, 'test.npx'),
-        'extracted_data_directory': os.path.join(DATA_DIR, 'output'),
+        'npx_file' : os.path.join(DATA_DIR, 'test_short.npx'),
+        'extracted_data_directory': os.path.join(DATA_DIR, 'output_short'),
         'npx_extractor_executable': r'C:\Users\joshs\Documents\GitHub\NpxExtractor\Release\NpxExtractor.exe',
 		'save_depth_estimation_figure': True,
 		'depth_estimation_figure_location': DATA_DIR,
 		'median_subtraction_executable': r'C:\Users\joshs\Documents\GitHub\spikebandmediansubtraction\Builds\VisualStudio2013\Release\SpikeBandMedianSubtraction.exe',
     }
 
-    #output = run_npx_extractor(args)
+    output = run_npx_extractor(args)
 
-    #args.update(output)
+    args.update(output)
 
     output = run_depth_estimation(args)
 

@@ -1,11 +1,5 @@
 import os
-import subprocess
-import glob
-import time
-import matlab.engine
 import shutil
-
-import numpy as np
 
 from ecephys_spike_sorting.modules.extract_from_npx.__main__ import run_npx_extractor
 from ecephys_spike_sorting.modules.depth_estimation.__main__ import run_depth_estimation

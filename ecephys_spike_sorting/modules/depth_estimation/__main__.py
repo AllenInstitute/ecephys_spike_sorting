@@ -153,8 +153,8 @@ def compute_offset_and_surface_channel(dataFolder, save_figure = False, figure_l
 
     mask_chans = np.array([37, 76, 113, 152, 189, 228, 265, 304, 341, 380]) - 1
 
-    start_time = 30000*10
-    recording_time = 90000
+    start_time = 0
+    recording_time = 30000
     median_subtr = np.zeros((recording_time,numChannels))
 
     # 1. cycle through to find median offset
