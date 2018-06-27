@@ -4,11 +4,9 @@ from argschema.fields import Nested, InputDir, String, Float, Dict, Int, Bool
  
 
 class InputParameters(ArgSchema): 
-    oe_json_file = String()
-    input_file = String()
-    save_figure = Bool()
-    figure_location = String()
-    
+    extracted_data_directory = String()
+    save_depth_estimation_figure = Bool()
+    depth_estimation_figure_location = String()
 
 class OutputSchema(DefaultSchema): 
     input_parameters = Nested(InputParameters, 
@@ -17,8 +15,7 @@ class OutputSchema(DefaultSchema):
                               required=True) 
  
 class OutputParameters(OutputSchema): 
-    # Add your output parameters 
     surface_channel = Int()
     air_channel = Int()
-    output_json = String()
+    probe_json = String()
     

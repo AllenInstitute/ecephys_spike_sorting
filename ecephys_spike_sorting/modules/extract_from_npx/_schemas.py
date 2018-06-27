@@ -4,9 +4,9 @@ from argschema.fields import Nested, InputDir, String, Float, Dict, Int
  
 
 class InputParameters(ArgSchema): 
-    npx_file_location = String()
-    output_file_location = String()
-    executable_file = String()
+    npx_file = String()
+    extracted_data_directory = String()
+    npx_extractor_executable = String()
 
 class OutputSchema(DefaultSchema): 
     input_parameters = Nested(InputParameters, 
