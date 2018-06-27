@@ -3,32 +3,32 @@ import os
 import logging
 import subprocess
 import time
+import shutil
 
 import numpy as np
-
-from _schemas import InputParameters, OutputParameters
-
 
 def run_npx_extractor(args):
 
     # load lfp band data
     
-    free_space = os.statvfs(args['output_file_path'])
+    total, used, free = shutil.disk_usage(args['output_file_location'])
     
     filesize = os.path.getsize(args['npx_file_location'])
     
-    assert(free_space > filesize)
+    assert(free > filesize * 2)
     
     logging.info('Running NPX Extractor')
     
     start = time.time()
-    subprocess.check_call(args['executable_file'], args['npx_file_location'], args['output_file_path'])
+    subprocess.check_call([args['executable_file'], args['npx_file_location'], args['output_file_location']])
     execution_time = time.time() - start
     
     return {"execution_time" : execution_time} # output manifest
 
 
 def main():
+
+    from _schemas import InputParameters, OutputParameters
 
     """Main entry point:"""
     mod = ArgSchemaParser(schema_type=InputParameters,

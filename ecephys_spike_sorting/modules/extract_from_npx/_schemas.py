@@ -5,10 +5,8 @@ from argschema.fields import Nested, InputDir, String, Float, Dict, Int
 
 class InputParameters(ArgSchema): 
     npx_file_location = String()
-    oe_settings_file = String()
     output_file_location = String()
     executable_file = String()
-    
 
 class OutputSchema(DefaultSchema): 
     input_parameters = Nested(InputParameters, 
