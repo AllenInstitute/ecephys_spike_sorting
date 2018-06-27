@@ -8,7 +8,6 @@ class InputParameters(ArgSchema):
     kilosort_output_directory = String()
     extracted_data_directory = String()
     num_channels = Int()
-    
 
 class OutputSchema(DefaultSchema): 
     input_parameters = Nested(InputParameters, 
@@ -17,6 +16,6 @@ class OutputSchema(DefaultSchema):
                               required=True) 
  
 class OutputParameters(OutputSchema): 
-    # Add your output parameters 
+
     execution_time = Float()
     

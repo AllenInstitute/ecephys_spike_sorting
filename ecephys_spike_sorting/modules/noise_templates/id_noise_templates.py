@@ -11,8 +11,25 @@ import numpy as np
 from scipy.signal import correlate
 
 from ecephys_spike_sorting.common.spike_template_helpers import find_depth
+from ecephys_spike_sorting.common.utils import write_cluster_group_tsv
 
-def id_noise_templates(spike_templates, unwhitened_temps, spike_times):
+def id_noise_templates(folder):
+
+    spike_times = np.load(os.path.join(folder,'spike_times.npy'))
+    spike_templates = np.load(os.path.join(folder,'spike_templates.npy'))
+    amplitudes = np.load(os.path.join(folder,'amplitudes.npy'))
+    templates = np.load(os.path.join(folder,'templates.npy'))
+    unwhitening_mat = np.load(os.path.join(folder,'whitening_mat_inv.npy'))
+                    
+    templates = templates[:,21:,:] # remove zeros
+    spike_templates = np.squeeze(spike_templates) # fix dimensions
+    spike_times = np.squeeze(spike_times) / args['sample_rate'] # fix dimensions and convert to seconds
+                    
+    unwhitened_temps = np.zeros((templates.shape))
+    
+    for temp_idx in range(templates.shape[0]):
+        
+        unwhitened_temps[temp_idx,:,:] = np.dot(np.ascontiguousarray(templates[temp_idx,:,:]),np.ascontiguousarray(unwhitening_mat))
     
     ids = np.unique(spike_templates) #np.arange(templateIDs.size) # [425, 426, 428, 100, 31, 61, 64, 11, 0, 506]
     
@@ -50,6 +67,11 @@ def id_noise_templates(spike_templates, unwhitened_temps, spike_times):
             auto_noise[idx] = True;
         else:
             auto_noise[idx] = False
+
+    quality = np.zeros(auto_noise.shape)
+    quality[auto_noise] = -1
+    
+    write_cluster_group_tsv(ids, quality, folder)
     
     return ids, auto_noise
     

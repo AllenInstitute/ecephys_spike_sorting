@@ -10,6 +10,20 @@ import pandas as pd
 import os
 import numpy as np
 import json
+import glob
+
+def get_lfp_band_continuous_file(base_directory):
+
+    f1 = os.path.join(base_directory, os.path.join('continuous','Neuropix*.1'))
+    ap_directory = glob.glob(f1)[0]
+    return os.path.join(ap_directory, 'continuous.dat')
+
+def get_ap_band_continuous_file(base_directory):
+    
+    f1 = os.path.join(base_directory, os.path.join('continuous','Neuropix*.0'))
+    ap_directory = glob.glob(f1)[0]
+    return os.path.join(ap_directory, 'continuous.dat')
+
 
 def find_range(x,a,b,option='within'):
     """Find data within range [a,b]"""
@@ -40,8 +54,6 @@ def write_probe_json(output_file, channels, offset, scaling, mask, surface_chan,
                   outfile, \
                   indent = 4, separators = (',', ': ') \
                  ) 
-
-# %%
 
 def read_probe_json(input_file):
     

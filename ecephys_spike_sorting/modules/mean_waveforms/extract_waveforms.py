@@ -13,6 +13,9 @@ import os
 import glob
 import pandas as pd
 
+from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file
+
+
 def signaltonoise(a, axis=0, ddof=0):
     """
     The signal-to-noise ratio of the input data.
@@ -77,12 +80,13 @@ def get_peak_ch(mean_waveforms):
     return ch_peak
 
     
-def extract_waveforms(rawDataFile, kilosort_path, numChannels, nBoots =100):
+def extract_waveforms(dataFolder, kilosort_path, numChannels, nBoots =100):
     """Re-calculate waveforms for sorted clusters from raw data.
     Bootstrap for units with more than 100 spikes.
     n=100
     boots=100
     """
+    rawDataFile = get_ap_band_continuous_file(dataFolder)
 
     clustersFile = os.path.join(kilosort_path,'spike_clusters.npy')
     spikeTimesFile = os.path.join(kilosort_path,'spike_times.npy')

@@ -9,12 +9,13 @@ class InputParameters(ArgSchema):
     sample_rate = Float()
 
 class OutputSchema(DefaultSchema): 
+
     input_parameters = Nested(InputParameters, 
                               description=("Input parameters the module " 
                                            "was run with"), 
                               required=True) 
  
 class OutputParameters(OutputSchema): 
-    # Add your output parameters 
+
     execution_time = Float()
     

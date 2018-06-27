@@ -1,10 +1,7 @@
 from argschema import ArgSchemaParser
 import os
 import logging
-import subprocess
 import time
-
-import numpy as np
 
 from ecephys_spike_sorting.modules.automerging.automerging import automerging
 
@@ -25,7 +22,6 @@ def main():
 
     from _schemas import InputParameters, OutputParameters
 
-    """Main entry point:"""
     mod = ArgSchemaParser(schema_type=InputParameters,
                           output_schema_type=OutputParameters)
 
