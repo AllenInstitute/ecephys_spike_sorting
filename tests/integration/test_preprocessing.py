@@ -6,6 +6,7 @@ import pandas as pd
 
 from ecephys_spike_sorting.modules.extract_from_npx.__main__ import run_npx_extractor
 from ecephys_spike_sorting.modules.depth_estimation.__main__ import run_depth_estimation
+from ecephys_spike_sorting.modules.median_subtraction.__main__ import run_median_subtraction
 
 DATA_DIR = r'C:\Users\joshs\Documents\GitHub\ecephys_spike_sorting\test_data'
 #os.environ.get('ECEPHYS_SPIKE_SORTING_DATA', False)
@@ -22,7 +23,8 @@ def test_npx_extractor(tmpdir_factory):
         'extracted_data_directory': os.path.join(DATA_DIR, 'output'),
         'npx_extractor_executable': r'C:\Users\joshs\Documents\GitHub\NpxExtractor\Release\NpxExtractor.exe',
 		'save_depth_estimation_figure': True,
-		'depth_estimation_figure_location': DATA_DIR
+		'depth_estimation_figure_location': DATA_DIR,
+		'median_subtraction_executable': r'C:\Users\joshs\Documents\GitHub\spikebandmediansubtraction\Builds\VisualStudio2013\Release\SpikeBandMedianSubtraction.exe',
     }
 
     #output = run_npx_extractor(args)
@@ -30,6 +32,10 @@ def test_npx_extractor(tmpdir_factory):
     #args.update(output)
 
     output = run_depth_estimation(args)
+
+    args.update(output)
+
+    output = run_median_subtraction(args)
 
     args.update(output)
 

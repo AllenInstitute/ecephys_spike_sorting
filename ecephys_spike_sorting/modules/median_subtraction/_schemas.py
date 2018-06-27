@@ -4,13 +4,9 @@ from argschema.fields import Nested, InputDir, String, Float, Dict, Int
  
 
 class InputParameters(ArgSchema): 
-    oe_json_file = String()
-    probe_info_file = String()
-    output_file_location = String()
-    executable_file = String()
-    surface_channel = Int()
-    air_channel = Int()
-    
+    probe_json = String()
+    extracted_data_directory = String()
+    median_subtraction_executable = String()
 
 class OutputSchema(DefaultSchema): 
     input_parameters = Nested(InputParameters, 
@@ -20,5 +16,5 @@ class OutputSchema(DefaultSchema):
  
 class OutputParameters(OutputSchema): 
     # Add your output parameters 
-    execution_time = Float()
+    median_subtraction_execution_time = Float()
     

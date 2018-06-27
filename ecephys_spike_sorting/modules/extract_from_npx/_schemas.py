@@ -16,5 +16,5 @@ class OutputSchema(DefaultSchema):
  
 class OutputParameters(OutputSchema): 
     # Add your output parameters 
-    execution_time = Float()
+    npx_extactor_execution_time = Float()
     
