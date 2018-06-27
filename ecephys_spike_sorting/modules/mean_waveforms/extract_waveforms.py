@@ -14,7 +14,7 @@ import glob
 import pandas as pd
 
 from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file
-
+from ecephys_spike_sorting.common.utils import load_kilosort_data
 
 def signaltonoise(a, axis=0, ddof=0):
     """

@@ -108,22 +108,35 @@ def write_cluster_group_tsv(IDs, quality, output_directory):
 
 def read_cluster_group_tsv(filename):
 
-    cluster_quality = []
-    cluster_index = []
+    info = np.genfromtxt(folder + '/cluster_groups.csv', dtype='str')
+    cluster_ids = info[1:,0].astype('int')
+    cluster_quality = info[1:,1]
+
+    return cluster_ids, cluster_quality
+
+def load(folder, filename):
+
+    return np.load(os.path.join(folder, filename))
+
+def load_kilosort_data(folder, sample_rate):
+
+    spike_times = load(folder,'spike_times.npy')
+    spike_clusters = load(folder,'spike_clusters.npy')
+    amplitudes = load(folder,'amplitudes.npy')
+    templates = load(folder,'templates.npy')
+    unwhitening_mat = load(folder,'whitening_mat_inv.npy')
+    channel_map = load(folder, 'channel_map.npy')
+                
+    templates = templates[:,21:,:] # remove zeros
+    spike_clusters = np.squeeze(spike_clusters) # fix dimensions
+    spike_times = np.squeeze(spike_times) / sample_rate # fix dimensions and convert to seconds
+                    
+    unwhitened_temps = np.zeros((templates.shape))
     
-    for idx, ID in enumerate(IDs):
+    for temp_idx in range(templates.shape[0]):
         
-        cluster_index.append(ID)
-        
-        if quality[idx] == 0:
-            cluster_quality.append('unsorted')
-        elif quality[idx] == 1:
-            cluster_quality.append('good')
-        else:
-            cluster_quality.append('noise')
-       
-    df = pd.DataFrame(data={'cluster_id' : cluster_index, 'group': cluster_quality})
-    
-    print('Saving data...')
-    
-    df.to_csv(os.path.join(output_directory, 'cluster_group.tsv'), sep='\t', index=False)
+        unwhitened_temps[temp_idx,:,:] = np.dot(np.ascontiguousarray(templates[temp_idx,:,:]),np.ascontiguousarray(unwhitening_mat))
+                    
+    cluster_ids, cluster_quality = read_cluster_group_tsv(os.path.join(folder, 'cluster_group.tsv'))
+
+    return spike_times, spike_clusters, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality

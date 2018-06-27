@@ -10,45 +10,28 @@ import os
 import pandas as pd
 import numpy as np
 
-from ecephys_spike_sorting.common.utils import read_cluster_group_tsv
+from ecephys_spike_sorting.common.utils import load_kilosort_data
 from ecephys_spike_sorting.modules.automerging.metrics import compare_templates, make_interp_temp, compute_isi_score, compute_isi_score
 from ecephys_spike_sorting.modules.automerging.merges import ID_merge_groups, make_merges
 
 
-def automerging(folder, sample_rate):
+def automerging(kilosortFolder, sample_rate):
 
-    spike_times = np.load(os.path.join(folder,'spike_times.npy'))
-    spike_templates = np.load(os.path.join(folder,'spike_templates.npy'))
-    amplitudes = np.load(os.path.join(folder,'amplitudes.npy'))
-    templates = np.load(os.path.join(folder,'templates.npy'))
-    unwhitening_mat = np.load(os.path.join(folder,'whitening_mat_inv.npy'))
-                    
-    templates = templates[:,21:,:] # remove zeros
-    spike_templates = np.squeeze(spike_templates) # fix dimensions
-    spike_times = np.squeeze(spike_times) / sample_rate # fix dimensions and convert to seconds
-                    
-    unwhitened_temps = np.zeros((templates.shape))
-    
-    for temp_idx in range(templates.shape[0]):
-        
-        unwhitened_temps[temp_idx,:,:] = np.dot(np.ascontiguousarray(templates[temp_idx,:,:]),np.ascontiguousarray(unwhitening_mat))
-                    
-        
-     # LOTS OF HARD-CODED PARAMETERS IN HERE:
-    templateIDs, is_noise = read_cluster_group_tsv(os.path.join(folder, 'cluster_group.tsv'))
+    spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
+            load_kilosort_data(kilosortFolder, sample_rate)
 
     min_t = np.min(spike_times)
     max_t = np.max(spike_times)
 
-    depths = np.zeros((templateIDs.size,))
+    depths = np.zeros((clusterIDs.size,))
 
-    for idx, templateID in enumerate(templateIDs):
+    for idx, clusterID in enumerate(clusterIDs):
 
-        template = unwhitened_temps[templateID,:,:]
+        template = templates[clusterID,:,:]
         depths[idx] = int(find_depth(template))
 
         sorted_by_depth = np.argsort(depths)
-        templateIDs = templateIDs[sorted_by_depth]
+        clusterIDs = clusterIDs[sorted_by_depth]
         depths = depths[sorted_by_depth]
         is_good = np.invert(is_noise[sorted_by_depth])
 
@@ -74,15 +57,15 @@ def automerging(folder, sample_rate):
             
             #print("unit " + str(i))
             
-            temp1 = make_interp_temp(unwhitened_temps,[templateIDs[i]]) #
-            times1 = spike_times[spike_templates == templateIDs[i]]
+            temp1 = make_interp_temp(templates,[clusterIDs[i]]) #
+            times1 = spike_times[spike_templates == clusterIDs[i]]
             
             for j in range(i+1,depths.size):
                 
                 if comparison_matrix[i,j,0] == 1:
                     
-                    temp2 = make_interp_temp(unwhitened_temps, [templateIDs[j]]) #
-                    times2 = spike_times[spike_templates == templateIDs[j]]
+                    temp2 = make_interp_temp(templates, [clusterIDs[j]]) #
+                    times2 = spike_times[spike_clusters == clusterIDs[j]]
                     
                     rms, offset_distance = compare_templates(temp1, temp2) #
                    # overlap = percent_overlap(times1, times2, min_t, max_t, 50) #
@@ -124,8 +107,8 @@ def automerging(folder, sample_rate):
             plt.imshow(rm2[:,:,4],vmin=0,vmax=0.4)
         lengths[idx] = len(group)
         
-    clusters = np.copy(spike_templates) 
-    clusters = make_merges(groups, clusters, spike_templates, templateIDs) 
+    clusters = np.copy(spike_clusters) 
+    clusters = make_merges(groups, clusters, spike_clusters, clusterIDs) 
 
     print('  Total clusters = ' + str(np.unique(clusters).size))
 
@@ -143,7 +126,7 @@ def automerging(folder, sample_rate):
         if ID > np.max(templateIDs):
             cluster_quality.append('good')
         else:
-            if is_good[np.where(templateIDs == ID)[0]]:
+            if is_good[np.where(clusterIDs == ID)[0]]:
                 cluster_quality.append('good')
             else:
                 cluster_quality.append('noise')
