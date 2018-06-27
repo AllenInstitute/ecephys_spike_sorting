@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Apr 11 14:56:49 2018
-
-@author: joshs
-"""
-
 import numpy as np
 
 from scipy.signal import correlate

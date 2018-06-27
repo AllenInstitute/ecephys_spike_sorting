@@ -1,13 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Feb 10 15:43:18 2017
-
-@author: joshs
-
-Added bootstrap and signaltonoise by Xiaoxuan Jia 
-
-"""
-
 import numpy as np
 import os
 import glob
