@@ -7,24 +7,21 @@ import time
 import numpy as np
 
 from id_noise_templates import id_noise_templates
-from ecephys_spike_sorting.common.write_cluster_group_tsv import write_cluster_group_tsv
-
-from _schemas import InputParameters, OutputParameters
-
+from ecephys_spike_sorting.common.utils import write_cluster_group_tsv
 
 def classify_noise_templates(args):
 
-    folder = args['input_directory']
+    folder = args['kilosort_output_directory']
     
     logging.info('Running noise template identification')
     
     start = time.time()
     
-    spike_times = np.load(folder + '/spike_times.npy')
-    spike_templates = np.load(folder + '/spike_templates.npy')
-    amplitudes = np.load(folder + '/amplitudes.npy')
-    templates = np.load(folder + '/templates.npy')
-    unwhitening_mat = np.load(folder + '/whitening_mat_inv.npy')
+    spike_times = np.load(os.path.join(folder,'spike_times.npy'))
+    spike_templates = np.load(os.path.join(folder,'spike_templates.npy'))
+    amplitudes = np.load(os.path.join(folder,'amplitudes.npy'))
+    templates = np.load(os.path.join(folder,'templates.npy'))
+    unwhitening_mat = np.load(os.path.join(folder,'whitening_mat_inv.npy'))
                     
     templates = templates[:,21:,:] # remove zeros
     spike_templates = np.squeeze(spike_templates) # fix dimensions
@@ -52,6 +49,8 @@ def classify_noise_templates(args):
 
 
 def main():
+
+    from _schemas import InputParameters, OutputParameters
 
     """Main entry point:"""
     mod = ArgSchemaParser(schema_type=InputParameters,

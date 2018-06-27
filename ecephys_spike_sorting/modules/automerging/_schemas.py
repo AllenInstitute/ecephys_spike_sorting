@@ -5,10 +5,8 @@ from argschema.fields import Nested, InputDir, String, Float, Dict, Int
 
 class InputParameters(ArgSchema):
     
-    kilosort_location = String()
-    input_file_location = String()
-    num_channels = Int()
-    
+    kilosort_output_directory = String()
+    sample_rate = Float()
 
 class OutputSchema(DefaultSchema): 
     input_parameters = Nested(InputParameters, 

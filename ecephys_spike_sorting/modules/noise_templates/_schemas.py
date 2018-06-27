@@ -5,7 +5,7 @@ from argschema.fields import Nested, InputDir, String, Float, Dict, Int
 
 class InputParameters(ArgSchema):
     
-    input_directory = InputDir()
+    kilosort_output_directory = String()
     sample_rate = Float()
 
 class OutputSchema(DefaultSchema): 

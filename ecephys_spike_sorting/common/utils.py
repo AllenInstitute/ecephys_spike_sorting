@@ -70,3 +70,48 @@ def read_probe_json(input_file):
         full_mask[ok_chans,ch] = True 
 
     return mask, offset, scaling, surface_channel, air_channel
+
+def write_cluster_group_tsv(IDs, quality, output_directory):
+
+    cluster_quality = []
+    cluster_index = []
+    
+    for idx, ID in enumerate(IDs):
+        
+        cluster_index.append(ID)
+        
+        if quality[idx] == 0:
+            cluster_quality.append('unsorted')
+        elif quality[idx] == 1:
+            cluster_quality.append('good')
+        else:
+            cluster_quality.append('noise')
+       
+    df = pd.DataFrame(data={'cluster_id' : cluster_index, 'group': cluster_quality})
+    
+    print('Saving data...')
+    
+    df.to_csv(os.path.join(output_directory, 'cluster_group.tsv'), sep='\t', index=False)
+
+
+def read_cluster_group_tsv(IDs, quality, output_directory):
+
+    cluster_quality = []
+    cluster_index = []
+    
+    for idx, ID in enumerate(IDs):
+        
+        cluster_index.append(ID)
+        
+        if quality[idx] == 0:
+            cluster_quality.append('unsorted')
+        elif quality[idx] == 1:
+            cluster_quality.append('good')
+        else:
+            cluster_quality.append('noise')
+       
+    df = pd.DataFrame(data={'cluster_id' : cluster_index, 'group': cluster_quality})
+    
+    print('Saving data...')
+    
+    df.to_csv(os.path.join(output_directory, 'cluster_group.tsv'), sep='\t', index=False)

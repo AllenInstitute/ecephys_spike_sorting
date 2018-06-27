@@ -6,34 +6,24 @@ import time
 
 import numpy as np
 
-import matlab.engine
-import matlab_file_generator
-
-from _schemas import InputParameters, OutputParameters
-
+from automerging import automerging
 
 def run_automerging(args):
 
-    # load lfp band data
-    
-    matlab_file_generator.create_chanmap(args['kilosort_location'], args['num_channels'], StartChan = 1, Nchannels = args['num_channels'], bad_channels = [])
-    matlab_file_generator.create_config(args['kilosort_location'], args['input_file_location'], Nfilt = 512, Threshold = [4, 10, 10], lam = [5, 20, 20], IntitalizeTh = -4, InitializeNfilt=10000)
-    
-    logging.info('Running Kilosort')
+    logging.info('Running automerging')
     
     start = time.time()
     
-    eng = matlab.engine.start_matlab()
-    eng.createChannelMapFile(nargout=0)
-    eng.kilosort_config_file(nargout=0)
-    eng.kilosort_master_file(nargout=0)
-        
+    automerging(args['kilosort_location'], args['sample_rate'])
+
     execution_time = time.time() - start
     
     return {"execution_time" : execution_time} # output manifest
 
 
 def main():
+
+    from _schemas import InputParameters, OutputParameters
 
     """Main entry point:"""
     mod = ArgSchemaParser(schema_type=InputParameters,
