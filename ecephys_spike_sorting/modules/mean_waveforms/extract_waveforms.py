@@ -70,7 +70,7 @@ def get_peak_ch(mean_waveforms):
     return ch_peak
 
     
-def extract_waveforms(dataFolder, kilosort_path, numChannels, nBoots =100):
+def extract_waveforms(dataFolder, kilosort_path, numChannels, params):
     """Re-calculate waveforms for sorted clusters from raw data.
     Bootstrap for units with more than 100 spikes.
     n=100
@@ -78,17 +78,15 @@ def extract_waveforms(dataFolder, kilosort_path, numChannels, nBoots =100):
     """
     rawDataFile = get_ap_band_continuous_file(dataFolder)
 
-    clustersFile = os.path.join(kilosort_path,'spike_clusters.npy')
-    spikeTimesFile = os.path.join(kilosort_path,'spike_times.npy')
-    clusterGroupsFile =     os.path.join(kilosort_path,'cluster_group.tsv')
+    spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
+            load_kilosort_data(kilosortFolder, sample_rate)
     
     waveformsFile = os.path.join(kilosort_path, 'mean_waveforms.npy')
     SNRFile = os.path.join(kilosort_path, 'SNR.npy')
-    templatesFile = os.path.join(kilosort_path, 'templates.npy')
 
-    samplesPerSpike = 82
-    preSamples = 20
-    total_waveforms = 100
+    samplesPerSpike = params['samples_per_spike']
+    preSamples = params['pre_samples']
+    total_waveforms = params['total_waveforms']
 
     numBytes = os.path.getsize(rawDataFile)
     numRecords = numBytes/numChannels/2
@@ -130,7 +128,7 @@ def extract_waveforms(dataFolder, kilosort_path, numChannels, nBoots =100):
         else:
             TW = times_for_cluster.size
             
-        boots = nBoots
+        boots = params['n_boots']
 
         if times_for_cluster.size > total_waveforms:
             waveform_boots = np.zeros((boots,samplesPerSpike, numChannels))

@@ -9,12 +9,8 @@ def run_depth_estimation(args):
 
     start = time.time()
 
-    surface_channel, air_channel, probe_json = compute_offset_and_surface_channel(args['extracted_data_directory'],
-                                                     save_figure = args['save_depth_estimation_figure'],
-                                                     figure_location = args['depth_estimation_figure_location'])
-    
-    assert(surface_channel > 0)
-    assert(air_channel > 0)
+    surface_channel, air_channel, probe_json = compute_offset_and_surface_channel(args['directories']['extracted_data_directory'],
+                                                     args['ephys_params'], args['depth_estimation_params'])
 
     execution_time = time.time() - start
         

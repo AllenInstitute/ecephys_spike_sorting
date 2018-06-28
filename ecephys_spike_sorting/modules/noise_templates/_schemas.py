@@ -1,19 +1,16 @@
 from argschema import ArgSchema, ArgSchemaParser 
 from argschema.schemas import DefaultSchema
 from argschema.fields import Nested, InputDir, String, Float, Dict, Int, NumpyArray
+from ecephys_spike_sorting.common.schemas import EphysParams, Directories
 
 class NoiseWaveformParams(DefaultSchema):
-
-
-class EphysParams(DefaultSchema):
-	sample_rate = Float(required=True, default=30000.0)
-    bit_volts = Float(required=True, default=0.195)
-    num_channels = Int(required=True, default=384)
-    reference_channels = NumpyArray(required=False, default=[37, 76, 113, 152, 189, 228, 265, 304, 341, 380])
-
-class Directories(DefaultSchema):
-	kilosort_output_directory = InputDir()
-	extracted_data_directory = InputDir()
+	std_thresh = Float(required=True, default=2.5)
+	waveform_spread = Int(required=True, default=10)
+	thresh2 = Float(required=True, default=0.2)
+	min_peak_sample = Int(required=True, default=10)
+	min_trough_sample = Int(required=True, default=10)
+	min_height = Int(required=True, default=-5)
+	contamination_ratio = Float(required=True, default=0.01)
 
 class InputParameters(ArgSchema):
     

@@ -12,8 +12,9 @@ def classify_noise_templates(args):
     
     start = time.time()
     
-     # LOTS OF HARD-CODED PARAMETERS IN HERE:
-    templateIDs, is_noise = id_noise_templates(args['kilosort_output_directory'])
+    templateIDs, is_noise = id_noise_templates(args['kilosort_output_directory'], \
+        args['ephys_params']['sample_rate'], \
+        args['noise_waveform_params'])
     
     execution_time = time.time() - start
     

@@ -11,7 +11,7 @@ def run_automerging(args):
     
     start = time.time()
     
-    automerging(args['kilosort_output_directory'], args['sample_rate'])
+    automerging(args['directories']['kilosort_output_directory'], args['ephys_params']['sample_rate'], args['automerging_params'])
 
     execution_time = time.time() - start
     

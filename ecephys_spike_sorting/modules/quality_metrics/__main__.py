@@ -14,7 +14,7 @@ def calculate_quality_metrics(args):
     
     start = time.time()
 
-    calculate_metrics(args['extracted_data_directory'], args['kilosort_output_directory'])
+    calculate_metrics(args['directories']['extracted_data_directory'], args['directories']['kilosort_output_directory'])
     
     execution_time = time.time() - start
     

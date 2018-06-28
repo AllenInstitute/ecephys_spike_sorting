@@ -7,7 +7,7 @@ from ecephys_spike_sorting.modules.automerging.metrics import compare_templates,
 from ecephys_spike_sorting.modules.automerging.merges import ID_merge_groups, make_merges
 
 
-def automerging(kilosortFolder, sample_rate):
+def automerging(kilosortFolder, sample_rate, params):
 
     spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
             load_kilosort_data(kilosortFolder, sample_rate)
@@ -74,7 +74,7 @@ def automerging(kilosortFolder, sample_rate):
 
     for index in np.arange(overall_score.size)   :
 
-        if overall_score[index] > merge_threshold: 
+        if overall_score[index] > params['merge_threshold']: 
             
             comparison_matrix[i_index[index],j_index[index],4] = 1
 
@@ -85,20 +85,6 @@ def automerging(kilosortFolder, sample_rate):
     print(' ')
 
     groups = ID_merge_groups(comparison_matrix[:,:,4])
-
-    if False: # check for extra large groups
-        lengths = np.zeros((len(groups),))
-
-    for idx,group in enumerate(groups):
-        if len(group) > 20:
-            indices = np.array(group)
-            reduced_matrix = comparison_matrix[indices,:,:]
-            rm2 = reduced_matrix[:,indices,:]
-            plt.figure(2)
-            plt.clf()
-            plt.imshow(rm2[:,:,4],vmin=0,vmax=0.4)
-        lengths[idx] = len(group)
-        
     clusters = np.copy(spike_clusters) 
     clusters = make_merges(groups, clusters, spike_clusters, clusterIDs) 
 

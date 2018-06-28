@@ -23,10 +23,11 @@ def id_noise_templates(kilosortFolder, sample_rate, params):
         depth = find_depth(template)
     
         std_thresh = params['std_thresh']
+        waveform_spread = params['waveform_spread']/2
     
-        S = np.std(template[:,depth-5:depth+5],1)
+        S = np.std(template[:,depth-waveform_spread:depth+waveform_spread],1)
         
-        thresh2 = 0.2
+        thresh2 = params['thresh2']
         wv = template[:,depth]
         C = correlate(wv,wv,mode='same')
         C = C/np.max(C)
@@ -40,7 +41,12 @@ def id_noise_templates(kilosortFolder, sample_rate, params):
         
         H = np.mean(h[:3])/np.max(h)
     
-        if False: #((np.max(S) < std_thresh or np.argmax(wv) < 10 or np.argmin(wv) < 10) and H > 0.01) or len(b) > 0 or np.min(wv) > -5:
+        if ((np.max(S) < std_thresh or \
+            np.argmax(wv) < params['min_peak_sample'] or \
+            np.argmin(wv) < params['min_trough_sample']) and \
+             H > params['contamination_ratio']) or \
+             len(b) > 0 or \
+             np.min(wv) > params['min_height']:
             auto_noise[idx] = True;
         else:
             auto_noise[idx] = False

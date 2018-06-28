@@ -11,46 +11,22 @@ from scipy.ndimage.filters import gaussian_filter1d
 from ecephys_spike_sorting.common.utils import find_range, write_probe_json, rms
 from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file, get_lfp_band_continuous_file
 
-# %%
+def find_surface_channel(lfp_data, ephys_params, params):
     
-def median_subtraction(spikes_file, full_mask, offset, scaling, totalChans):
-    
-    rawData = np.memmap(spikes_file, dtype='int16', mode='r+')
-    
-    for sample in range(0,100): #rawData.size/numChannels):
-        
-        start = sample*totalChans
-        end = sample*totalChans + totalChans
-        this_sample = np.copy(rawData[start:end])
-        this_sample = this_sample - offset
-        
-        for ch in range(0,numChannels):
-            
-            m = np.where(full_mask[:,ch])[0]
-            this_sample[ch] = int(float(this_sample[ch]) - float(np.median(this_sample[m]))*scaling[ch])
-        
-        rawData[start:end] = this_sample
-        
-    del rawData
-
-def find_surface_channel(lfp_data, save_figure, figure_location):
-    
-    # HARD-CODED PARAMETERS:
-    nchannels = 384
-    sample_frequency = 2500
-    smoothing_amount = 5
-    power_thresh = 2.5
-    diff_thresh = -0.07
-    freq_range = [0,10]
-    channel_range = [370,380]
-    n_passes = 1
-    # END HARD-CODED PARAMETERS
+    nchannels = ephys_params['num_channels']
+    sample_frequency = ephys_params['lfp_sample_rate']
+    smoothing_amount = params['smoothing_amount']
+    power_thresh = params['power_thresh']
+    diff_thresh = params['diff_thresh']
+    freq_range = params['freq_range']
+    channel_range = params['channel_range']
+    n_passes = params['n_passes']
     
     candidates = np.zeros((n_passes,))
     
     for p in range(n_passes):
         
-        startPt = sample_frequency*100*p
+        startPt = sample_frequency*params['skip_s_per_pass']*p
         endPt = startPt + sample_frequency
     
         rawData = np.memmap(lfp_data, dtype='int16', mode='r')
@@ -72,10 +48,10 @@ def find_surface_channel(lfp_data, save_figure, figure_location):
             sample_frequencies, Pxx_den = welch(chunk[:,channel], fs=sample_frequency, nfft=nfft)
             power[:,channel] = Pxx_den
         
-        in_range = find_range(sample_frequencies, 0, 150)
+        in_range = find_range(sample_frequencies, 0, params['max_freq'])
         
-        mask_chans = np.array([37, 76, 113, 152, 189, 228, 265, 304, 341, 380]) - 1
-        
+        mask_chans = ephys_params['reference_channels']
+
         in_range_gamma = find_range(sample_frequencies, freq_range[0],freq_range[1])
         
         values = np.log10(np.mean(power[in_range_gamma,:],0))
@@ -87,7 +63,7 @@ def find_surface_channel(lfp_data, save_figure, figure_location):
            #print(np.where(values < power_thresh))
            surface_chan = np.max(np.where((np.diff(values) < diff_thresh) * (values[:-1] < power_thresh) )[0])
         except ValueError:
-           surface_chan = 384
+           surface_chan = ephys_params['num_channels']
             
         candidates[p] = surface_chan
         
@@ -101,33 +77,33 @@ def find_surface_channel(lfp_data, save_figure, figure_location):
             
             plt.subplot(4,1,3)
             plt.plot(values) 
-            plt.plot([0,384],[power_thresh,power_thresh],'--k')
+            plt.plot([0,nchannels],[power_thresh,power_thresh],'--k')
   
             plt.plot([surface_chan, surface_chan],[-2, 2],'--r')
             
             plt.subplot(4,1,4)
             plt.plot(np.diff(values))
-            plt.plot([0,384],[diff_thresh,diff_thresh],'--k')
+            plt.plot([0,nchannels],[diff_thresh,diff_thresh],'--k')
             
             plt.plot([surface_chan, surface_chan],[-0.2, diff_thresh],'--r')
             plt.title(surface_chan)
             plt.savefig(os.path.join(figure_location, 'probe_depth.png'))
             
     surface_channel = np.median(candidates)
-    air_channel = np.min([surface_channel + 100, 384])
+    air_channel = np.min([surface_channel + params['air_gap'], nchannels])
         
     return surface_channel, air_channel
 
 # %%
 
-def compute_offset_and_surface_channel(dataFolder, save_figure = False, figure_location = None):
+def compute_offset_and_surface_channel(dataFolder, ephys_params, params):
 
-    hi_noise_thresh = 50.0
-    lo_noise_thresh = 3.0
+    hi_noise_thresh = params['hi_noise_thresh']
+    lo_noise_thresh = params['lo_noise_thresh']
   
     output_file = os.path.join(dataFolder, 'probe_info.json')
 
-    numChannels = 384
+    numChannels = ephys_params['num_channels']
 
     offsets = np.zeros((numChannels,), dtype = 'int16')
     rms_noise = np.zeros((numChannels,), dtype='int16')
@@ -141,10 +117,10 @@ def compute_offset_and_surface_channel(dataFolder, save_figure = False, figure_l
     rawDataAp = np.memmap(spikes_file, dtype='int16', mode='r')
     dataAp = np.reshape(rawDataAp, (int(rawDataAp.size/numChannels), numChannels))
 
-    mask_chans = np.array([37, 76, 113, 152, 189, 228, 265, 304, 341, 380]) - 1
+    mask_chans = ephys_params['reference_channels']
 
     start_time = 0
-    recording_time = 30000
+    recording_time = int(ephys_params['sample_rate'])
     median_subtr = np.zeros((recording_time,numChannels))
 
     # 1. cycle through to find median offset
@@ -154,14 +130,14 @@ def compute_offset_and_surface_channel(dataFolder, save_figure = False, figure_l
         channel = dataAp[start_time:start_time+recording_time,ch]
         offsets[ch] = np.median(channel).astype('int16')
         median_subtr[:,ch] = channel - offsets[ch]
-        rms_noise[ch] = rms(median_subtr[:,ch])*0.195
+        rms_noise[ch] = rms(median_subtr[:,ch])*ephys_params['bit_volts']
         
     excluded_chans1 = np.where(rms_noise > hi_noise_thresh)[0]
     excluded_chans2 = np.where(rms_noise < lo_noise_thresh)[0]
         
     mask_chans2 = np.concatenate((mask_chans, excluded_chans1, excluded_chans2))
 
-    surface, air = find_surface_channel(lfp_file, save_figure, figure_location)
+    surface, air = find_surface_channel(lfp_file, ephys_params, params)
 
     print("Surface channel: " + str(surface))
 

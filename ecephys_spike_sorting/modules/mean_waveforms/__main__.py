@@ -9,7 +9,10 @@ def calculate_mean_waveforms(args):
     
     start = time.time()
 
-    extract_waveforms(args['extracted_data_directory'], args['kilosort_output_directory'], args['num_channels'])
+    extract_waveforms(args['directories']['extracted_data_directory'], \
+        args['directories']['kilosort_output_directory'], \
+        args['ephys_params']['num_channels'], \
+        args['mean_waveform_params'])
 
     execution_time = time.time() - start
     
