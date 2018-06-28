@@ -7,18 +7,23 @@ import time
 import numpy as np
 
 import matlab.engine
-import matlab_file_generator
 
-from _schemas import InputParameters, OutputParameters
-
+import ecephys_spike_sorting.modules.kilosort_helper.matlab_file_generator
+from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file
 
 def run_kilosort(args):
 
-    # load lfp band data
+    spikes_file = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
+
+    matlab_file_generator.create_chanmap(args['kilosort_location'], args['ephys_params']['num_channels'], StartChan = 1, Nchannels = args['ephys_params']['num_channels'], bad_channels = [])
     
-    matlab_file_generator.create_chanmap(args['kilosort_location'], args['num_channels'], StartChan = 1, Nchannels = args['num_channels'], bad_channels = [])
-    matlab_file_generator.create_config(args['kilosort_location'], args['input_file_location'], Nfilt = 512, Threshold = [4, 10, 10], lam = [5, 20, 20], IntitalizeTh = -4, InitializeNfilt=10000)
-    
+    if args['kilosort_version'] == 1:
+        matlab_file_generator.create_config(args['kilosort_location'], spikes_file, args['kilosort_params'])
+    elif args['kilosort_version'] == 2:
+        matlab_file_generator.create_config2(args['kilosort_location'], spikes_file, args['kilosort2_params'])
+    else:
+        return
+
     logging.info('Running Kilosort')
     
     start = time.time()
@@ -34,6 +39,8 @@ def run_kilosort(args):
 
 
 def main():
+
+    from _schemas import InputParameters, OutputParameters
 
     """Main entry point:"""
     mod = ArgSchemaParser(schema_type=InputParameters,
