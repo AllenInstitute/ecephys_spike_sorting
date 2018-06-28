@@ -21,7 +21,7 @@ cookiecutter = "*"
 sphinx-gallery = "*"
 pytest = "*"
 "ruamel.yaml" = "*"
-ecephys_cached_data_service = ">=0.1.0"
+ecephys_cached_data_service = ">=0.1.2"
 
 
 [packages]

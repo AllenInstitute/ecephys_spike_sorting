@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "abc1cd9558189403a2355873c0e736828d73860e8eee7c91c8f04fef7cca56a1"
+            "sha256": "35d9403b05fb8eca20b52c2767507255440025db461cfe1ce47f7292d57e896d"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -77,7 +77,6 @@
                 "sha256:ea36e19ac0a483eea239320aef0bd40702404ff8c7e42179a2d9d36c5afcb55c",
                 "sha256:f923406e6b32c86309261b8195e24e18b6a8801df0cfc7814ac44017bfcb3939"
             ],
-            "markers": "python_version != '3.2.*' and python_version != '3.0.*' and python_version >= '2.7' and python_version != '3.1.*'",
             "version": "==1.0.1"
         },
         "marshmallow": {
@@ -382,10 +381,10 @@
         },
         "ecephys-cached-data-service": {
             "hashes": [
-                "sha256:4262341664bbad1fe723aab38b51cb43f6d2e478e4db7c4c4fa1938cfd114d37"
+                "sha256:05d510c753cde44e8df9f9395af37c11aed5367de1a3d83362b48782a840d738"
             ],
-            "markers": "python_version < '4' and python_version != '3.1.*' and python_version != '3.3.*' and python_version != '3.2.*' and python_version != '3.0.*' and python_version >= '2.6'",
-            "version": "==0.1.0"
+            "markers": "python_version != '3.3.*' and python_version >= '2.6' and python_version != '3.2.*' and python_version != '3.0.*' and python_version != '3.1.*' and python_version < '4'",
+            "version": "==0.1.2"
         },
         "future": {
             "hashes": [
