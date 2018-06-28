@@ -23,11 +23,13 @@ class Kilosort2Parameters(DefaultSchema):
 class InputParameters(ArgSchema):
     
     kilosort_location = String()
+    probe_json = String()
     kilosort_params = Nested(KilosortParameters)
     kilosort2_params = Nested(KilosortParameters)
     directories = Nested(Directories)
     ephys_params = Nested(EphysParams)
     kilosort_version = Int(required=True, default=2)
+    surface_channel_buffer = Int(required=True, default=15)
     
 
 class OutputSchema(DefaultSchema): 
@@ -37,6 +39,6 @@ class OutputSchema(DefaultSchema):
                               required=True) 
  
 class OutputParameters(OutputSchema): 
-    # Add your output parameters 
+
     execution_time = Float()
     

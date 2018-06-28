@@ -15,8 +15,15 @@ def run_kilosort(args):
 
     spikes_file = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
 
-    matlab_file_generator.create_chanmap(args['kilosort_location'], args['ephys_params']['num_channels'], StartChan = 1, Nchannels = args['ephys_params']['num_channels'], bad_channels = [])
-    
+    mask, offset, scaling, surface_channel, air_channel = read_probe_json(args['probe_json'])
+
+    top_channel = np.min([384, int(surface_channel) + args['surface_channel_buffer']])
+    num_templates = top_channel * 3
+    num_templates = num_templates - (num_templates % 32)
+
+    matlab_file_generator.create_chanmap(args['kilosort_location'], \
+                                        EndChan = top_channel, \
+                                        BadChannels = np.where(mask == False)[0])
     if args['kilosort_version'] == 1:
         matlab_file_generator.create_config(args['kilosort_location'], spikes_file, args['kilosort_params'])
     elif args['kilosort_version'] == 2:
