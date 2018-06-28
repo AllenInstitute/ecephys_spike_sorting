@@ -1,0 +1,7 @@
+{
+    "test.npx": {
+        "local_path": "test.npx",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/test.npx",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/test.npx"
+    }
+}

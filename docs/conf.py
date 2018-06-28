@@ -282,7 +282,7 @@ texinfo_documents = [
 #texinfo_show_urls = 'footnote'
             
 def run_apidoc(_):
-    from sphinx.apidoc import main
+    from sphinx.ext.apidoc import main
     import sys
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
     cur_dir = os.path.abspath(os.path.dirname(__file__))

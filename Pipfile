@@ -4,6 +4,12 @@ url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+
+url = "http://aibs-artifactory.corp.alleninstitute.org/artifactory/api/pypi/pypi-local/simple"
+verify_ssl = false
+name = "local"
+
 
 [dev-packages]
 
@@ -15,6 +21,7 @@ cookiecutter = "*"
 sphinx-gallery = "*"
 pytest = "*"
 "ruamel.yaml" = "*"
+ecephys_cached_data_service = ">=0.1.0"
 
 
 [packages]
@@ -26,3 +33,7 @@ pandas = "*"
 GitPython = "*"
 pillow = "*"
 argschema = "*"
+
+
+[requires]
+python_version = "3.6"

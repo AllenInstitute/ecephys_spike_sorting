@@ -5,7 +5,7 @@ from scipy.signal import correlate
 from ecephys_spike_sorting.common.spike_template_helpers import find_depth
 from ecephys_spike_sorting.common.utils import write_cluster_group_tsv, load_kilosort_data
 
-def id_noise_templates(folder):
+def id_noise_templates(kilosortFolder, sample_rate, params):
 
     spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
             load_kilosort_data(kilosortFolder, sample_rate)
@@ -18,11 +18,11 @@ def id_noise_templates(folder):
     
         template = templates[tempID,:,:]
         
-        times = spike_times[these_templates]/30000.
+        times = spike_times[these_templates]
     
         depth = find_depth(template)
     
-        std_thresh = 2.5
+        std_thresh = params['std_thresh']
     
         S = np.std(template[:,depth-5:depth+5],1)
         
