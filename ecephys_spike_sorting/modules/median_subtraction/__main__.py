@@ -8,18 +8,20 @@ import glob
 import numpy as np
 
 from ecephys_spike_sorting.common.utils import read_probe_json
+from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file
 
 def run_median_subtraction(args):
 
     mask, offset, scaling, surface_channel, air_channel = read_probe_json(args['probe_json'])
-    continuous_directory = os.path.join(args['extracted_data_directory'], os.path.join('continuous','Neuropix*.0'))
-    ap_directory = glob.glob(continuous_directory)[0]
-    spikes_file = os.path.join(ap_directory, 'continuous.dat')
+
+    spikes_file = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
     
     logging.info('Running median subtraction')
     
     start = time.time()
+
     subprocess.check_call([args['median_subtraction_executable'], args['probe_json'], spikes_file, str(int(air_channel))])
+    
     execution_time = time.time() - start
     
     return {"execution_time" : execution_time} # output manifest

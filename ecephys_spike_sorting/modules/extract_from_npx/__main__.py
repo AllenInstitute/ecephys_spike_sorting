@@ -20,7 +20,7 @@ def run_npx_extractor(args):
     logging.info('Running NPX Extractor')
     
     start = time.time()
-    subprocess.check_call([args['npx_extractor_executable'], args['npx_file'], args['extracted_data_directory']])
+    subprocess.check_call([args['npx_extractor_executable'], args['npx_file'], args['directories']['extracted_data_directory']])
     execution_time = time.time() - start
     
     return {"execution_time" : execution_time} # output manifest
