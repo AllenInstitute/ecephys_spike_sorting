@@ -5,6 +5,7 @@ from ecephys_spike_sorting.common.schemas import EphysParams, Directories
 
 class InputParameters(ArgSchema): 
     npx_file = String()
+    settings_xml = String()
     npx_extractor_executable = String()
     directories = Nested(Directories)
 
@@ -17,4 +18,5 @@ class OutputSchema(DefaultSchema):
 class OutputParameters(OutputSchema): 
     # Add your output parameters 
     npx_extactor_execution_time = Float()
+    settings_json = String()
     

@@ -7,6 +7,8 @@ import shutil
 
 import numpy as np
 
+from ecephys_spike_sorting.modules.extract_from_npx.create_settings_json import create_settings_json
+
 def run_npx_extractor(args):
 
     # load lfp band data
@@ -18,12 +20,15 @@ def run_npx_extractor(args):
     assert(free > filesize * 2)
     
     logging.info('Running NPX Extractor')
+
+    settings_json = create_settings_json(args['settings_xml'], args['directories']['extracted_data_directory'])
     
     start = time.time()
     subprocess.check_call([args['npx_extractor_executable'], args['npx_file'], args['directories']['extracted_data_directory']])
     execution_time = time.time() - start
     
-    return {"execution_time" : execution_time} # output manifest
+    return {"execution_time" : execution_time,
+            "settings_json" : settings_json} # output manifest
 
 
 def main():

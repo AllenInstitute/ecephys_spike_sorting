@@ -33,6 +33,7 @@ pandas = "*"
 GitPython = "*"
 pillow = "*"
 argschema = "*"
+xmljson= "*"
 
 
 [requires]
