@@ -6,6 +6,7 @@ from ecephys_spike_sorting.common.schemas import EphysParams, Directories
 
 class AutomergingParams(DefaultSchema):
     merge_threshold = Float(required=True, default=2.5)
+    distance_to_compare = Int(required=True, default=5)
 
 class InputParameters(ArgSchema):
     

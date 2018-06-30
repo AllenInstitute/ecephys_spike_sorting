@@ -2,20 +2,19 @@ import os
 import pandas as pd
 import numpy as np
 
-from ecephys_spike_sorting.common.utils import load_kilosort_data
 from ecephys_spike_sorting.modules.automerging.metrics import compare_templates, make_interp_temp, compute_isi_score, compute_isi_score
-from ecephys_spike_sorting.modules.automerging.merges import ID_merge_groups, make_merges
+from ecephys_spike_sorting.modules.automerging.merges import compute_overall_score, ID_merge_groups, make_merges
+from ecephys_spike_sorting.common.spike_template_helpers import find_depth
 
-
-def automerging(kilosortFolder, sample_rate, params):
-
-    spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
-            load_kilosort_data(kilosortFolder, sample_rate)
+def automerging(spike_times, spike_clusters, clusterIDs, cluster_quality, templates, params):
 
     min_t = np.min(spike_times)
     max_t = np.max(spike_times)
 
     depths = np.zeros((clusterIDs.size,))
+
+    is_noise = np.ones(cluster_quality.shape, dtype=bool)
+    is_noise[cluster_quality == 'noise'] = False
 
     for idx, clusterID in enumerate(clusterIDs):
 
@@ -31,7 +30,7 @@ def automerging(kilosortFolder, sample_rate, params):
         
     for i in range(0,depths.size):
         for j in range(i+1,depths.size):
-            if np.abs(depths[i] - depths[j]) <= distance_to_compare and is_good[i] and is_good[j]:
+            if np.abs(depths[i] - depths[j]) <= params['distance_to_compare'] and is_good[i] and is_good[j]:
                 comparison_matrix[i,j,0] = 1
             
     print('Total comparisons: ' + str(np.where(comparison_matrix[:,:,0] == 1)[0].size))
@@ -50,7 +49,7 @@ def automerging(kilosortFolder, sample_rate, params):
             #print("unit " + str(i))
             
             temp1 = make_interp_temp(templates,[clusterIDs[i]]) #
-            times1 = spike_times[spike_templates == clusterIDs[i]]
+            times1 = spike_times[spike_clusters == clusterIDs[i]]
             
             for j in range(i+1,depths.size):
                 
@@ -101,18 +100,12 @@ def automerging(kilosortFolder, sample_rate, params):
 
         cluster_index.append(ID)
 
-        if ID > np.max(templateIDs):
-            cluster_quality.append('good')
+        if ID > np.max(clusterIDs):
+            cluster_quality.append(1) # good
         else:
             if is_good[np.where(clusterIDs == ID)[0]]:
-                cluster_quality.append('good')
+                cluster_quality.append(1) # good
             else:
-                cluster_quality.append('noise')
-       
-    df = pd.DataFrame(data={'cluster_id' : cluster_index, 'group': cluster_quality})
+                cluster_quality.append(-1) # noise
 
-    print('Saving data...')
-
-    df.to_csv(os.path.join(folder, 'cluster_group.tsv'), sep='\t', index=False)
-    np.save(os.path.join(folder, 'spike_clusters.npy'), clusters)
-    np.save(os.path.join(folder, 'comparison_matrix.npy'), comparison_matrix)
+    return clusters, cluster_index, cluster_quality
