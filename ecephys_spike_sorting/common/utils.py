@@ -100,7 +100,7 @@ def write_cluster_group_tsv(IDs, quality, output_directory):
 
 def read_cluster_group_tsv(filename):
 
-    info = np.genfromtxt(folder + '/cluster_groups.csv', dtype='str')
+    info = np.genfromtxt(filename, dtype='str')
     cluster_ids = info[1:,0].astype('int')
     cluster_quality = info[1:,1]
 

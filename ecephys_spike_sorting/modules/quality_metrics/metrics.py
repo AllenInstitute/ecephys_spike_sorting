@@ -5,16 +5,17 @@ from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file
 from ecephys_spike_sorting.common.utils import load_kilosort_data
 
 
-def calculate_metrics(dataFolder, kilosortFolder)
+
+def calculate_metrics(dataFolder, kilosortFolder):
 
 	rawDataFile = get_ap_band_continuous_file(dataFolder)
 
 	spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
             load_kilosort_data(kilosortFolder, sample_rate)
 
-    iso = isolation(spike_times, spike_clusters, rawDataFile)
-    noise_o = noise_overlap(spike_times, spike_clusters, rawDataFile)
-    isi_con = isi_contamination(spike_times, spike_clusters, rawDataFile)
+	iso = isolation(spike_times, spike_clusters, rawDataFile)
+	noise_o = noise_overlap(spike_times, spike_clusters, rawDataFile)
+	isi_con = isi_contamination(spike_times, spike_clusters, rawDataFile)
 
     # make a DataFrame
     # save it to disk
@@ -100,6 +101,7 @@ def overlap_metric(clips, labels):
 def compute_noise_shape(data, mean_clip):
     
     # something about weighting
+    pass
 
 
 def regress_out_noise_shape(clips, shape):
@@ -130,3 +132,39 @@ def extract_clips(data, times, clip_size=70, clip_offset=15):
     
     
     return clips
+
+def signaltonoise(a, axis=0, ddof=0):
+    """
+    The signal-to-noise ratio of the input data.
+    Returns the signal-to-noise ratio of `a`, here defined as the mean
+    divided by the standard deviation.
+    Parameters
+    ----------
+    a : array_like
+        An array_like object containing the sample data.
+    axis : int or None, optional
+        Axis along which to operate. Default is 0. If None, compute over
+        the whole array `a`.
+    ddof : int, optional
+        Degrees of freedom correction for standard deviation. Default is 0.
+    Returns
+    -------
+    s2n : ndarray
+        The mean to standard deviation ratio(s) along `axis`, or 0 where the
+        standard deviation is 0.
+    """
+    a = np.asanyarray(a)
+    m = a.mean(axis)
+    sd = a.std(axis=axis, ddof=ddof)
+    return np.where(sd == 0, 0, m/sd)
+
+def snr(W):
+    """Calculate snr of sorted units based on Xiaoxuan's matlab code. 
+    W: (waveforms from all spike times), first dim is rep
+    ref: (Nordhausen et al., 1996; Suner et al., 2005)
+    """
+    W_bar = np.nanmean(W,axis=0)
+    A = max(W_bar) - min(W_bar)
+    e = W - np.tile(W_bar,(np.shape(W)[0],1))
+    snr = A/(2*np.nanstd(e.flatten()))
+    return snr   

@@ -18,7 +18,7 @@ def create_config(kilosort_location,forwardslash_data_file_location, data_file_n
     with open(config_path,"w+") as f:
         f.write(config_string)
 
-def create_config2(kilosort_location,forwardslash_data_file_location, data_file_name = 'continuous.dat', params):
+def create_config2(kilosort_location,forwardslash_data_file_location, data_file_name, params):
     config_string = make_config_string2(forwardslash_data_file_location, data_file_name, Nfilt)   
     config_path = os.path.join(kilosort_location,'kilosort2_config_file.m')    
     with open(config_path,"w+") as f:
