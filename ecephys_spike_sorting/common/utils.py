@@ -110,7 +110,7 @@ def load(folder, filename):
 
     return np.load(os.path.join(folder, filename))
 
-def load_kilosort_data(folder, sample_rate):
+def load_kilosort_data(folder, sample_rate, convert_to_seconds = True):
 
     spike_times = load(folder,'spike_times.npy')
     spike_clusters = load(folder,'spike_clusters.npy')
@@ -121,7 +121,9 @@ def load_kilosort_data(folder, sample_rate):
                 
     templates = templates[:,21:,:] # remove zeros
     spike_clusters = np.squeeze(spike_clusters) # fix dimensions
-    spike_times = np.squeeze(spike_times) / sample_rate # fix dimensions and convert to seconds
+    spike_times = np.squeeze(spike_times)# fix dimensions
+    if convert_to_seconds:
+       spike_times = spike_times / sample_rate # convert to seconds
                     
     unwhitened_temps = np.zeros((templates.shape))
     

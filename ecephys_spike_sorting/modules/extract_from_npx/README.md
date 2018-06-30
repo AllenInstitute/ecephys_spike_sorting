@@ -27,4 +27,4 @@ Output data
 - **ap_timestamps.npy** : Timestamps for AP samples
 - **channel_states.npy** : Channels on which each event was recording
 - **event_timestamps.npy** : Timestamps for each event
-- **oe_info.json** : Parameters for data acquistion.
+- **open-ephys.json** : Parameters for data acquistion.

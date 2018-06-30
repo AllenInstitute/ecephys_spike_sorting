@@ -24,4 +24,5 @@ class OutputSchema(DefaultSchema):
 class OutputParameters(OutputSchema): 
 
     execution_time = Float()
+    mean_waveforms_file = String()
     

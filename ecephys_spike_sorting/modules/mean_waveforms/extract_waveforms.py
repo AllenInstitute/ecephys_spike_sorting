@@ -1,175 +1,125 @@
 import numpy as np
 import os
 import glob
-import pandas as pd
 
-from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file
-from ecephys_spike_sorting.common.utils import load_kilosort_data
+import xarray as xr
 
-def signaltonoise(a, axis=0, ddof=0):
-    """
-    The signal-to-noise ratio of the input data.
-    Returns the signal-to-noise ratio of `a`, here defined as the mean
-    divided by the standard deviation.
-    Parameters
-    ----------
-    a : array_like
-        An array_like object containing the sample data.
-    axis : int or None, optional
-        Axis along which to operate. Default is 0. If None, compute over
-        the whole array `a`.
-    ddof : int, optional
-        Degrees of freedom correction for standard deviation. Default is 0.
-    Returns
+def extract_waveforms(raw_data, spike_times, spike_clusters, clusterIDs, cluster_quality, sample_rate, output_file, params):
+    
+    """Calculate mean waveforms for sorted units.
+
+    Inputs:
     -------
-    s2n : ndarray
-        The mean to standard deviation ratio(s) along `axis`, or 0 where the
-        standard deviation is 0.
-    """
-    a = np.asanyarray(a)
-    m = a.mean(axis)
-    sd = a.std(axis=axis, ddof=ddof)
-    return np.where(sd == 0, 0, m/sd)
+    raw_data : continuous data as numpy array (samples x channels)
+    spike_times : spike times (in samples)
+    spike_clusters : cluster IDs for each spike time []
+    clusterIDs : all unique cluster ids
+    cluster_quality : 'noise' or 'good'
+    sample_rate : Hz
+    output_file : path to output file
 
-def bootstrap_resample(X, n=None):
-    """ Bootstrap resample an array.
-    Sample with replacement.
-    From analysis/sampling.py.
-    Parameters
-    ----------
-    X : array_like
-      data to resample
-    n : int, optional
-      length of resampled array, equal to len(X) if n==None
-    Results
+    Outputs:
     -------
-    returns X_resamples
-    """
-    if n == None:
-        n = len(X)
-        
-    resample_i = np.floor(np.random.rand(n)*len(X)).astype(int)
-    X_resample = X[resample_i]
-    return X_resample
-    
-def snr(W):
-    """Calculate snr of sorted units based on Xiaoxuan's matlab code. 
-    W: (waveforms from all spike times), first dim is rep
-    ref: (Nordhausen et al., 1996; Suner et al., 2005)
-    """
-    W_bar = np.nanmean(W,axis=0)
-    A = max(W_bar) - min(W_bar)
-    e = W - np.tile(W_bar,(np.shape(W)[0],1))
-    snr = A/(2*np.nanstd(e.flatten()))
-    return snr   
-    
-def get_peak_ch(mean_waveforms):
-    """Calculate peak channel based on mean waveforms."""
-    delta = np.max(mean_waveforms, axis=0)-np.min(mean_waveforms, axis=0)                     
-    ch_peak = np.where(delta==max(delta))[0][0]
-    return ch_peak
+    mean_waveforms : xarray (in NetCDF format) with dims :
+     - 1 : clusterID
+     - 2 : epoch (last is entire dataset)
+     - 3 : mean (0) or std (1)
+     - 4 : channels
+     - 5 : samples
 
-    
-def extract_waveforms(dataFolder, kilosort_path, numChannels, params):
-    """Re-calculate waveforms for sorted clusters from raw data.
-    Bootstrap for units with more than 100 spikes.
-    n=100
-    boots=100
-    """
-    rawDataFile = get_ap_band_continuous_file(dataFolder)
+    Parameters:
+    ----------
+    samples_per_spike : number of samples in extracted spikes
+    pre_samples : number of samples prior to peak
+    num_epochs : number of epochs to calculate mean waveforms
+    spikes_per_epoch : max number of spikes to generate average for epoch
 
-    spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
-            load_kilosort_data(kilosortFolder, sample_rate)
-    
+    """
+
     waveformsFile = os.path.join(kilosort_path, 'mean_waveforms.npy')
     SNRFile = os.path.join(kilosort_path, 'SNR.npy')
 
-    samplesPerSpike = params['samples_per_spike']
-    preSamples = params['pre_samples']
-    total_waveforms = params['total_waveforms']
+    samples_per_spike = params['samples_per_spike']
+    pre_samples = params['pre_samples']
+    num_epochs = params['num_epochs']
+    spikes_per_epoch = params['spikes_per_epoch']
 
-    numBytes = os.path.getsize(rawDataFile)
-    numRecords = numBytes/numChannels/2
+    good_clusters = clusterIDs[cluster_quality == 'good']
 
-    rawData = np.memmap(rawDataFile, dtype='int16', mode='r')
-    data = np.reshape(rawData, (rawData.size/numChannels, numChannels))
+    mean_waveforms = np.zeros((good_clusters.size, num_epochs + 1, 2, raw_data.shape[1], samples_per_spike))
 
-    clusters = np.load(clustersFile)
-    spike_times = np.load(spikeTimesFile)
-    templates = np.load(templatesFile)
-    cluster_nums = np.unique(clusters)
-    cluster_groups = pd.read_csv(clusterGroupsFile, sep='\t')
-    
-    new_clusters = np.zeros(clusters.size, dtype = np.int16)
-    
-    # 1. relabel clusters as consecutive integers
-    for cluster_idx, cluster_num in enumerate(cluster_nums):
-        
-        in_cluster = np.where(clusters == cluster_num)[0]
-        new_clusters[in_cluster] = int(cluster_idx)
-        cluster_groups.ix[cluster_idx, 0] = int(cluster_idx)
+    epoch_start_times = np.linspace(np.min(spike_times), np.max(spike_times), num_epochs + 1)
 
-    del clusters, cluster_nums
-    clusters = new_clusters
-    cluster_nums = np.unique(clusters)
-    print(cluster_nums)
-        
-    mean_waveforms = np.zeros((np.max(clusters)+1,samplesPerSpike,numChannels))
-    SNR = np.zeros((np.max(clusters)+1,2)) # 0: snr; 1: peak_channel
+    for cluster_idx, clusterID in enumerate(good_clusters):
 
-    # 2. extract mean waveforms and save
-    for cluster_idx, cluster_num in enumerate(cluster_nums):
-        print(cluster_num)
-        in_cluster = np.where(clusters == cluster_num)[0]
+        in_cluster = (clusters == clusterID)
         times_for_cluster = spike_times[in_cluster]
-        
-        if times_for_cluster.size > total_waveforms:
-            TW = total_waveforms
-        else:
-            TW = times_for_cluster.size
-            
-        boots = params['n_boots']
 
-        if times_for_cluster.size > total_waveforms:
-            waveform_boots = np.zeros((boots,samplesPerSpike, numChannels))
-            SNR_boots=np.zeros((boots,samplesPerSpike, numChannels))
-            for i in range(boots):
-                times_boot = bootstrap_resample(times_for_cluster,n=total_waveforms)
-                waveforms = np.zeros((samplesPerSpike, numChannels, TW))
-                for wv_idx in range(0, TW):
-                    peak_time = times_boot[wv_idx][0]
-                    rawWaveform = data[int(peak_time-preSamples):int(peak_time+samplesPerSpike-preSamples),:]
-                    try:
-                        normWaveform = rawWaveform - np.tile(rawWaveform[0,:],(samplesPerSpike,1))
-                        waveforms[:, :, wv_idx] = normWaveform
-                    except ValueError:
-                        waveforms[:, :, wv_idx] = np.nan
-                SNR_boots[i,:,:]=signaltonoise(waveforms, axis=2)
-                waveform_boots[i,:,:]=np.nanmean(waveforms,2)
-            tmp = np.squeeze(np.mean(waveform_boots,0))
-            mean_waveforms[cluster_num, :, :] = tmp
-            ch_peak = get_peak_ch(tmp)
-            SNR[cluster_num, 0]=ch_peak
-            SNR[cluster_num, 1]=snr(waveforms[:,ch_peak,:].T) 
-        else:
-            waveforms = np.zeros((samplesPerSpike, numChannels, TW))
-            for wv_idx in range(0, TW):
-                peak_time = times_for_cluster[wv_idx][0]
-                rawWaveform = data[int(peak_time-preSamples):int(peak_time+samplesPerSpike-preSamples),:]
-                try:
-                    normWaveform = rawWaveform - np.tile(rawWaveform[0,:],(samplesPerSpike,1))
-                    waveforms[:, :, wv_idx] = normWaveform
-                except ValueError:
-                    waveforms[:, :, wv_idx] = np.nan
-            tmp = np.nanmean(waveforms,2)  
-            mean_waveforms[cluster_num, :, :] = tmp
-            ch_peak = get_peak_ch(tmp)
-            SNR[cluster_num, 0]=ch_peak
-            SNR[cluster_num, 1]=snr(waveforms[:,ch_peak,:].T)         
-            
-    np.save(waveformsFile, mean_waveforms)
-    np.save(SNRFile, SNR)
-    np.save(clustersFile, clusters)
-    cluster_groups.to_csv(clusterGroupsFile, sep='\t', index=False)
+        waveforms = np.empty((spikes_per_epoch * num_epochs, raw_data.shape[1], samples_per_spike))
+        waveforms[:] = np.nan
+
+        for epoch, start_time in epoch_start_times[:-1]:
+
+            end_time = epoch_start_times[epoch+1]
+            times_for_epoch = times_for_cluster[(times_for_cluster > start_time) * (times_for_cluster < start_time)]
+
+            rand_times = np.shuffle(times_for_epoch)
+
+            total_waveforms = np.min([rand_times.size, spikes_per_epoch])
+
+            for wv_idx, peak_time in rand_times[:total_waveforms]:
+                rawWaveform = raw_data[int(peak_time-preSamples):int(peak_time+samplesPerSpike-preSamples),:].T
+                waveforms[wv_idx + epoch * spikes_per_epoch, :, :] = rawWaveform
+
+            start = epoch*spikes_per_epoch
+            end = start + spikes_per_epoch
+            mean_waveforms[cluster_idx, epoch, 0, :, :] = np.nanmean(waveforms[start:end, :,:], 0)
+            mean_waveforms[cluster_idx, epoch, 1, :, :] = np.nanstd(waveforms[start:end, :, :], 0)
+
+        mean_waveforms[cluster_idx, num_epochs, 0, :, :] = np.nanmean(waveforms, 0)
+        mean_waveforms[cluster_idx, num_epochs, 1, :, :] = np.nanstd(waveforms, 0)
+
+    dimCoords, dimLabels = generateDimLabels(good_clusters, num_epochs, pre_samples, samples_per_spike, raw_data.shape[1], sample_rate)
+
+    writeDataAsXarray(mean_waveforms, dimCoords, dimLabels, output_file)
+
+
+def generateDimLabels(good_clusters, num_epochs, pre_samples, total_samples, num_channels, sample_rate):
+
+    """ Generate dimension labels and coordinates for the xarray """
+
+    dimCoords = []
+    dimLabels = []
+
+    dimCoords.append(good_clusters)
+    dimLabels.append('clusterID')
+
+    dim1Coords = [str(i) for i in range(0, num_epochs)]
+    dim1Coords.append('all')
+    dimCoords.append(dim1Coords)
+    dimLabels.append('epoch')
+
+    dimCoords.append(['mean', 'std'])
+    dimLabels.append('mean or std')
+
+    dimCoords.append(range(0,num_channels))
+    dimLabels.append('channel')
+
+    dimCoords.append(np.linspace(-pre_samples, total_samples-pre_samples) / sample_rate)
+    dimLabels.append('time')
+
+    return dimCoords, dimLabels
+
+
+
+def writeDataAsXarray(mean_waveforms, dimCoords, dimLabels, output_file):
+
+    """ Saves mean waveform as xarray """
+
+    waveform_array = xr.DataArray(mean_waveforms, \
+        coords=dimCoords, \
+        dims=dimLabels)
+
+    waveform_array.to_netcdf(output_file)
     
 
