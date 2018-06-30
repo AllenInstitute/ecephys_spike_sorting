@@ -1,9 +1,7 @@
-from collections import OrderedDict
 from xmljson import gdata
 from xml.etree.ElementTree import fromstring
-import io, json, os
 
-def create_settings_json(input_file, output_directory):
+def create_settings_json(input_file):
 
     with open (input_file, "r") as file:
         file_string = file.read()
@@ -20,21 +18,28 @@ def create_settings_json(input_file, output_directory):
 
     neuropix = { }
 
-    for processor in a['SETTINGS']['SIGNALCHAIN']['PROCESSOR']:
-        
+    for processor in a['SETTINGS']['SIGNALCHAIN'][1]['PROCESSOR']:
+
+        #print(processor)
+        #print(type(processor))
+    
         if str.find(processor['name'], 'Neuropix') > -1:
             
             neuropix['phase'] = processor['name'][-2:]
-            settings = processor['EDITOR']['NEUROPIXELS']
-            hardware_info = [info.split(': ') for info in settings['info'].split('\n')[::2]]
-            
-            neuropix['ap gain'] = settings['apGainValue']
-            neuropix['lfp gain'] = settings['lfpGainValue']
-            neuropix['reference channel'] = settings['referenceChannel']
-            neuropix['filter cut'] = settings['filterCut']
-            
-            for info in hardware_info:
-                neuropix[str.lower(info[0])] = info[1]
+
+            try:
+                settings = processor['EDITOR']['NEUROPIXELS']
+                hardware_info = [info.split(': ') for info in settings['info'].split('\n')[::2]]
+                
+                neuropix['ap gain'] = settings['apGainValue']
+                neuropix['lfp gain'] = settings['lfpGainValue']
+                neuropix['reference channel'] = settings['referenceChannel']
+                neuropix['filter cut'] = settings['filterCut']
+                
+                for info in hardware_info:
+                    neuropix[str.lower(info[0])] = info[1]
+            except KeyError:
+                neuropix['error'] = 'probe info not found'
             
             sp0 = {}
             sp0['name'] = 'Neuropix-3a-100.0'
@@ -56,7 +61,5 @@ def create_settings_json(input_file, output_directory):
     oe_json['info'] = info_dict
     oe_json['neuropix'] = neuropix
 
-    output_file = os.path.join(output_directory, 'open-ephys.json')
+    return oe_json
 
-    with io.open(output_file, 'w', encoding='utf-8') as f:
-        f.write(json.dumps(oe_json, ensure_ascii=False, sort_keys=True, indent=4))
