@@ -4,7 +4,7 @@ import glob
 
 import xarray as xr
 
-def extract_waveforms(raw_data, spike_times, spike_clusters, clusterIDs, cluster_quality, sample_rate, output_file, params):
+def extract_waveforms(raw_data, spike_times, spike_clusters, clusterIDs, cluster_quality, sample_rate, params):
     
     """Calculate mean waveforms for sorted units.
 
@@ -20,12 +20,14 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, clusterIDs, cluster
 
     Outputs:
     -------
-    mean_waveforms : xarray (in NetCDF format) with dims :
+    mean_waveforms : numpy array with dims :
      - 1 : clusterID
      - 2 : epoch (last is entire dataset)
      - 3 : mean (0) or std (1)
      - 4 : channels
      - 5 : samples
+    dimCoords : list of coordinates for each dimension
+    dimLabels : list of labels for each dimension
 
     Parameters:
     ----------
@@ -36,13 +38,14 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, clusterIDs, cluster
 
     """
 
-    waveformsFile = os.path.join(kilosort_path, 'mean_waveforms.npy')
-    SNRFile = os.path.join(kilosort_path, 'SNR.npy')
-
+    # #############################################
+    #             read in parameters
+    # #############################################
     samples_per_spike = params['samples_per_spike']
     pre_samples = params['pre_samples']
     num_epochs = params['num_epochs']
     spikes_per_epoch = params['spikes_per_epoch']
+    # #############################################
 
     good_clusters = clusterIDs[cluster_quality == 'good']
 
@@ -50,29 +53,41 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, clusterIDs, cluster
 
     epoch_start_times = np.linspace(np.min(spike_times), np.max(spike_times), num_epochs + 1)
 
+    print(epoch_start_times)
+
     for cluster_idx, clusterID in enumerate(good_clusters):
 
-        in_cluster = (clusters == clusterID)
+        in_cluster = (spike_clusters == clusterID)
         times_for_cluster = spike_times[in_cluster]
 
         waveforms = np.empty((spikes_per_epoch * num_epochs, raw_data.shape[1], samples_per_spike))
         waveforms[:] = np.nan
 
-        for epoch, start_time in epoch_start_times[:-1]:
+        for epoch, start_time in enumerate(epoch_start_times[:-1]):
 
             end_time = epoch_start_times[epoch+1]
             times_for_epoch = times_for_cluster[(times_for_cluster > start_time) * (times_for_cluster < start_time)]
 
-            rand_times = np.shuffle(times_for_epoch)
+            np.random.shuffle(times_for_epoch)
 
-            total_waveforms = np.min([rand_times.size, spikes_per_epoch])
+            total_waveforms = np.min([times_for_epoch.size, spikes_per_epoch])
 
-            for wv_idx, peak_time in rand_times[:total_waveforms]:
+            for wv_idx, peak_time in times_for_epoch[:total_waveforms]:
                 rawWaveform = raw_data[int(peak_time-preSamples):int(peak_time+samplesPerSpike-preSamples),:].T
                 waveforms[wv_idx + epoch * spikes_per_epoch, :, :] = rawWaveform
 
-            start = epoch*spikes_per_epoch
+            start = epoch * spikes_per_epoch
             end = start + spikes_per_epoch
+
+            if (end > spikes_per_epoch * num_epochs):
+                print(start)
+                print(end)
+                print(epoch)
+
+                assert(end <= spikes_per_epoch * num_epochs)
+
+            assert(end - start > 0)
+
             mean_waveforms[cluster_idx, epoch, 0, :, :] = np.nanmean(waveforms[start:end, :,:], 0)
             mean_waveforms[cluster_idx, epoch, 1, :, :] = np.nanstd(waveforms[start:end, :, :], 0)
 
@@ -81,7 +96,8 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, clusterIDs, cluster
 
     dimCoords, dimLabels = generateDimLabels(good_clusters, num_epochs, pre_samples, samples_per_spike, raw_data.shape[1], sample_rate)
 
-    writeDataAsXarray(mean_waveforms, dimCoords, dimLabels, output_file)
+    return mean_waveforms, dimCoords, dimLabels
+
 
 
 def generateDimLabels(good_clusters, num_epochs, pre_samples, total_samples, num_channels, sample_rate):
@@ -114,7 +130,7 @@ def generateDimLabels(good_clusters, num_epochs, pre_samples, total_samples, num
 
 def writeDataAsXarray(mean_waveforms, dimCoords, dimLabels, output_file):
 
-    """ Saves mean waveform as xarray """
+    """ Saves mean waveforms as xarray """
 
     waveform_array = xr.DataArray(mean_waveforms, \
         coords=dimCoords, \
