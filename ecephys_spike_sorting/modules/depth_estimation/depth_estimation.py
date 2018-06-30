@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from scipy.signal import welch
 from scipy.ndimage.filters import gaussian_filter1d
 
-from ecephys_spike_sorting.common.utils import find_range, write_probe_json, rms
+from ecephys_spike_sorting.common.utils import find_range, rms
 
 def find_surface_channel(data, ephys_params, params):
     
@@ -20,15 +20,16 @@ def find_surface_channel(data, ephys_params, params):
     freq_range = params['freq_range']
     channel_range = params['channel_range']
     n_passes = params['n_passes']
+    save_figure = params['save_figure']
     
     candidates = np.zeros((n_passes,))
     
     for p in range(n_passes):
         
-        startPt = sample_frequency*params['skip_s_per_pass']*p
-        endPt = startPt + sample_frequency
+        startPt = int(sample_frequency*params['skip_s_per_pass']*p)
+        endPt = startPt + int(sample_frequency)
     
-        channels = np.arange(nchannels)
+        channels = np.arange(nchannels).astype('int')
         chunk = np.copy(data[startPt:endPt,channels])
         
         for channel in channels:
@@ -96,7 +97,6 @@ def compute_offset_and_surface_channel(ap_data, lfp_data, ephys_params, params):
 
     hi_noise_thresh = params['hi_noise_thresh']
     lo_noise_thresh = params['lo_noise_thresh']
-  
 
     numChannels = ephys_params['num_channels']
 
@@ -143,4 +143,4 @@ def compute_offset_and_surface_channel(ap_data, lfp_data, ephys_params, params):
     output_dict['surface_channel'] = surface
     output_dict['air_channel'] = air
 
-    return surface, air, output_file
+    return output_dict

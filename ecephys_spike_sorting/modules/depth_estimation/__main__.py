@@ -12,6 +12,8 @@ def run_depth_estimation(args):
 
     start = time.time()
 
+    numChannels = args['ephys_params']['num_channelsm']
+
     output_file = os.path.join(args['directories']['extracted_data_directory'], 'probe_info.json')
     spikes_file = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
     lfp_file = get_lfp_band_continuous_file(args['directories']['extracted_data_directory'])
@@ -20,7 +22,7 @@ def run_depth_estimation(args):
     dataAp = np.reshape(rawDataAp, (int(rawDataAp.size/numChannels), numChannels))
 
     rawDataLfp = np.memmap(lfp_file, dtype='int16', mode='r')
-    dataLfp = np.reshape(rawDataLfp, (int(rawDataAp.size/numChannels), numChannels))
+    dataLfp = np.reshape(rawDataLfp, (int(rawDataLfp.size/numChannels), numChannels))
 
     info = compute_offset_and_surface_channel(dataAp, dataLfp, \
                 args['ephys_params'], args['depth_estimation_params'])
