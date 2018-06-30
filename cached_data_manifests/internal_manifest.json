@@ -78,5 +78,10 @@
         "local_path": "channel_positions.npy",
         "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/channel_positions.npy",
         "data_uri": "http://axon:8090/file/ecephys_spike_sorting/channel_positions.npy"
+    },
+    "cluster_group.tsv": {
+        "local_path": "cluster_group.tsv",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/cluster_group.tsv",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/cluster_group.tsv"
     }
 }
