@@ -35,50 +35,63 @@ def id_noise_templates(spike_times, spike_clusters, cluster_ids, templates, para
     # #############################################
 
     std_thresh = params['std_thresh']
-    waveform_spread = params['waveform_spread']/2
+    waveform_spread = int(params['waveform_spread']/2)
     thresh2 = params['thresh2']
 
     # #############################################
 
+
     auto_noise = np.zeros(cluster_ids.shape,dtype=bool)
 
-    for idx, tempID in enumerate(cluster_ids):
+
+    for idx, clusterID in enumerate(cluster_ids):
     
-        these_clusters = spike_clusters == tempID
+        for_this_cluster = (spike_clusters == clusterID)
     
-        template = templates[tempID,:,:]
+        template = templates[clusterID,:,:]
         
-        times = spike_times[these_templates]
-    
-        depth = find_depth(template)
-    
-        S = np.std(template[:,depth-waveform_spread:depth+waveform_spread],1)
-        
-        wv = template[:,depth]
-        C = correlate(wv,wv,mode='same')
-        C = C/np.max(C)
-        
-        a = np.where(C > thresh2)[0]
-        d = np.diff(a)
-        b = np.where(d > 1)[0]
-        
-        h, bins = np.histogram(np.diff(times), bins=np.linspace(0,0.1,100))
-        h = h/np.max(h)
-        
-        H = np.mean(h[:3])/np.max(h)
-    
-        if ((np.max(S) < std_thresh or \
-            np.argmax(wv) < params['min_peak_sample'] or \
-            np.argmin(wv) < params['min_trough_sample']) and \
-             H > params['contamination_ratio']) or \
-             len(b) > 0 or \
-             np.min(wv) > params['min_height']:
-            auto_noise[idx] = True;
-        else:
-            auto_noise[idx] = False
+        times = spike_times[for_this_cluster]
+
+        if times.size > 0:
+
+            depth = find_depth(template)
+
+            min_chan = np.max([0, depth-waveform_spread])
+            max_chan = np.min([depth+waveform_spread, template.shape[1]])
+
+            S = np.std(template[:,min_chan:max_chan],1)
+            
+            wv = template[:,depth]
+
+            C = correlate(wv,wv,mode='same')
+
+            if np.max(C) > 0:
+                C = C/np.max(C)
+            
+            a = np.where(C > thresh2)[0]
+            d = np.diff(a)
+            b = np.where(d > 1)[0]
+
+            b = [ ]
+                
+            h, bins = np.histogram(np.diff(times), bins=np.linspace(0,0.1,100))
+
+            if np.max(h) > 0 and np.max(h) != np.nan:
+                h = h/np.max(h)
+                H = np.mean(h[:3])/np.max(h)
+            else:
+                H = 0
+            
+            if ((np.max(S) < std_thresh or \
+                np.argmax(wv) < params['min_peak_sample'] or \
+                np.argmin(wv) < params['min_trough_sample']) and \
+                 H > params['contamination_ratio']) or \
+                 len(b) > 0 or \
+                 np.min(wv) > params['min_height']:
+                auto_noise[idx] = True;
 
     is_noise = np.zeros(auto_noise.shape)
     is_noise[auto_noise] = -1
     
-    return ids, is_noise
+    return cluster_ids, is_noise
     
