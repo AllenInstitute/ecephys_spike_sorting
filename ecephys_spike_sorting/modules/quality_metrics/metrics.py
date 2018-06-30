@@ -1,25 +1,13 @@
 import numpy as np
 from sklearn import decomposition, neighbors
 
-from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file
-from ecephys_spike_sorting.common.utils import load_kilosort_data
+def calculate_metrics(data, spike_times, spike_clusters, amplitudes, params)
 
+	iso = isolation(data, spike_times, spike_clusters)
+	noise_o = noise_overlap(data, spike_times, spike_clusters)
+	isi_con = isi_contamination(data, spike_times, spike_clusters)
 
-
-def calculate_metrics(dataFolder, kilosortFolder):
-
-	rawDataFile = get_ap_band_continuous_file(dataFolder)
-
-	spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
-            load_kilosort_data(kilosortFolder, sample_rate)
-
-	iso = isolation(spike_times, spike_clusters, rawDataFile)
-	noise_o = noise_overlap(spike_times, spike_clusters, rawDataFile)
-	isi_con = isi_contamination(spike_times, spike_clusters, rawDataFile)
-
-    # make a DataFrame
-    # save it to disk
-            
+	return metrics 
 
 def isolation(spike_times, spike_clusters, rawDataFile):
 
