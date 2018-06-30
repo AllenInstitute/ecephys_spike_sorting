@@ -4,6 +4,8 @@ import glob
 
 import xarray as xr
 
+import warnings
+
 def extract_waveforms(raw_data, spike_times, spike_clusters, clusterIDs, cluster_quality, sample_rate, params):
     
     """Calculate mean waveforms for sorted units.
@@ -79,20 +81,17 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, clusterIDs, cluster
             start = epoch * spikes_per_epoch
             end = start + spikes_per_epoch
 
-            if (end > spikes_per_epoch * num_epochs):
-                print(start)
-                print(end)
-                print(epoch)
+            assert(end <= spikes_per_epoch * num_epochs)
 
-                assert(end <= spikes_per_epoch * num_epochs)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=RuntimeWarning)
+                mean_waveforms[cluster_idx, epoch, 0, :, :] = np.nanmean(waveforms[start:end, :,:], 0)
+                mean_waveforms[cluster_idx, epoch, 1, :, :] = np.nanstd(waveforms[start:end, :, :], 0)
 
-            assert(end - start > 0)
-
-            mean_waveforms[cluster_idx, epoch, 0, :, :] = np.nanmean(waveforms[start:end, :,:], 0)
-            mean_waveforms[cluster_idx, epoch, 1, :, :] = np.nanstd(waveforms[start:end, :, :], 0)
-
-        mean_waveforms[cluster_idx, num_epochs, 0, :, :] = np.nanmean(waveforms, 0)
-        mean_waveforms[cluster_idx, num_epochs, 1, :, :] = np.nanstd(waveforms, 0)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            mean_waveforms[cluster_idx, num_epochs, 0, :, :] = np.nanmean(waveforms, 0)
+            mean_waveforms[cluster_idx, num_epochs, 1, :, :] = np.nanstd(waveforms, 0)
 
     dimCoords, dimLabels = generateDimLabels(good_clusters, num_epochs, pre_samples, samples_per_spike, raw_data.shape[1], sample_rate)
 
