@@ -5,16 +5,25 @@ import time
 
 from ecephys_spike_sorting.modules.noise_templates.id_noise_templates import id_noise_templates
 
+from ecephys_spike_sorting.common.utils import write_cluster_group_tsv, load_kilosort_data
+
 
 def classify_noise_templates(args):
 
     logging.info('Running noise template identification')
     
     start = time.time()
+
+    spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
+            load_kilosort_data(args['directories']['kilosort_output_directory'], \
+                args['ephys_params']['sample_rate'], \
+                convert_to_seconds = True)
     
-    templateIDs, is_noise = id_noise_templates(args['kilosort_output_directory'], \
-        args['ephys_params']['sample_rate'], \
+    cluster_ids, is_noise = id_noise_templates(spike_times, spike_clusters, \
+        cluster_ids, templates, \
         args['noise_waveform_params'])
+
+    write_cluster_group_tsv(cluster_ids, is_noise, args['kilosort_output_directory'])
     
     execution_time = time.time() - start
     

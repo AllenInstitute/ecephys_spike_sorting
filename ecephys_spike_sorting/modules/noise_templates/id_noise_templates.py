@@ -3,16 +3,46 @@ import numpy as np
 from scipy.signal import correlate
 
 from ecephys_spike_sorting.common.spike_template_helpers import find_depth
-from ecephys_spike_sorting.common.utils import write_cluster_group_tsv, load_kilosort_data
 
-def id_noise_templates(kilosortFolder, sample_rate, params):
+def id_noise_templates(spike_times, spike_clusters, cluster_ids, templates, params):
 
-    spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
-            load_kilosort_data(kilosortFolder, sample_rate)
+    """Identify non-neural units based on waveform shape and ISI histogram
 
-    auto_noise = np.zeros(ids.shape,dtype=bool)
+    Inputs:
+    -------
+    spike_times : spike times (in seconds)
+    spike_clusters : cluster IDs for each spike time []
+    cluster_ids : all unique cluster ids
+    templates : template for each unit output by Kilosort
 
-    for idx, tempID in enumerate(ids):
+    Outputs:
+    -------
+    cluster_ids : same as input
+    is_noise : numpy array with -1 for noise, 0 otherwise
+
+    Parameters:
+    ----------
+    std_thresh : 
+    waveform_spread :
+    thresh2 :
+    min_peak_sample :
+    min_trough_sample :
+    contamination_ratio :
+    min_height :
+
+    """
+    
+    # #############################################
+
+    std_thresh = params['std_thresh']
+    waveform_spread = params['waveform_spread']/2
+    thresh2 = params['thresh2']
+
+    # #############################################
+
+    auto_noise = np.zeros(cluster_ids.shape,dtype=bool)
+
+    for idx, tempID in enumerate(cluster_ids):
     
         these_clusters = spike_clusters == tempID
     
@@ -22,12 +52,8 @@ def id_noise_templates(kilosortFolder, sample_rate, params):
     
         depth = find_depth(template)
     
-        std_thresh = params['std_thresh']
-        waveform_spread = params['waveform_spread']/2
-    
         S = np.std(template[:,depth-waveform_spread:depth+waveform_spread],1)
         
-        thresh2 = params['thresh2']
         wv = template[:,depth]
         C = correlate(wv,wv,mode='same')
         C = C/np.max(C)
@@ -51,10 +77,8 @@ def id_noise_templates(kilosortFolder, sample_rate, params):
         else:
             auto_noise[idx] = False
 
-    quality = np.zeros(auto_noise.shape)
-    quality[auto_noise] = -1
+    is_noise = np.zeros(auto_noise.shape)
+    is_noise[auto_noise] = -1
     
-    write_cluster_group_tsv(ids, quality, folder)
-    
-    return ids, auto_noise
+    return ids, is_noise
     

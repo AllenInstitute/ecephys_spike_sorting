@@ -18,7 +18,6 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, clusterIDs, cluster
     clusterIDs : all unique cluster ids
     cluster_quality : 'noise' or 'good'
     sample_rate : Hz
-    output_file : path to output file
 
     Outputs:
     -------
@@ -41,12 +40,12 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, clusterIDs, cluster
     """
 
     # #############################################
-    #             read in parameters
-    # #############################################
+
     samples_per_spike = params['samples_per_spike']
     pre_samples = params['pre_samples']
     num_epochs = params['num_epochs']
     spikes_per_epoch = params['spikes_per_epoch']
+    
     # #############################################
 
     good_clusters = clusterIDs[cluster_quality == 'good']
