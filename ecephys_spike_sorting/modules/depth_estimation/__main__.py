@@ -5,12 +5,29 @@ import time
 
 from ecephys_spike_sorting.modules.depth_estimation.depth_estimation import compute_offset_and_surface_channel
 
+from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file, get_lfp_band_continuous_file, write_probe_json
+
+
 def run_depth_estimation(args):
 
     start = time.time()
 
-    surface_channel, air_channel, probe_json = compute_offset_and_surface_channel(args['directories']['extracted_data_directory'],
-                                                     args['ephys_params'], args['depth_estimation_params'])
+    output_file = os.path.join(args['directories']['extracted_data_directory'], 'probe_info.json')
+    spikes_file = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
+    lfp_file = get_lfp_band_continuous_file(args['directories']['extracted_data_directory'])
+
+    rawDataAp = np.memmap(spikes_file, dtype='int16', mode='r')
+    dataAp = np.reshape(rawDataAp, (int(rawDataAp.size/numChannels), numChannels))
+
+    rawDataLfp = np.memmap(lfp_file, dtype='int16', mode='r')
+    dataLfp = np.reshape(rawDataLfp, (int(rawDataAp.size/numChannels), numChannels))
+
+    info = compute_offset_and_surface_channel(dataAp, dataLfp, \
+                args['ephys_params'], args['depth_estimation_params'])
+
+    write_probe_json(output_file, info['channels'], info['offsets'], \
+        info['scaling'], info['mask'], info['surface_channel'], info['air_channel'])
+
 
     execution_time = time.time() - start
         

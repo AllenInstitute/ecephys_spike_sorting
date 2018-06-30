@@ -9,9 +9,8 @@ from scipy.signal import welch
 from scipy.ndimage.filters import gaussian_filter1d
 
 from ecephys_spike_sorting.common.utils import find_range, write_probe_json, rms
-from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file, get_lfp_band_continuous_file
 
-def find_surface_channel(lfp_data, ephys_params, params):
+def find_surface_channel(data, ephys_params, params):
     
     nchannels = ephys_params['num_channels']
     sample_frequency = ephys_params['lfp_sample_rate']
@@ -29,9 +28,6 @@ def find_surface_channel(lfp_data, ephys_params, params):
         startPt = sample_frequency*params['skip_s_per_pass']*p
         endPt = startPt + sample_frequency
     
-        rawData = np.memmap(lfp_data, dtype='int16', mode='r')
-        data = np.reshape(rawData, (int(rawData.size/nchannels), nchannels))
-        
         channels = np.arange(nchannels)
         chunk = np.copy(data[startPt:endPt,channels])
         
@@ -96,12 +92,11 @@ def find_surface_channel(lfp_data, ephys_params, params):
 
 # %%
 
-def compute_offset_and_surface_channel(dataFolder, ephys_params, params):
+def compute_offset_and_surface_channel(ap_data, lfp_data, ephys_params, params):
 
     hi_noise_thresh = params['hi_noise_thresh']
     lo_noise_thresh = params['lo_noise_thresh']
   
-    output_file = os.path.join(dataFolder, 'probe_info.json')
 
     numChannels = ephys_params['num_channels']
 
@@ -109,13 +104,7 @@ def compute_offset_and_surface_channel(dataFolder, ephys_params, params):
     rms_noise = np.zeros((numChannels,), dtype='int16')
     lfp_power = np.zeros((numChannels,), dtype = 'float32')
 
-    spikes_file = get_ap_band_continuous_file(dataFolder)
-    lfp_file = get_lfp_band_continuous_file(dataFolder)
-
     # %%
-
-    rawDataAp = np.memmap(spikes_file, dtype='int16', mode='r')
-    dataAp = np.reshape(rawDataAp, (int(rawDataAp.size/numChannels), numChannels))
 
     mask_chans = ephys_params['reference_channels']
 
@@ -127,7 +116,7 @@ def compute_offset_and_surface_channel(dataFolder, ephys_params, params):
 
     for ch in range(0,numChannels,1): #
         
-        channel = dataAp[start_time:start_time+recording_time,ch]
+        channel = ap_data[start_time:start_time+recording_time,ch]
         offsets[ch] = np.median(channel).astype('int16')
         median_subtr[:,ch] = channel - offsets[ch]
         rms_noise[ch] = rms(median_subtr[:,ch])*ephys_params['bit_volts']
@@ -137,7 +126,7 @@ def compute_offset_and_surface_channel(dataFolder, ephys_params, params):
         
     mask_chans2 = np.concatenate((mask_chans, excluded_chans1, excluded_chans2))
 
-    surface, air = find_surface_channel(lfp_file, ephys_params, params)
+    surface, air = find_surface_channel(lfp_data, ephys_params, params)
 
     print("Surface channel: " + str(surface))
 
@@ -146,6 +135,12 @@ def compute_offset_and_surface_channel(dataFolder, ephys_params, params):
     mask[mask_chans2] = False
     scaling = np.ones((numChannels,))
 
-    write_probe_json(output_file, channels, offsets, scaling, mask, surface, air)
+    output_dict = {}
+    output_dict['channels'] = channels
+    output_dict['mask'] = mask
+    output_dict['scaling'] = scaling
+    output_dict['offsets'] = offsets
+    output_dict['surface_channel'] = surface
+    output_dict['air_channel'] = air
 
     return surface, air, output_file

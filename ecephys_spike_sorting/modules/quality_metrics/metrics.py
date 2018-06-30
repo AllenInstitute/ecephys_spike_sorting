@@ -1,7 +1,8 @@
 import numpy as np
 from sklearn import decomposition, neighbors
+import matlab.engine
 
-def calculate_metrics(data, spike_times, spike_clusters, amplitudes, params)
+def calculate_metrics(data, spike_times, spike_clusters, amplitudes, params):
 
 	iso = isolation(data, spike_times, spike_clusters)
 	noise_o = noise_overlap(data, spike_times, spike_clusters)

@@ -6,7 +6,7 @@ import xarray as xr
 
 import warnings
 
-def extract_waveforms(raw_data, spike_times, spike_clusters, clusterIDs, cluster_quality, sample_rate, params):
+def extract_waveforms(raw_data, spike_times, spike_clusters, clusterIDs, cluster_quality, bit_volts, sample_rate, params):
     
     """Calculate mean waveforms for sorted units.
 
@@ -75,7 +75,7 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, clusterIDs, cluster
 
             for wv_idx, peak_time in times_for_epoch[:total_waveforms]:
                 rawWaveform = raw_data[int(peak_time-preSamples):int(peak_time+samplesPerSpike-preSamples),:].T
-                waveforms[wv_idx + epoch * spikes_per_epoch, :, :] = rawWaveform
+                waveforms[wv_idx + epoch * spikes_per_epoch, :, :] = rawWaveform * bit_volts
 
             start = epoch * spikes_per_epoch
             end = start + spikes_per_epoch
