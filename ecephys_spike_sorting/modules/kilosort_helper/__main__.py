@@ -8,12 +8,14 @@ import numpy as np
 
 import matlab.engine
 
-import ecephys_spike_sorting.modules.kilosort_helper.matlab_file_generator
-from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file
+import ecephys_spike_sorting.modules.kilosort_helper.matlab_file_generator as matlab_file_generator
+from ecephys_spike_sorting.common.utils import read_probe_json, get_ap_band_continuous_file
 
 def run_kilosort(args):
 
     spikes_file = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
+    spikes_dir = os.path.dirname(spikes_file)
+    spike_dir_forward_slash = spikes_dir.replace('\\','/')
 
     mask, offset, scaling, surface_channel, air_channel = read_probe_json(args['probe_json'])
 
@@ -25,9 +27,9 @@ def run_kilosort(args):
                                         EndChan = top_channel, \
                                         BadChannels = np.where(mask == False)[0])
     if args['kilosort_version'] == 1:
-        matlab_file_generator.create_config(args['kilosort_location'], spikes_file, args['kilosort_params'])
+        matlab_file_generator.create_config(args['kilosort_location'], spike_dir_forward_slash, 'continuous.dat', args['kilosort_params'])
     elif args['kilosort_version'] == 2:
-        matlab_file_generator.create_config2(args['kilosort_location'], spikes_file, args['kilosort2_params'])
+        matlab_file_generator.create_config2(args['kilosort_location'], spike_dir_forward_slash, 'continuous.dat', args['kilosort2_params'])
     else:
         return
 
@@ -37,9 +39,14 @@ def run_kilosort(args):
     
     eng = matlab.engine.start_matlab()
     eng.createChannelMapFile(nargout=0)
-    eng.kilosort_config_file(nargout=0)
-    eng.kilosort_master_file(nargout=0)
-        
+
+    if args['kilosort_version'] == 1:
+        eng.kilosort_config_file(nargout=0)
+        eng.kilosort_master_file(nargout=0)
+    else:
+        eng.kilosort2_config_file(nargout=0)
+        eng.kilosort2_master_file(nargout=0)
+
     execution_time = time.time() - start
     
     return {"execution_time" : execution_time} # output manifest
@@ -47,7 +54,7 @@ def run_kilosort(args):
 
 def main():
 
-    from _schemas import InputParameters, OutputParameters
+    from ._schemas import InputParameters, OutputParameters
 
     """Main entry point:"""
     mod = ArgSchemaParser(schema_type=InputParameters,

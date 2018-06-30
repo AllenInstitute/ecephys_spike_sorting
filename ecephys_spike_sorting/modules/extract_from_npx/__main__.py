@@ -15,7 +15,7 @@ def run_npx_extractor(args):
 
     # load lfp band data
     
-    total, used, free = shutil.disk_usage(args['extracted_data_directory'])
+    total, used, free = shutil.disk_usage(args['directories']['extracted_data_directory'])
     
     filesize = os.path.getsize(args['npx_file'])
     
@@ -28,7 +28,7 @@ def run_npx_extractor(args):
     output_file = os.path.join(args['directories']['extracted_data_directory'], 'open-ephys.json')
 
     with io.open(output_file, 'w', encoding='utf-8') as f:
-        f.write(json.dumps(oe_json, ensure_ascii=False, sort_keys=True, indent=4))
+        f.write(json.dumps(settings_json, ensure_ascii=False, sort_keys=True, indent=4))
 
     start = time.time()
     subprocess.check_call([args['npx_extractor_executable'], args['npx_file'], args['directories']['extracted_data_directory']])
@@ -40,7 +40,7 @@ def run_npx_extractor(args):
 
 def main():
 
-    from _schemas import InputParameters, OutputParameters
+    from ._schemas import InputParameters, OutputParameters
 
     """Main entry point:"""
     mod = ArgSchemaParser(schema_type=InputParameters,

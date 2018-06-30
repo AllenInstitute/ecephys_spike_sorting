@@ -11,21 +11,20 @@ class KilosortParameters(DefaultSchema):
 	IntitalizeTh = Int(required=True, default=-4)
 	InitializeNfilt = Int(required=True, default=10000)
     
-
 class Kilosort2Parameters(DefaultSchema):
 
 	Nfilt = Int(required=True, default=1024)
 	Threshold = String(required=True, default="[4, 10, 10]")
 	lam = String(required=True, default="[5, 20, 20]")
-	IntitalizeTh = Int(required=True, default=-4)
+	InitializeTh = Int(required=True, default=-4)
 	InitializeNfilt = Int(required=True, default=10000)
 
 class InputParameters(ArgSchema):
     
     kilosort_location = String()
     probe_json = String()
-    kilosort_params = Nested(KilosortParameters)
-    kilosort2_params = Nested(KilosortParameters)
+    kilosort_params = Nested(KilosortParameters, required=False)
+    kilosort2_params = Nested(KilosortParameters, required=False)
     directories = Nested(Directories)
     ephys_params = Nested(EphysParams)
     kilosort_version = Int(required=True, default=2)

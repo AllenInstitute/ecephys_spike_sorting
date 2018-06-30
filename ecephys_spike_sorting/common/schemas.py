@@ -9,5 +9,5 @@ class EphysParams(DefaultSchema):
 	reference_channels = NumpyArray(required=False, default=[37, 76, 113, 152, 189, 228, 265, 304, 341, 380])
 
 class Directories(DefaultSchema):
-	kilosort_output_directory = InputDir()
-	extracted_data_directory = InputDir()
+	kilosort_output_directory = String()
+	extracted_data_directory = String()

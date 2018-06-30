@@ -19,7 +19,7 @@ def create_config(kilosort_location,forwardslash_data_file_location, data_file_n
         f.write(config_string)
 
 def create_config2(kilosort_location,forwardslash_data_file_location, data_file_name, params):
-    config_string = make_config_string2(forwardslash_data_file_location, data_file_name, Nfilt)   
+    config_string = make_config_string2(forwardslash_data_file_location, data_file_name, params)   
     config_path = os.path.join(kilosort_location,'kilosort2_config_file.m')    
     with open(config_path,"w+") as f:
         f.write(config_string)
@@ -49,7 +49,7 @@ def make_chanmap_string(EndChan = 384, StartChan = 1, Nchannels = 384, BadChanne
 
     return chanmap_string
 
-def make_config_string2(forwardslash_data_file_location, data_file_name, Nfilt = 1024):
+def make_config_string2(forwardslash_data_file_location, data_file_name, params):
 
     config_string = """createChannelMapFile; 
         ops.rootZ = '""" + forwardslash_data_file_location + """';
@@ -71,7 +71,7 @@ def make_config_string2(forwardslash_data_file_location, data_file_name, Nfilt =
         ops.ThS      = [8 8];  % lower bound on acceptable single spike quality
         ops.momentum = [20 400]; % number of samples to average over (annealed) 
         ops.sigmaMask  = 30; % spatial constant in um for computing residual variance of spike
-        ops.Nfilt       = """ + str(Nfilt) + """; % max number of clusters (even temporary ones)
+        ops.Nfilt       = """ + str(params['Nfilt']) + """; % max number of clusters (even temporary ones)
         ops.nPCs        = 3; % how many PCs to project the spikes into
         ops.useRAM      = 0; % whether to hold data in RAM (won't check if there's enough RAM)
         ops.ThPre       = 8; % threshold crossings for pre-clustering (in PCA projection space)
@@ -107,7 +107,7 @@ def make_config_string(forwardslash_data_file_location, data_file_name, Nfilt = 
         ops.fbinary             = fullfile(ops.root, '"""+data_file_name+"""'); % will be created for 'openEphys'       
         ops.fproc               = 'C:/data/kilosort/temp_wh.dat'; % residual from RAM of preprocessed data      
         
-        ops.fs                  = fs;        % sampling rate        (omit if already in chanMap file)
+        ops.fs                  = 30000;        % sampling rate        (omit if already in chanMap file)
         ops.NchanTOT            = Nchannels;           % total number of channels (omit if already in chanMap file)
         ops.Nchan               = NChannelsToSort;           % number of active channels (omit if already in chanMap file)
         ops.Nfilt               = """+str(params['Nfilt'])+""";           % number of clusters to use (2-4 times more than Nchan, should be a multiple of 32)             

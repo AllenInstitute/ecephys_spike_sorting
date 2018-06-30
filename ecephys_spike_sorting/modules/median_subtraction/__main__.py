@@ -24,11 +24,11 @@ def run_median_subtraction(args):
     
     execution_time = time.time() - start
     
-    return {"execution_time" : execution_time} # output manifest
+    return {"median_subtraction_execution_time" : execution_time} # output manifest
 
 def main():
 
-    from _schemas import InputParameters, OutputParameters
+    from ._schemas import InputParameters, OutputParameters
 
     """Main entry point:"""
     mod = ArgSchemaParser(schema_type=InputParameters,

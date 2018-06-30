@@ -1,6 +1,6 @@
 from argschema import ArgSchema, ArgSchemaParser 
 from argschema.schemas import DefaultSchema
-from argschema.fields import Nested, InputDir, String, Float, Dict, Int, Bool, OutputFile
+from argschema.fields import Nested, InputDir, NumpyArray, String, Float, Dict, Int, Bool, OutputFile
 from ecephys_spike_sorting.common.schemas import EphysParams, Directories
 
 class DepthEstimationParams(DefaultSchema):

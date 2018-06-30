@@ -21,6 +21,7 @@ def find_surface_channel(data, ephys_params, params):
     channel_range = params['channel_range']
     n_passes = params['n_passes']
     save_figure = params['save_figure']
+    figure_location = params['figure_location']
     
     candidates = np.zeros((n_passes,))
     

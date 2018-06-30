@@ -3,8 +3,9 @@ import os
 import logging
 import time
 
-from ecephys_spike_sorting.modules.depth_estimation.depth_estimation import compute_offset_and_surface_channel
+import numpy as np
 
+from ecephys_spike_sorting.modules.depth_estimation.depth_estimation import compute_offset_and_surface_channel
 from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file, get_lfp_band_continuous_file, write_probe_json
 
 
@@ -12,7 +13,7 @@ def run_depth_estimation(args):
 
     start = time.time()
 
-    numChannels = args['ephys_params']['num_channelsm']
+    numChannels = args['ephys_params']['num_channels']
 
     output_file = os.path.join(args['directories']['extracted_data_directory'], 'probe_info.json')
     spikes_file = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
@@ -33,14 +34,14 @@ def run_depth_estimation(args):
 
     execution_time = time.time() - start
         
-    return {"surface_channel": surface_channel,
-            "air_channel": air_channel,
-            "probe_json": probe_json,
+    return {"surface_channel": info['surface_channel'],
+            "air_channel": info['air_channel'],
+            "probe_json": output_file,
             "execution_time": execution_time} # output manifest
 
 def main():
 
-    from _schemas import InputParameters, OutputParameters
+    from ._schemas import InputParameters, OutputParameters
 
     mod = ArgSchemaParser(schema_type=InputParameters,
                           output_schema_type=OutputParameters)
