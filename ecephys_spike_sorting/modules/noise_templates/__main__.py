@@ -14,7 +14,7 @@ def classify_noise_templates(args):
     
     start = time.time()
 
-    spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
+    spike_times, spike_clusters, amplitudes, templates, channel_map, cluster_ids, cluster_quality = \
             load_kilosort_data(args['directories']['kilosort_output_directory'], \
                 args['ephys_params']['sample_rate'], \
                 convert_to_seconds = True)
@@ -27,8 +27,10 @@ def classify_noise_templates(args):
         cluster_ids, templates, \
         args['noise_waveform_params'])
 
-    write_cluster_group_tsv(cluster_ids, is_noise, args['kilosort_output_directory'])
+    write_cluster_group_tsv(cluster_ids, is_noise, args['directories']['kilosort_output_directory'])
     
+    print(is_noise)
+
     execution_time = time.time() - start
     
     return {"execution_time" : execution_time} # output manifest
@@ -36,7 +38,7 @@ def classify_noise_templates(args):
 
 def main():
 
-    from _schemas import InputParameters, OutputParameters
+    from ._schemas import InputParameters, OutputParameters
 
     mod = ArgSchemaParser(schema_type=InputParameters,
                           output_schema_type=OutputParameters)

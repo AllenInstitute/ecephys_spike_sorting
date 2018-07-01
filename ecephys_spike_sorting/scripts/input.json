@@ -46,6 +46,13 @@
 		"lam" : "[5, 20, 20]",
 		"InitializeTh" : -4,
 		"InitializeNFilt" : 10000
+	},
+
+	"mean_waveform_params" : {
+		"samples_per_spike" : 82,
+		"pre_samples" : 20,
+		"num_epochs" : 10,
+		"spikes_per_epoch" : 100
 	}
 
 }

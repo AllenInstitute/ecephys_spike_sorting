@@ -3,18 +3,21 @@ import os
 import logging
 import time
 
+import numpy as np
+
 from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file
 from ecephys_spike_sorting.common.utils import load_kilosort_data
 
-from ecephys_spike_sorting.modules.mean_waveforms.extract_waveforms import extract_waveforms
+from ecephys_spike_sorting.modules.mean_waveforms.extract_waveforms import extract_waveforms, writeDataAsXarray
 
 def calculate_mean_waveforms(args):
     
     start = time.time()
 
-    rawDataFile = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
+    # rawDataFile = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
+    rawDataFile = os.path.join(args['directories']['extracted_data_directory'], 'continuous_ap_post.dat')
     rawData = np.memmap(rawDataFile, dtype='int16', mode='r')
-    data = np.reshape(rawData, (int(rawData.size/ephys_params['num_channels']), ephys_params['num_channels']))
+    data = np.reshape(rawData, (int(rawData.size/args['ephys_params']['num_channels']), args['ephys_params']['num_channels']))
 
     spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
             load_kilosort_data(args['directories']['kilosort_output_directory'], \
@@ -23,9 +26,13 @@ def calculate_mean_waveforms(args):
 
     output_file = os.path.join(args['directories']['kilosort_output_directory'], 'mean_waveforms.nc')
 
-    data, coords, labels = extract_waveforms(data, spike_times, spike_clusters, clusterIDs, cluster_quality, ephys_params['bit_volts'], ephys_params['sample_rate'], output_file, args['mean_waveform_params'])
+    waveforms, spike_counts, coords, labels = extract_waveforms(data, spike_times, \
+                spike_clusters, clusterIDs, \
+                cluster_quality, args['ephys_params']['bit_volts'], \
+                args['ephys_params']['sample_rate'], \
+                args['mean_waveform_params'])
 
-    writeDataAsXarray(data, coords, labels, output_file)
+    writeDataAsXarray(waveforms, spike_counts, coords, labels, output_file)
 
     execution_time = time.time() - start
     
@@ -35,7 +42,7 @@ def calculate_mean_waveforms(args):
 
 def main():
 
-    from _schemas import InputParameters, OutputParameters
+    from ._schemas import InputParameters, OutputParameters
 
     mod = ArgSchemaParser(schema_type=InputParameters,
                           output_schema_type=OutputParameters)

@@ -37,17 +37,17 @@ def id_noise_templates_rf(spike_times, spike_clusters, cluster_ids, templates, p
 
     # #############################################
 
-    classifier = pickle.load(open(classifier_path, 'r'))
+    classifier = pickle.load(open(classifier_path, 'rb'))
 
-    features = np.zeros((cluster_ids.size,templates.shape[1]))
+    feature_matrix = np.zeros((cluster_ids.size,templates.shape[1]))
 
     for idx, unit in enumerate(cluster_ids):
         
         template = templates[unit,:,:]
         depth = find_depth(template)
-        features[unit,:] = template[:,depth]
+        feature_matrix[unit,:] = template[:,depth]
 
-    is_noise = -classifier.predict(feature_matrix)
+    is_noise = 1-2*classifier.predict(feature_matrix)
     
     return cluster_ids, is_noise
     
