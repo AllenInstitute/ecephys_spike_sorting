@@ -4,6 +4,7 @@ from argschema.fields import Nested, InputDir, String, Float, Dict, Int, NumpyAr
 from ecephys_spike_sorting.common.schemas import EphysParams, Directories
 
 class NoiseWaveformParams(DefaultSchema):
+	classifier_path = String()
 	std_thresh = Float(required=True, default=2.5)
 	waveform_spread = Int(required=True, default=10)
 	thresh2 = Float(required=True, default=0.2)

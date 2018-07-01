@@ -1,8 +1,57 @@
 import numpy as np
 
 from scipy.signal import correlate
+from sklearn.ensemble import RandomForestClassifier
+
+import pickle
 
 from ecephys_spike_sorting.common.spike_template_helpers import find_depth
+
+
+def id_noise_templates_rf(spike_times, spike_clusters, cluster_ids, templates, params):
+
+    """Identify non-neural units based on waveform shape and ISI histogram
+
+    Inputs:
+    -------
+    spike_times : spike times (in seconds)
+    spike_clusters : cluster IDs for each spike time []
+    cluster_ids : all unique cluster ids
+    templates : template for each unit output by Kilosort
+    classifier : sklearn Random Forest classifier trained on hand-curated data
+
+    Outputs:
+    -------
+    cluster_ids : same as input
+    is_noise : numpy array with -1 for noise, 0 otherwise
+
+    Parameters:
+    ----------
+    none
+
+    """
+    
+    # #############################################
+
+    classifier_path = params['classifier_path']
+
+    # #############################################
+
+    classifier = pickle.load(open(classifier_path, 'r'))
+
+    features = np.zeros((cluster_ids.size,templates.shape[1]))
+
+    for idx, unit in enumerate(cluster_ids):
+        
+        template = templates[unit,:,:]
+        depth = find_depth(template)
+        features[unit,:] = template[:,depth]
+
+    is_noise = -classifier.predict(feature_matrix)
+    
+    return cluster_ids, is_noise
+    
+
 
 def id_noise_templates(spike_times, spike_clusters, cluster_ids, templates, params):
 
