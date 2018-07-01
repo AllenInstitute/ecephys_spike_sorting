@@ -51,7 +51,7 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, clusterIDs, cluster
     
     # #############################################
 
-    good_clusters = clusterIDs[cluster_quality == 'good']
+    good_clusters = clusterIDs
 
     mean_waveforms = np.zeros((good_clusters.size, num_epochs + 1, 2, raw_data.shape[1], samples_per_spike))
     spike_count = np.zeros((good_clusters.size, num_epochs + 1))
