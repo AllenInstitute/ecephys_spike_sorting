@@ -24,7 +24,7 @@ def calculate_quality_metrics(args):
                 args['ephys_params']['sample_rate'], \
                 convert_to_seconds = False)
 
-    metrics = calculate_metrics(data, spike_times, spike_clusters, amplitudes, args['quality_metrics_params'])
+    metrics = calculate_metrics(data, spike_times, spike_clusters, amplitudes, args['ephys_params']['sample_rate'], args['quality_metrics_params'])
     
     output_file = os.path.join(args['directories']['kilosort_output_directory'], 'metrics.csv')
 

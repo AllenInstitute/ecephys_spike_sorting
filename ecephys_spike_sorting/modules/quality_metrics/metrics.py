@@ -4,11 +4,11 @@ from sklearn import decomposition, neighbors
 
 from ecephys_spike_sorting.common.spike_template_helpers import find_depth
 
-def calculate_metrics(data, spike_times, spike_clusters, amplitudes, params):
+def calculate_metrics(data, spike_times, spike_clusters, amplitudes, sample_rate, params):
 
 	#iso = calculate_isolation_quality(data, spike_times, spike_clusters)
 	#noise_o = calculate_noise_overlap(data, spike_times, spike_clusters)
-	isi_viol = calculate_isi_violations(spike_times, spike_clusters, params['isi_threshold'])
+	isi_viol = calculate_isi_violations(spike_times / sample_rate, spike_clusters, params['isi_threshold'])
 	snr, peak_chan = calculate_snr_and_peak_chan(data, spike_times, spike_clusters, params['snr_spike_count'], params['samples_per_spike'], params['pre_samples'])
 	firing_rate = calculate_firing_rate(spike_times, spike_clusters)
 
