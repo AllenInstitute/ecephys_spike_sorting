@@ -5,6 +5,8 @@ import subprocess
 import time
 import shutil
 
+from git import Repo
+
 import numpy as np
 
 import io, json, os
@@ -13,7 +15,8 @@ from ecephys_spike_sorting.modules.extract_from_npx.create_settings_json import 
 
 def run_npx_extractor(args):
 
-    # load lfp band data
+    repo = Repo(args['npx_extractor_repo'])
+    headcommit = repo.head.commit
     
     total, used, free = shutil.disk_usage(args['directories']['extracted_data_directory'])
     
@@ -35,7 +38,9 @@ def run_npx_extractor(args):
     execution_time = time.time() - start
     
     return {"execution_time" : execution_time,
-            "settings_json" : settings_json} # output manifest
+            "settings_json" : settings_json,
+            "npx_extractor_commit_date" : time.strftime("%a, %d %b %Y %H:%M", time.gmtime(headcommit.committed_date)),
+            "npx_extractor_commit_hash" : headcommit.hexsha } # output manifest
 
 
 def main():

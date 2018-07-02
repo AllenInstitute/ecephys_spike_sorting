@@ -3,6 +3,7 @@ import os
 import logging
 import subprocess
 import time
+from git import Repo
 
 import numpy as np
 
@@ -12,6 +13,9 @@ import ecephys_spike_sorting.modules.kilosort_helper.matlab_file_generator as ma
 from ecephys_spike_sorting.common.utils import read_probe_json, get_ap_band_continuous_file
 
 def run_kilosort(args):
+
+    repo = Repo(args['kilosort_repo'])
+    headcommit = repo.head.commit
 
     spikes_file = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
     spikes_dir = os.path.dirname(spikes_file)
@@ -49,7 +53,9 @@ def run_kilosort(args):
 
     execution_time = time.time() - start
     
-    return {"execution_time" : execution_time} # output manifest
+    return {"execution_time" : execution_time,
+            "kilosort_commit_date" : time.strftime("%a, %d %b %Y %H:%M", time.gmtime(headcommit.committed_date)),
+            "kilosort_commit_hash" : headcommit.hexsha } # output manifest
 
 
 def main():

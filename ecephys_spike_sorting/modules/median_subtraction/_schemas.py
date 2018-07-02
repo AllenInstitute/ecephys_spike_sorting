@@ -6,6 +6,7 @@ from ecephys_spike_sorting.common.schemas import EphysParams, Directories
 class InputParameters(ArgSchema): 
     probe_json = String()
     median_subtraction_executable = String()
+    median_subtraction_repo = String()
     directories = Nested(Directories)
     
 class OutputSchema(DefaultSchema): 
@@ -17,4 +18,6 @@ class OutputSchema(DefaultSchema):
 class OutputParameters(OutputSchema): 
     # Add your output parameters 
     median_subtraction_execution_time = Float()
+    median_subtraction_commit_hash = String()
+    median_subtraction_commit_date = String()
     

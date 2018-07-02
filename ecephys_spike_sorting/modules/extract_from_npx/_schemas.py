@@ -7,6 +7,7 @@ class InputParameters(ArgSchema):
     npx_file = String()
     settings_xml = String()
     npx_extractor_executable = String()
+    npx_extractor_repo = String()
     directories = Nested(Directories)
 
 class OutputSchema(DefaultSchema): 
@@ -17,6 +18,8 @@ class OutputSchema(DefaultSchema):
  
 class OutputParameters(OutputSchema): 
     # Add your output parameters 
-    npx_extactor_execution_time = Float()
+    npx_extractor_execution_time = Float()
     settings_json = String()
+    npx_extractor_commit_hash = String()
+    npx_extractor_commit_date = String()
     
