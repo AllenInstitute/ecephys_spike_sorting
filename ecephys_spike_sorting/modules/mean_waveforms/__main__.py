@@ -14,8 +14,7 @@ def calculate_mean_waveforms(args):
     
     start = time.time()
 
-    # rawDataFile = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
-    rawDataFile = os.path.join(args['directories']['extracted_data_directory'], 'continuous_ap_post.dat')
+    rawDataFile = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
     rawData = np.memmap(rawDataFile, dtype='int16', mode='r')
     data = np.reshape(rawData, (int(rawData.size/args['ephys_params']['num_channels']), args['ephys_params']['num_channels']))
 

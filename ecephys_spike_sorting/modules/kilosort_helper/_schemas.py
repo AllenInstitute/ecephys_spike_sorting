@@ -22,6 +22,7 @@ class Kilosort2Parameters(DefaultSchema):
 class InputParameters(ArgSchema):
     
     kilosort_location = String()
+    kilosort_repo = String()
     probe_json = String()
     kilosort_params = Nested(KilosortParameters, required=False)
     kilosort2_params = Nested(KilosortParameters, required=False)
@@ -40,4 +41,6 @@ class OutputSchema(DefaultSchema):
 class OutputParameters(OutputSchema): 
 
     execution_time = Float()
+    kilosort_commit_hash = String()
+    kilosort_commit_date = String()
     

@@ -4,16 +4,19 @@
 	"probe_json" : "C:\\data\\test_run\\probe_info.json",
 
 	"npx_extractor_executable": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\npxextractor\\Release\\NpxExtractor.exe",
+	"npx_extractor_repo": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\npxextractor",
 
     "median_subtraction_executable": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\spikebandmediansubtraction\\Builds\\VisualStudio2013\\Release\\SpikeBandMedianSubtraction.exe",
+    "median_subtraction_repo": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\spikebandmediansubtraction",
 
     "kilosort_location": "C:\\Users\\svc_neuropix\\Documents\\MATLAB",
+    "kilosort_repo": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\kilosort2",
     "kilosort_version" : 2,
     "surface_channel_buffer" : 15,
 
 	"directories": {
-		"extracted_data_directory": "C:\\data\\test_run",
-		"kilosort_output_directory": "C:\\data\\test_run\\continuous\\Neuropix-3a-100.0"
+		"extracted_data_directory": "E:\\712089388_384647_20180620_probeC_sorted",
+		"kilosort_output_directory": "E:\\712089388_384647_20180620_probeC_sorted\\continuous\\Neuropix-3a-100.0"
 	},
 
 	"ephys_params": {
@@ -51,8 +54,13 @@
 	"mean_waveform_params" : {
 		"samples_per_spike" : 82,
 		"pre_samples" : 20,
-		"num_epochs" : 10,
+		"num_epochs" : 3,
 		"spikes_per_epoch" : 100
+	},
+
+	"noise_waveform_params" : {
+		"classifier_path" : "C:\\Users\\svc_neuropix\\Documents\\GitHub\\ecephys_spike_sorting\\ecephys_spike_sorting\\modules\\noise_templates\\classifier.pkl"
+
 	}
 
 }

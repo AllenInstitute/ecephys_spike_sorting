@@ -5,11 +5,9 @@ import os
 from ecephys_spike_sorting.modules.depth_estimation.depth_estimation import compute_offset_and_surface_channel
 import ecephys_spike_sorting.common.utils as utils
 
-os.environ['ECEPHYS_SPIKE_SORTING_DATA'] = r'C:\Users\svc_neuropix\Documents\GitHub\ecephys_spike_sorting\cached_data'
-
 DATA_DIR = os.environ.get('ECEPHYS_SPIKE_SORTING_DATA', False)
 
-def test_extract_waveforms():
+def test_depth_estimation():
 
 	ephys_params = {}
 	ephys_params['sample_rate'] = 30000.0
