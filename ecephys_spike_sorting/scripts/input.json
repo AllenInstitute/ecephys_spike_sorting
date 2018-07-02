@@ -12,8 +12,8 @@
     "surface_channel_buffer" : 15,
 
 	"directories": {
-		"extracted_data_directory": "C:\\data\\test_run",
-		"kilosort_output_directory": "C:\\data\\test_run\\continuous\\Neuropix-3a-100.0"
+		"extracted_data_directory": "E:\\712089388_384647_20180620_probeC_sorted",
+		"kilosort_output_directory": "E:\\712089388_384647_20180620_probeC_sorted\\continuous\\Neuropix-3a-100.0"
 	},
 
 	"ephys_params": {
@@ -53,6 +53,11 @@
 		"pre_samples" : 20,
 		"num_epochs" : 10,
 		"spikes_per_epoch" : 100
+	},
+
+	"noise_waveform_params" : {
+		"classifier_path" : "C:\\Users\\svc_neuropix\\Documents\\GitHub\\ecephys_spike_sorting\\ecephys_spike_sorting\\modules\\noise_templates\\classifier.pkl"
+
 	}
 
 }

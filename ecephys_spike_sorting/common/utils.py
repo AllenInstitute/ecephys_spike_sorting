@@ -131,6 +131,10 @@ def load_kilosort_data(folder, sample_rate, convert_to_seconds = True):
         
         unwhitened_temps[temp_idx,:,:] = np.dot(np.ascontiguousarray(templates[temp_idx,:,:]),np.ascontiguousarray(unwhitening_mat))
                     
-    cluster_ids, cluster_quality = read_cluster_group_tsv(os.path.join(folder, 'cluster_group.tsv'))
+    try:
+        cluster_ids, cluster_quality = read_cluster_group_tsv(os.path.join(folder, 'cluster_group.tsv'))
+    except OSError:
+        cluster_ids = None
+        cluster_quality = None
 
     return spike_times, spike_clusters, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality
