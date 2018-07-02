@@ -29,9 +29,9 @@ def run_median_subtraction(args):
     
     execution_time = time.time() - start
     
-    return {"median_subtraction_execution_time" : execution_time.
-            "kilosort_commit_date" : time.strftime("%a, %d %b %Y %H:%M", time.gmtime(headcommit.committed_date)),
-            "kilosort_commit_hash" : headcommit.hexsha } # output manifest} # output manifest
+    return {"median_subtraction_execution_time" : execution_time,
+            "median_subtraction_commit_date" : time.strftime("%a, %d %b %Y %H:%M", time.gmtime(headcommit.committed_date)),
+            "median_subtraction_commit_hash" : headcommit.hexsha } # output manifest} # output manifest
 
 def main():
 
