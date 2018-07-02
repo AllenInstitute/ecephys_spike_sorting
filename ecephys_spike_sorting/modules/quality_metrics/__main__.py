@@ -13,8 +13,6 @@ from ecephys_spike_sorting.modules.quality_metrics.metrics import calculate_metr
 
 def calculate_quality_metrics(args):
 
-    # code goes here
-    
     start = time.time()
 
     rawDataFile = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
@@ -28,11 +26,14 @@ def calculate_quality_metrics(args):
 
     metrics = calculate_metrics(data, spike_times, spike_clusters, amplitudes, args['quality_metrics_params'])
     
-    # write to disk
+    output_file = os.path.join(args['directories']['kilosort_output_directory'], 'metrics.csv')
+
+    metrics.to_csv(output_file)
 
     execution_time = time.time() - start
     
-    return {"execution_time" : execution_time} # output manifest
+    return {"execution_time" : execution_time,
+            "quality_metrics_output_file" : output_file} # output manifest
 
 
 def main():

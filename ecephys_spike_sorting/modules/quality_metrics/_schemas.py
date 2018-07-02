@@ -5,13 +5,10 @@ from ecephys_spike_sorting.common.schemas import EphysParams, Directories
 
 
 class QualityMetricsParams(DefaultSchema):
-    std_thresh = Float(required=True, default=2.5)
-    waveform_spread = Int(required=True, default=10)
-    thresh2 = Float(required=True, default=0.2)
-    min_peak_sample = Int(required=True, default=10)
-    min_trough_sample = Int(required=True, default=10)
-    min_height = Int(required=True, default=-5)
-    contamination_ratio = Float(required=True, default=0.01)
+    isi_threshold = Float(required=True, default=0.015)
+    snr_spike_count = Int(required=True, default=100)
+    samples_per_spike = Int(required=True, default=82)
+	pre_samples = Int(required=True, default=20)
 
 class InputParameters(ArgSchema):
     
@@ -29,4 +26,5 @@ class OutputSchema(DefaultSchema):
 class OutputParameters(OutputSchema): 
 
     execution_time = Float()
+    quality_metrics_output_file = String()
     

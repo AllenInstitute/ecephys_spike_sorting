@@ -1,35 +1,101 @@
 import numpy as np
+import pandas as pd
 from sklearn import decomposition, neighbors
-import matlab.engine
+
+from ecephys_spike_sorting.common.spike_template_helpers import find_depth
 
 def calculate_metrics(data, spike_times, spike_clusters, amplitudes, params):
 
-	iso = isolation(data, spike_times, spike_clusters)
-	noise_o = noise_overlap(data, spike_times, spike_clusters)
-	isi_con = isi_contamination(data, spike_times, spike_clusters)
+	#iso = calculate_isolation_quality(data, spike_times, spike_clusters)
+	#noise_o = calculate_noise_overlap(data, spike_times, spike_clusters)
+	isi_viol = calculate_isi_violations(spike_times, spike_clusters, params['isi_threshold'])
+	snr, peak_chan = calculate_snr_and_peak_chan(data, spike_times, spike_clusters, params['snr_spike_count'], params['samples_per_spike'], params['pre_samples'])
+	firing_rate = calculate_firing_rate(spike_times, spike_clusters)
+
+	cluster_ids = np.unique(spike_clusters)
+
+	# package it into a DataFrame called metrics
+	metrics = pd.DataFrame(data={'cluster_ids': cluster_ids, 
+		                    'peak_chan' : peak_chan,
+		                    'snr' : snr,
+		                    'firing_rate' : firing_rate})
 
 	return metrics 
 
-def isolation(spike_times, spike_clusters, rawDataFile):
+def calculate_isolation_quality(spike_times, spike_clusters, rawDataFile):
 
 	# code goes here
 
 	pass
 
 
-def noise_overlap(spike_times, spike_clusters, rawDataFile):
+def calculate_noise_overlap(spike_times, spike_clusters, rawDataFile):
 
 	# code goes here
 
 	pass
 
 
-def isi_contamination(spike_times, spike_clusters, rawDataFile):
+def calculate_isi_violations(spike_times, spike_clusters, isi_threshold):
 
-	# code goes here
+	cluster_isi = np.unique(spike_clusters)
 
-	pass
+	isi_violations = np.zeros(cluster_ids.shape)
 
+	for idx, cluster_id in enumerate(cluster_ids):
+		for_this_cluster = (spike_clusters == cluster_id)
+		isi_violations[idx] = isi_violations(spike_times[for_this_cluster], isi_threshold=isi_threshold)
+
+	return isi_violations
+
+
+def calculate_snr(data, spike_times, spike_clusters, spike_count, samples_per_spike, pre_samples):
+
+	cluster_ids = np.unique(spike_clusters)
+
+	snrs = np.zeros(cluster_ids.shape)
+	peak_chans = np.zeros(cluster_ids.shape)
+
+	for idx, cluster_id in enumerate(cluster_ids):
+		for_this_cluster = (spike_clusters == cluster_id)
+		times = spike_times[for_this_cluster]
+		np.random.shuffle(times)
+		total_waveforms = np.min([spike_count, times.size])
+		times_for_snr = times[:total_waveforms]
+		waveforms = extract_clips(data, spike_times, samples_per_spike, pre_samples)
+		mean_waveform = np.mean(waveforms, 0)
+		
+		peak_chans[idx] = find_depth(mean_waveform.T)
+
+		snrs[idx] = snr(waveforms[:,peak_chan[idx]])
+
+	return snrs, peak_chans
+
+
+def calculate_firing_rate(spike_times, spike_clusters):
+
+	cluster_ids = np.unique(spike_clusters)
+
+	firing_rates = np.zeros(cluster_ids.shape)
+
+	for idx, cluster_id in enumerate(cluster_ids):
+		for_this_cluster = (spike_clusters == cluster_id)
+		firing_rates[idx] = firing_rate(spike_times[for_this_cluster])
+
+	return firing_rates
+
+
+def calculate_depths(spike_times, spike_clusters):
+
+	cluster_ids = np.unique(spike_clusters)
+
+	firing_rates = np.zeros(cluster_ids.shape)
+
+	for idx, cluster_id in enumerate(cluster_ids):
+		for_this_cluster = (spike_clusters == cluster_id)
+		firing_rates[idx] = firing_rate(spike_times[for_this_cluster])
+
+	return depths
 
 
 def compute_overlap(data, t1, t2, num_to_use = 500):
@@ -111,49 +177,67 @@ def sample(arr, num):
     return arr[rand_order[:num]]
 
 
-def extract_clips(data, times, clip_size=70, clip_offset=15):
+def extract_clips(data, times, clip_size=82, clip_offset=20):
     
-    clips = np.zeros((times.size, clip_size,data.shape[1]))
+    clips = np.zeros((times.size, clip_size, data.shape[1]))
     
     for i, t in enumerate(times):
         
         clips[i,:,:] = data[t-clip_offset:t-clip_offset+clip_size,:]
     
-    
     return clips
 
-def signaltonoise(a, axis=0, ddof=0):
-    """
-    The signal-to-noise ratio of the input data.
-    Returns the signal-to-noise ratio of `a`, here defined as the mean
-    divided by the standard deviation.
-    Parameters
-    ----------
-    a : array_like
-        An array_like object containing the sample data.
-    axis : int or None, optional
-        Axis along which to operate. Default is 0. If None, compute over
-        the whole array `a`.
-    ddof : int, optional
-        Degrees of freedom correction for standard deviation. Default is 0.
-    Returns
+
+def isi_violations(spike_train, isi_threshold, min_isi=0):
+	"""Calculate ISI violations for a spike train.
+
+    modified by Dan Denman from cortex-lab/sortingQuality GitHub by Nick Steinmetz
+
+    Inputs:
     -------
-    s2n : ndarray
-        The mean to standard deviation ratio(s) along `axis`, or 0 where the
-        standard deviation is 0.
-    """
-    a = np.asanyarray(a)
-    m = a.mean(axis)
-    sd = a.std(axis=axis, ddof=ddof)
-    return np.where(sd == 0, 0, m/sd)
+	spike_train : array of spike times
+	isi_threshold : threshold for isi violation
+	min_isi :
+
+	Outputs:
+	--------
+	fpRate : rate of isi violations as a fraction of overall rate
+	num_violations : total number of violations
+
+	"""
+
+    isis = np.diff(spike_train)
+    num_spikes = len(spike_train)
+    num_violations = sum(isis < isi_threshold) 
+    violation_time = 2*nSpikes*(isi_threshold - min_isi)
+    total_rate = nSpikes/(spike_train[-1] - spike_train[0])
+    violation_rate = num_violations/violation_time
+    fpRate = violation_rate/total_rate
+
+    assert(fpRate < 1.0) # it is nonsense to have a rate > 1; a rate > 1 means the assumputions of this analysis are failing
+    
+    return fpRate, num_violations
+
 
 def snr(W):
-    """Calculate snr of sorted units based on Xiaoxuan's matlab code. 
-    W: (waveforms from all spike times), first dim is rep
+    """Calculate SNR of spike waveforms.
+
+    based on Xiaoxuan's Matlab code. 
+
     ref: (Nordhausen et al., 1996; Suner et al., 2005)
+
+    Input:
+    -------
+    W : array of N waveforms (N x samples)
+
+    Output:
+    snr : signal-to-noise ratio for unit (scalar)
+    
     """
+    
     W_bar = np.nanmean(W,axis=0)
     A = max(W_bar) - min(W_bar)
     e = W - np.tile(W_bar,(np.shape(W)[0],1))
     snr = A/(2*np.nanstd(e.flatten()))
+
     return snr   
