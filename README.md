@@ -3,7 +3,7 @@ ecephys spike sorting
 
 https://github.com/AllenInstitute/ecephys_spike_sorting
 
-Modules for spike-sorting Allen Insitute Neuropixels data
+Modules for spike-sorting Allen Institute Neuropixels data
 
 
 ## Modules
