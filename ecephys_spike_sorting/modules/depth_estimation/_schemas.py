@@ -18,6 +18,7 @@ class DepthEstimationParams(DefaultSchema):
     channel_range = NumpyArray(required=True, default=[370,380], help='Channels assumed to be out of brain, but in saline')
     n_passes = Int(required=True, default=1, help='Number of times to compute surface channel')
     skip_s_per_pass = Int(required=True, default=100, help='Number of seconds between data chunks used on each pass')
+    start_sample = Int(require=True, default=0, help='First sample for computing median offset')
 
     nfft = Int(required=True, default=4096, help='Length of FFT used for calculations')
 

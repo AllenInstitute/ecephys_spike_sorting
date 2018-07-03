@@ -10,7 +10,7 @@ from scipy.ndimage.filters import gaussian_filter1d
 
 from ecephys_spike_sorting.common.utils import find_range, rms
 
-def find_surface_channel(data, nchannels=384, sample_frequency=2500, params):
+def find_surface_channel(data, params, reference_channels, nchannels=384, sample_frequency=2500):
     
     smoothing_amount = params['smoothing_amount']
     power_thresh = params['power_thresh']
@@ -40,7 +40,7 @@ def find_surface_channel(data, nchannels=384, sample_frequency=2500, params):
         for channel in channels:
             chunk[:,channel] = chunk[:,channel] - np.median(chunk[:,channel_range[0]:channel_range[1]],1)
         
-        power = np.zeros((nfft/2+1, channels.size))
+        power = np.zeros((int(nfft/2+1), channels.size))
     
         for channel in channels:
             sample_frequencies, Pxx_den = welch(chunk[:,channel], fs=sample_frequency, nfft=nfft)
@@ -48,7 +48,7 @@ def find_surface_channel(data, nchannels=384, sample_frequency=2500, params):
         
         in_range = find_range(sample_frequencies, 0, params['max_freq'])
         
-        mask_chans = ephys_params['reference_channels']
+        mask_chans = reference_channels
 
         in_range_gamma = find_range(sample_frequencies, freq_range[0],freq_range[1])
         
@@ -131,7 +131,7 @@ def compute_offset_and_surface_channel(ap_data, lfp_data, ephys_params, params):
         
     mask_chans2 = np.concatenate((mask_chans, excluded_chans1, excluded_chans2))
 
-    surface, air = find_surface_channel(lfp_data, ephys_params['num_channels'], ephys_params['lfp_sample_rate'], params)
+    surface, air = find_surface_channel(lfp_data, params, ephys_params['reference_channels'], ephys_params['num_channels'], ephys_params['lfp_sample_rate'])
 
     print("Surface channel: " + str(surface))
 

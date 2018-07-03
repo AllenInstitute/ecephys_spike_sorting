@@ -27,7 +27,9 @@ def test_depth_estimation():
 	params['max_freq'] = 150
 	params['channel_range'] = [370, 380]
 	params['n_passes'] = 1
+	params['start_sample'] = 0
 	params['air_gap'] = 100
+	params['nfft'] = 4096
 	params['skip_s_per_pass'] = 100
 
 	raw_data_file = os.path.join(DATA_DIR, 'continuous_ap_pre.dat')
