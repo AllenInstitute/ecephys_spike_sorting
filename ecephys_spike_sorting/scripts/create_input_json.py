@@ -7,7 +7,7 @@ def createInputJson(npx_file, output_file):
 
 	drive, tail = os.path.split(probe_directory)
 
-	extracted_data_directory = os.path.join(r'C:\data', tail + '_sorted')
+	extracted_data_directory = os.path.join('E:\\', tail + '_sorted')
 	probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
 	kilosort_output_directory = os.path.join(extracted_data_directory, r'continuous\Neuropix-3a-100.0')
 
@@ -75,6 +75,14 @@ def createInputJson(npx_file, output_file):
 		"noise_waveform_params" : {
 			"classifier_path" : "C:\\Users\\svc_neuropix\\Documents\\GitHub\\ecephys_spike_sorting\\ecephys_spike_sorting\\modules\\noise_templates\\classifier.pkl"
 
+		},
+
+		"quality_metrics_params" : {
+
+			"isi_threshold" : 0.015,
+			"snr_spike_count" : 100,
+			"samples_per_spike" : 82,
+			"pre_samples" : 20
 		}
 
 	}
