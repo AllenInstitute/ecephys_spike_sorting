@@ -12,7 +12,7 @@ See the schema file for detailed information about input json contents.
 
 Input data
 ----------
-- **ap band .dat file** : in16 binary files written by the extract_from_npx module.
+- **ap band .dat file** : int16 binary files written by the extract_from_npx module.
 - **probe_info.json** : file written by depth_estimation module.
 
 Output data

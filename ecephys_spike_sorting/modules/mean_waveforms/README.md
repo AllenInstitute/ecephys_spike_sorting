@@ -15,7 +15,7 @@ See the schema file for detailed information about input json contents.
 
 Input data
 ----------
-- **continuous data file** : Raw data in 
+- **continuous data file** : Raw data in int16 binary format
 - **Kilosort outputs** : includes spike times, spike clusters, cluster quality, etc.
 
 
