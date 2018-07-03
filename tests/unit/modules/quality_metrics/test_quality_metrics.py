@@ -5,7 +5,7 @@ import os
 from ecephys_spike_sorting.modules.quality_metrics.metrics import calculate_metrics
 import ecephys_spike_sorting.common.utils as utils
 
-DATA_DIR = os.environ.get('ECEPHYS_SPIKE_SORTING_DATA', False)
+DATA_DIR = '/ssd/Programming/ecephys_spike_sorting/cached_data/'#' 'os.environ.get('ECEPHYS_SPIKE_SORTING_DATA', False)
 
 def test_quality_metrics():
 
@@ -27,5 +27,9 @@ def test_quality_metrics():
 	 templates, channel_map, cluster_ids, cluster_quality \
 	 = utils.load_kilosort_data(DATA_DIR, sample_rate, False)
 	
-	data, coords, labels = extract_waveforms(data, spike_times, spike_clusters, amplitudes, sample_rate, params)
+	metrics = calculate_metrics(data, spike_times, spike_clusters, amplitudes, sample_rate, params)
 
+	print(metrics)
+
+if __name__ == "__main__":
+    test_quality_metrics()

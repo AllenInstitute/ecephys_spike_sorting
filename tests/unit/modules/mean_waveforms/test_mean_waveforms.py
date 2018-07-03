@@ -5,7 +5,7 @@ import os
 from ecephys_spike_sorting.modules.mean_waveforms.extract_waveforms import extract_waveforms
 import ecephys_spike_sorting.common.utils as utils
 
-os.environ['ECEPHYS_SPIKE_SORTING_DATA'] = r'C:\Users\svc_neuropix\Documents\GitHub\ecephys_spike_sorting\cached_data'
+DATA_DIR = os.environ.get('ECEPHYS_SPIKE_SORTING_DATA', False)
 
 def test_extract_waveforms():
 
@@ -27,6 +27,6 @@ def test_extract_waveforms():
 	 templates, channel_map, cluster_ids, cluster_quality \
 	 = utils.load_kilosort_data(DATA_DIR, sample_rate, False)
 	
-	data, coords, labels = extract_waveforms(data, spike_times, spike_clusters, cluster_ids, cluster_quality, bit_volts, sample_rate, params)
+	data, spike_counts, coords, labels = extract_waveforms(data, spike_times, spike_clusters, cluster_ids, cluster_quality, bit_volts, sample_rate, params)
 
 	print(labels)

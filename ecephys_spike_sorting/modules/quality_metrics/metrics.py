@@ -8,9 +8,9 @@ def calculate_metrics(data, spike_times, spike_clusters, amplitudes, sample_rate
 
 	#iso = calculate_isolation_quality(data, spike_times, spike_clusters)
 	#noise_o = calculate_noise_overlap(data, spike_times, spike_clusters)
+	snr, peak_chan = calculate_snr_and_peak_chan(data, spike_times.astype('int64'), spike_clusters, params['snr_spike_count'], params['samples_per_spike'], params['pre_samples'])
 	isi_viol = calculate_isi_violations(spike_times / sample_rate, spike_clusters, params['isi_threshold'])
-	snr, peak_chan = calculate_snr_and_peak_chan(data, spike_times, spike_clusters, params['snr_spike_count'], params['samples_per_spike'], params['pre_samples'])
-	firing_rate = calculate_firing_rate(spike_times, spike_clusters)
+	firing_rate = calculate_firing_rate(spike_times / sample_rate, spike_clusters)
 
 	cluster_ids = np.unique(spike_clusters)
 
@@ -38,36 +38,43 @@ def calculate_noise_overlap(spike_times, spike_clusters, rawDataFile):
 
 def calculate_isi_violations(spike_times, spike_clusters, isi_threshold):
 
-	cluster_isi = np.unique(spike_clusters)
+	cluster_ids = np.unique(spike_clusters)
 
-	isi_violations = np.zeros(cluster_ids.shape)
+	viol_rate = np.zeros(cluster_ids.shape)
 
 	for idx, cluster_id in enumerate(cluster_ids):
 		for_this_cluster = (spike_clusters == cluster_id)
-		isi_violations[idx] = isi_violations(spike_times[for_this_cluster], isi_threshold=isi_threshold)
+		viol_rate[idx], num_violations = isi_violations(spike_times[for_this_cluster], isi_threshold=isi_threshold)
 
-	return isi_violations
+	return viol_rate
 
 
-def calculate_snr(data, spike_times, spike_clusters, spike_count, samples_per_spike, pre_samples):
+def calculate_snr_and_peak_chan(data, spike_times, spike_clusters, spike_count, samples_per_spike, pre_samples):
 
 	cluster_ids = np.unique(spike_clusters)
 
-	snrs = np.zeros(cluster_ids.shape)
-	peak_chans = np.zeros(cluster_ids.shape)
+	snrs = np.empty(cluster_ids.shape, dtype='float64')
+	peak_chans = np.empty(cluster_ids.shape, dtype='int32')
+
+	snrs[:] = np.nan
+	peak_chans[:] = np.nan
 
 	for idx, cluster_id in enumerate(cluster_ids):
+
 		for_this_cluster = (spike_clusters == cluster_id)
 		times = spike_times[for_this_cluster]
 		np.random.shuffle(times)
 		total_waveforms = np.min([spike_count, times.size])
 		times_for_snr = times[:total_waveforms]
-		waveforms = extract_clips(data, spike_times, samples_per_spike, pre_samples)
-		mean_waveform = np.mean(waveforms, 0)
-		
-		peak_chans[idx] = find_depth(mean_waveform.T)
+		waveforms = extract_clips(data, times_for_snr, samples_per_spike, pre_samples)
 
-		snrs[idx] = snr(waveforms[:,peak_chan[idx]])
+		if waveforms is not None:
+			mean_waveform = np.nanmean(waveforms, 0)
+			peak_chans[idx] = int(find_depth(mean_waveform))
+			try:
+				snrs[idx] = snr(waveforms[:,peak_chans[idx]])
+			except IndexError:
+				snrs[idx] = np.nan
 
 	return snrs, peak_chans
 
@@ -179,13 +186,54 @@ def sample(arr, num):
 
 def extract_clips(data, times, clip_size=82, clip_offset=20):
     
-    clips = np.zeros((times.size, clip_size, data.shape[1]))
-    
-    for i, t in enumerate(times):
-        
-        clips[i,:,:] = data[t-clip_offset:t-clip_offset+clip_size,:]
-    
-    return clips
+	if times.size > 1:
+	    
+		clips = np.zeros((times.size, clip_size, data.shape[1]))
+	    
+		for i, t in enumerate(times):
+	        
+			try:
+				clips[i,:,:] = data[int(t-clip_offset):int(t-clip_offset+clip_size),:]
+			except (ValueError, TypeError) as e:
+				clips[i,:,:] = np.nan
+	    
+	elif times.size == 1:
+
+		clips = data[int(times[0])-clip_offset:int(times[0])-clip_offset+clip_size,:]
+
+	else:
+
+		clips = None
+
+	return clips
+
+
+
+def firing_rate(spike_train, min_time = None, max_time = None):
+	"""Calculate firing rate for a spike train.
+
+	If no temporal bounds are specified, the first and last spike time are used.
+
+    Inputs:
+    -------
+	spike_train : array of spike times
+	min_time : time of first possible spike (optional)
+	max_time : time of last possible spike (optional)
+
+	Outputs:
+	--------
+	fr : firing rate in Hz
+
+	"""
+
+	if min_time is not None and max_time is not None:
+		duration = max_time - min_time
+	else:
+		duration = np.max(spike_train) - np.min(spike_train)
+
+	fr = spike_train.size / duration
+
+	return fr
 
 
 def isi_violations(spike_train, isi_threshold, min_isi=0):
@@ -206,38 +254,38 @@ def isi_violations(spike_train, isi_threshold, min_isi=0):
 
 	"""
 
-    isis = np.diff(spike_train)
-    num_spikes = len(spike_train)
-    num_violations = sum(isis < isi_threshold) 
-    violation_time = 2*nSpikes*(isi_threshold - min_isi)
-    total_rate = nSpikes/(spike_train[-1] - spike_train[0])
-    violation_rate = num_violations/violation_time
-    fpRate = violation_rate/total_rate
+	isis = np.diff(spike_train)
+	num_spikes = len(spike_train)
+	num_violations = sum(isis < isi_threshold) 
+	violation_time = 2*num_spikes*(isi_threshold - min_isi)
+	total_rate = firing_rate(spike_train)
+	violation_rate = num_violations/violation_time
+	fpRate = violation_rate/total_rate
 
-    assert(fpRate < 1.0) # it is nonsense to have a rate > 1; a rate > 1 means the assumputions of this analysis are failing
-    
-    return fpRate, num_violations
+	#assert(fpRate < 1.0) # it is nonsense to have a rate > 1; a rate > 1 means the assumputions of this analysis are failing
+
+	return fpRate, num_violations
 
 
 def snr(W):
-    """Calculate SNR of spike waveforms.
+	"""Calculate SNR of spike waveforms.
 
-    based on Xiaoxuan's Matlab code. 
+	based on Xiaoxuan's Matlab code. 
 
-    ref: (Nordhausen et al., 1996; Suner et al., 2005)
+	ref: (Nordhausen et al., 1996; Suner et al., 2005)
 
-    Input:
-    -------
-    W : array of N waveforms (N x samples)
+	Input:
+	-------
+	W : array of N waveforms (N x samples)
 
-    Output:
-    snr : signal-to-noise ratio for unit (scalar)
-    
-    """
-    
-    W_bar = np.nanmean(W,axis=0)
-    A = max(W_bar) - min(W_bar)
-    e = W - np.tile(W_bar,(np.shape(W)[0],1))
-    snr = A/(2*np.nanstd(e.flatten()))
+	Output:
+	snr : signal-to-noise ratio for unit (scalar)
 
-    return snr   
+	"""
+
+	W_bar = np.nanmean(W,axis=0)
+	A = np.max(W_bar) - np.min(W_bar)
+	e = W - np.tile(W_bar,(np.shape(W)[0],1))
+	snr = A/(2*np.nanstd(e.flatten()))
+
+	return snr   

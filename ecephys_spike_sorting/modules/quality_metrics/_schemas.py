@@ -8,7 +8,7 @@ class QualityMetricsParams(DefaultSchema):
     isi_threshold = Float(required=True, default=0.015)
     snr_spike_count = Int(required=True, default=100)
     samples_per_spike = Int(required=True, default=82)
-	pre_samples = Int(required=True, default=20)
+    pre_samples = Int(required=True, default=20)
 
 class InputParameters(ArgSchema):
     

@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import os
 
-from ecephys_spike_sorting.modules.noise_templates.id_noise_templates import id_noise_templates
+from ecephys_spike_sorting.modules.noise_templates.id_noise_templates import id_noise_templates_rf
 import ecephys_spike_sorting.common.utils as utils
 
 DATA_DIR = os.environ.get('ECEPHYS_SPIKE_SORTING_DATA', False)

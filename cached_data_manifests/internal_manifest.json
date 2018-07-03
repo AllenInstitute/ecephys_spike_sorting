@@ -85,7 +85,7 @@
         "data_uri": "http://axon:8090/file/ecephys_spike_sorting/cluster_group.tsv"
     },
     "settings.xml": {
-        "local_path": "cluster_group.tsv",
+        "local_path": "settings.xml",
         "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/settings.xml",
         "data_uri": "http://axon:8090/file/ecephys_spike_sorting/settings.xml"
     },
@@ -94,5 +94,4 @@
         "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/classifier.pkl",
         "data_uri": "http://axon:8090/file/ecephys_spike_sorting/classifier.pkl"
     }
-}
 }
