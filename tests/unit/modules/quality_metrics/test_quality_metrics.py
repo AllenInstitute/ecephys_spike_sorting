@@ -5,7 +5,7 @@ import os
 from ecephys_spike_sorting.modules.quality_metrics.metrics import calculate_metrics
 import ecephys_spike_sorting.common.utils as utils
 
-DATA_DIR = '/ssd/Programming/ecephys_spike_sorting/cached_data/'#' 'os.environ.get('ECEPHYS_SPIKE_SORTING_DATA', False)
+DATA_DIR = os.environ.get('ECEPHYS_SPIKE_SORTING_DATA', False)
 
 def test_quality_metrics():
 
