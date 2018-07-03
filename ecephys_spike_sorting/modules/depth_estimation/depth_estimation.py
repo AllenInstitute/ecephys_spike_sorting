@@ -10,16 +10,16 @@ from scipy.ndimage.filters import gaussian_filter1d
 
 from ecephys_spike_sorting.common.utils import find_range, rms
 
-def find_surface_channel(data, ephys_params, params):
+def find_surface_channel(data, nchannels=384, sample_frequency=2500, params):
     
-    nchannels = ephys_params['num_channels']
-    sample_frequency = ephys_params['lfp_sample_rate']
     smoothing_amount = params['smoothing_amount']
     power_thresh = params['power_thresh']
     diff_thresh = params['diff_thresh']
     freq_range = params['freq_range']
     channel_range = params['channel_range']
+    nfft = params['nfft']
     n_passes = params['n_passes']
+
     save_figure = params['save_figure']
     if save_figure:
         figure_location = params['figure_location']
@@ -40,8 +40,7 @@ def find_surface_channel(data, ephys_params, params):
         for channel in channels:
             chunk[:,channel] = chunk[:,channel] - np.median(chunk[:,channel_range[0]:channel_range[1]],1)
         
-        nfft = 4096
-        power = np.zeros((2049, channels.size))
+        power = np.zeros((nfft/2+1, channels.size))
     
         for channel in channels:
             sample_frequencies, Pxx_den = welch(chunk[:,channel], fs=sample_frequency, nfft=nfft)
@@ -67,33 +66,37 @@ def find_surface_channel(data, ephys_params, params):
         candidates[p] = surface_chan
         
         if save_figure:
-            plt.figure(figsize=(5,10))
-            plt.subplot(4,1,1)
-            plt.imshow(np.flipud((chunk).T), aspect='auto',vmin=-1000,vmax=1000)
-            
-            plt.subplot(4,1,2)
-            plt.imshow(np.flipud(np.log10(power[in_range,:]).T), aspect='auto')
-            
-            plt.subplot(4,1,3)
-            plt.plot(values) 
-            plt.plot([0,nchannels],[power_thresh,power_thresh],'--k')
-  
-            plt.plot([surface_chan, surface_chan],[-2, 2],'--r')
-            
-            plt.subplot(4,1,4)
-            plt.plot(np.diff(values))
-            plt.plot([0,nchannels],[diff_thresh,diff_thresh],'--k')
-            
-            plt.plot([surface_chan, surface_chan],[-0.2, diff_thresh],'--r')
-            plt.title(surface_chan)
-            plt.savefig(os.path.join(figure_location, 'probe_depth.png'))
-            
+            plot_results(data, power, in_range, values, surface_chan, power_thresh, diff_thresh, figure_location)
+      
     surface_channel = np.median(candidates)
     air_channel = np.min([surface_channel + params['air_gap'], nchannels])
         
     return surface_channel, air_channel
+    
 
-# %%
+def plot_results(data, power, in_range, values, surface_chan, power_thresh, diff_thresh, figure_location):
+
+    plt.figure(figsize=(5,10))
+    plt.subplot(4,1,1)
+    plt.imshow(np.flipud((chunk).T), aspect='auto',vmin=-1000,vmax=1000)
+    
+    plt.subplot(4,1,2)
+    plt.imshow(np.flipud(np.log10(power[in_range,:]).T), aspect='auto')
+    
+    plt.subplot(4,1,3)
+    plt.plot(values) 
+    plt.plot([0,nchannels],[power_thresh,power_thresh],'--k')
+
+    plt.plot([surface_chan, surface_chan],[-2, 2],'--r')
+    
+    plt.subplot(4,1,4)
+    plt.plot(np.diff(values))
+    plt.plot([0,nchannels],[diff_thresh,diff_thresh],'--k')
+    
+    plt.plot([surface_chan, surface_chan],[-0.2, diff_thresh],'--r')
+    plt.title(surface_chan)
+    plt.savefig(os.path.join(figure_location, 'probe_depth.png'))
+
 
 def compute_offset_and_surface_channel(ap_data, lfp_data, ephys_params, params):
 
@@ -110,7 +113,7 @@ def compute_offset_and_surface_channel(ap_data, lfp_data, ephys_params, params):
 
     mask_chans = ephys_params['reference_channels']
 
-    start_time = 0
+    start_time = params['start_sample']
     recording_time = int(ephys_params['sample_rate'])
     median_subtr = np.zeros((recording_time,numChannels))
 
@@ -128,7 +131,7 @@ def compute_offset_and_surface_channel(ap_data, lfp_data, ephys_params, params):
         
     mask_chans2 = np.concatenate((mask_chans, excluded_chans1, excluded_chans2))
 
-    surface, air = find_surface_channel(lfp_data, ephys_params, params)
+    surface, air = find_surface_channel(lfp_data, ephys_params['num_channels'], ephys_params['lfp_sample_rate'], params)
 
     print("Surface channel: " + str(surface))
 

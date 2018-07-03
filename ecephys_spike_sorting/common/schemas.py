@@ -7,6 +7,7 @@ class EphysParams(DefaultSchema):
 	bit_volts = Float(required=True, default=0.195)
 	num_channels = Int(required=True, default=384)
 	reference_channels = NumpyArray(required=False, default=[37, 76, 113, 152, 189, 228, 265, 304, 341, 380])
+	template_zero_padding = Int(required=True, default=21)
 
 class Directories(DefaultSchema):
 	kilosort_output_directory = String()

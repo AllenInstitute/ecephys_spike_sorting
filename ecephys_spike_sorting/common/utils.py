@@ -33,45 +33,30 @@ def rms(data):
 def write_probe_json(output_file, channels, offset, scaling, mask, surface_chan, air_chan):
 
     with open(output_file, 'w') as outfile:
-        json.dump( \
-                  {  \
-                        'channel' : channels.tolist(), \
-                        'offset' : offset.tolist(), \
-                        'scaling' : scaling.tolist(), \
-                        'mask' : mask.tolist(), \
-                        'surface_channel' : surface_chan, \
+        json.dump( 
+                  {  
+                        'channel' : channels.tolist(), 
+                        'offset' : offset.tolist(), 
+                        'scaling' : scaling.tolist(), 
+                        'mask' : mask.tolist(), 
+                        'surface_channel' : surface_chan, 
                         'air_channel' : air_chan
                    },
                  
-                  outfile, \
-                  indent = 4, separators = (',', ': ') \
+                  outfile, 
+                  indent = 4, separators = (',', ': ') 
                  ) 
 
 def read_probe_json(input_file):
     
     with open(input_file) as data_file:
         data = json.load(data_file)
-
-    totalChans = 384
-    maxChan = 384
-    
-    full_mask = np.zeros((totalChans,totalChans))
-    full_mask = full_mask > 1
     
     scaling = np.array(data['scaling'])
     mask = np.array(data['mask'])
     offset = np.array(data['offset'])
     surface_channel = data['surface_channel']
     air_channel = data['air_channel']
-
-    period = 24
-        
-    for ch in range(0,totalChans):
-        
-        neighbors = np.arange(ch%period, maxChan, period).astype('int') # 1 neighbor is better than 2
-        ok_chans = np.setdiff1d(neighbors, np.where(mask == False)[0])
-        
-        full_mask[ok_chans,ch] = True 
 
     return mask, offset, scaling, surface_channel, air_channel
 
@@ -110,7 +95,7 @@ def load(folder, filename):
 
     return np.load(os.path.join(folder, filename))
 
-def load_kilosort_data(folder, sample_rate, convert_to_seconds = True):
+def load_kilosort_data(folder, sample_rate, convert_to_seconds = True, template_zero_padding= 21):
 
     spike_times = load(folder,'spike_times.npy')
     spike_clusters = load(folder,'spike_clusters.npy')
@@ -119,7 +104,7 @@ def load_kilosort_data(folder, sample_rate, convert_to_seconds = True):
     unwhitening_mat = load(folder,'whitening_mat_inv.npy')
     channel_map = load(folder, 'channel_map.npy')
                 
-    templates = templates[:,21:,:] # remove zeros
+    templates = templates[:,template_zero_padding:,:] # remove zeros
     spike_clusters = np.squeeze(spike_clusters) # fix dimensions
     spike_times = np.squeeze(spike_times)# fix dimensions
     if convert_to_seconds:

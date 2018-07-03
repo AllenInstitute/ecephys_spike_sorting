@@ -6,8 +6,10 @@ from ecephys_spike_sorting.common.schemas import EphysParams, Directories
 class DepthEstimationParams(DefaultSchema):
     hi_noise_thresh = Float(required=True, default=50.0)
     lo_noise_thresh = Float(required=True, default=3.0)
+
     save_figure = Bool(required=True, default=True)
     figure_location = OutputFile(required=True, default=None)
+    
     smoothing_amount = Int(required=True, default=5)
     power_thresh = Float(required=True, default=2.5)
     diff_thresh = Float(required=True, default=-0.07)
@@ -15,6 +17,8 @@ class DepthEstimationParams(DefaultSchema):
     max_freq = Int(required=True, default=150)
     channel_range = NumpyArray(required=True, default=[370,380])
     n_passes = Int(required=True, default=1)
+    nfft = Int(required=True, default=4096)
+
     air_gap = Int(required=True, default=100)
     skip_s_per_pass = Int(required=True, default=100)
 

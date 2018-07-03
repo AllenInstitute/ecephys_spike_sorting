@@ -19,7 +19,7 @@ def automerging(spike_times, spike_clusters, clusterIDs, cluster_quality, templa
     for idx, clusterID in enumerate(clusterIDs):
 
         template = templates[clusterID,:,:]
-        depths[idx] = int(find_depth(template))
+        depths[idx] = find_depth(template)
 
         sorted_by_depth = np.argsort(depths)
         clusterIDs = clusterIDs[sorted_by_depth]
