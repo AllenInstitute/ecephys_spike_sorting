@@ -4,9 +4,9 @@ from argschema.fields import Nested, InputDir, String, Float, Dict, Int
 from ecephys_spike_sorting.common.schemas import EphysParams, Directories
 
 class InputParameters(ArgSchema): 
-    probe_json = String()
-    median_subtraction_executable = String()
-    median_subtraction_repo = String()
+    probe_json = String(help='Path to probe json (saved by depth_estimation module)')
+    median_subtraction_executable = String(help='Path to .exe used for median subtraction (Windows only)')
+    median_subtraction_repo = String(help='Path to local repository for median subtraction executable')
     directories = Nested(Directories)
     
 class OutputSchema(DefaultSchema): 

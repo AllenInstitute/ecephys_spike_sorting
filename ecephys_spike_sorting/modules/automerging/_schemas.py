@@ -5,8 +5,8 @@ from ecephys_spike_sorting.common.schemas import EphysParams, Directories
 
 
 class AutomergingParams(DefaultSchema):
-    merge_threshold = Float(required=True, default=2.5)
-    distance_to_compare = Int(required=True, default=5)
+    merge_threshold = Float(required=True, default=2.5, help='Minimum merge score required to perform a merge')
+    distance_to_compare = Int(required=True, default=5, help='Distance (in channels) to look for potential merges')
 
 class InputParameters(ArgSchema):
     

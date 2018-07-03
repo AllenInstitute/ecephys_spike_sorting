@@ -4,10 +4,10 @@ from argschema.fields import Nested, InputDir, String, Float, Dict, Int
 from ecephys_spike_sorting.common.schemas import EphysParams, Directories
 
 class MeanWaveformParams(DefaultSchema):
-	samples_per_spike = Int(required=True, default=82)
-	pre_samples = Int(required=True, default=20)
-	num_epochs = Int(required=True, default=10)
-	spikes_per_epoch = Int(require=True, default=100)
+    samples_per_spike = Int(required=True, default=82, help='Number of samples to extract for each spike')
+    pre_samples = Int(required=True, default=20, help='Number of samples between start of spike and the peak')
+    num_epochs = Int(required=True, default=1, help='Number of epochs to compute mean waveforms')
+    spikes_per_epoch = Int(require=True, default=100, help='Max number of spikes per epoch')
 
 class InputParameters(ArgSchema):
     

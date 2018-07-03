@@ -5,10 +5,10 @@ from ecephys_spike_sorting.common.schemas import EphysParams, Directories
 
 
 class QualityMetricsParams(DefaultSchema):
-    isi_threshold = Float(required=True, default=0.015)
-    snr_spike_count = Int(required=True, default=100)
-    samples_per_spike = Int(required=True, default=82)
-    pre_samples = Int(required=True, default=20)
+    isi_threshold = Float(required=True, default=0.015, help='Maximum time (in seconds) for ISI violation')
+    snr_spike_count = Int(required=True, default=100, help='Number of waveforms used to compute SNR')
+    samples_per_spike = Int(required=True, default=82, help='Number of samples to extract for each spike')
+    pre_samples = Int(required=True, default=20, help='Number of samples between start of spike and the peak')
 
 class InputParameters(ArgSchema):
     
