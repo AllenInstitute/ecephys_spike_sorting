@@ -31,7 +31,8 @@ def calculate_mean_waveforms(args):
                 args['ephys_params']['sample_rate'], \
                 args['mean_waveform_params'])
 
-    writeDataAsXarray(waveforms, spike_counts, coords, labels, output_file)
+    #writeDataAsXarray(waveforms, spike_counts, coords, labels, output_file)
+    writeDataAsNpy(waveforms, output_file)
 
     execution_time = time.time() - start
     

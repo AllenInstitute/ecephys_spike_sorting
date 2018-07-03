@@ -72,7 +72,7 @@ def find_surface_channel(data, nchannels=384, sample_frequency=2500, params):
     air_channel = np.min([surface_channel + params['air_gap'], nchannels])
         
     return surface_channel, air_channel
-    
+
 
 def plot_results(data, power, in_range, values, surface_chan, power_thresh, diff_thresh, figure_location):
 

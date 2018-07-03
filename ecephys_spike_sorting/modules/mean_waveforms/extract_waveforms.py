@@ -165,5 +165,15 @@ def writeDataAsXarray(mean_waveforms, spike_count, dimCoords, dimLabels, output_
     ds = xr.Dataset({'waveforms' : waveform_array, 'spike_count' : spike_count_array})
 
     ds.to_netcdf(output_file)
+
+
+def writeDataAsNpy(waveforms, output_file):
+
+    """ Saves mean waveforms as xarray """
+
+    mean_waveforms = waveforms[:,-1,0,:,:] # extract overall mean
+
+    np.save(mean_waveforms, output_file)
+    
     
 
