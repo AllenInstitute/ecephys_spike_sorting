@@ -1,33 +1,29 @@
 from argschema import ArgSchemaParser
 import os
 import logging
-import subprocess
 import time
 
-import numpy as np
+from ecephys_spike_sorting.modules.automerging.automerging import automerging
 
-import matlab.engine
-import matlab_file_generator
-
-from _schemas import InputParameters, OutputParameters
+from ecephys_spike_sorting.common.utils import write_cluster_group_tsv, load_kilosort_data
 
 
 def run_automerging(args):
 
-    # load lfp band data
-    
-    matlab_file_generator.create_chanmap(args['kilosort_location'], args['num_channels'], StartChan = 1, Nchannels = args['num_channels'], bad_channels = [])
-    matlab_file_generator.create_config(args['kilosort_location'], args['input_file_location'], Nfilt = 512, Threshold = [4, 10, 10], lam = [5, 20, 20], IntitalizeTh = -4, InitializeNfilt=10000)
-    
-    logging.info('Running Kilosort')
+    logging.info('Running automerging')
     
     start = time.time()
     
-    eng = matlab.engine.start_matlab()
-    eng.createChannelMapFile(nargout=0)
-    eng.kilosort_config_file(nargout=0)
-    eng.kilosort_master_file(nargout=0)
-        
+    spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
+        load_kilosort_data(args['directories']['kilosort_output_directory'], \
+            args['ephys_params']['sample_rate'], \
+            convert_to_seconds = True)
+    
+    spike_clusters, cluster_index, cluster_quality = automerging(spike_times, spike_clusters, clusterIDs, templates, args['automerging_params'])
+
+    write_cluster_group_tsv(cluster_index, cluster_quality)
+    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'spike_clusters.npy'), spike_clusters)
+
     execution_time = time.time() - start
     
     return {"execution_time" : execution_time} # output manifest
@@ -35,7 +31,8 @@ def run_automerging(args):
 
 def main():
 
-    """Main entry point:"""
+    from _schemas import InputParameters, OutputParameters
+
     mod = ArgSchemaParser(schema_type=InputParameters,
                           output_schema_type=OutputParameters)
 

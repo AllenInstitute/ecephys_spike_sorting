@@ -1,17 +1,14 @@
 from argschema import ArgSchema, ArgSchemaParser 
 from argschema.schemas import DefaultSchema
 from argschema.fields import Nested, InputDir, String, Float, Dict, Int
- 
+from ecephys_spike_sorting.common.schemas import EphysParams, Directories
 
 class InputParameters(ArgSchema): 
-    oe_json_file = String()
-    probe_info_file = String()
-    output_file_location = String()
-    executable_file = String()
-    surface_channel = Int()
-    air_channel = Int()
+    probe_json = String(help='Path to probe json (saved by depth_estimation module)')
+    median_subtraction_executable = String(help='Path to .exe used for median subtraction (Windows only)')
+    median_subtraction_repo = String(help='Path to local repository for median subtraction executable')
+    directories = Nested(Directories)
     
-
 class OutputSchema(DefaultSchema): 
     input_parameters = Nested(InputParameters, 
                               description=("Input parameters the module " 
@@ -20,5 +17,7 @@ class OutputSchema(DefaultSchema):
  
 class OutputParameters(OutputSchema): 
     # Add your output parameters 
-    execution_time = Float()
+    median_subtraction_execution_time = Float()
+    median_subtraction_commit_hash = String()
+    median_subtraction_commit_date = String()
     

@@ -1,0 +1,30 @@
+Extract from NPX
+==============
+Converts continuous data from raw NPX format (~75% compression ratio) to .dat files required for spike sorting and other downstream analysis.
+
+Reads event times from the NPX file and writes them as .npy files.
+
+Converts the settings.xml file for an experiment into a JSON file with parameters such as sample rate and bit volts for each channel.
+
+Running
+-------
+```
+python -m ecephys_spike_sorting.modules.extract_from_npx --input_json <path to input json> --output_json <path to output json>
+```
+See the schema file for detailed information about input json contents.
+
+
+Input data
+----------
+- **NPX file** : Written by Open Ephys (https://github.com/open-ephys-gui-binaries/open-ephys/tree/neuropix-allen). Contains all of the data recorded from one Neuropixels probe.
+- **settings.xml** : Written by Open Ephys. Contains information about the signal chain that was used for the experiment.
+
+
+Output data
+-----------
+- **continuous.dat** : Continuous data (1 file each for LFP and AP band)
+- **lfp_timestamps.npy** : Timestamps for LFP samples
+- **ap_timestamps.npy** : Timestamps for AP samples
+- **channel_states.npy** : Channels on which each event was recording
+- **event_timestamps.npy** : Timestamps for each event
+- **open-ephys.json** : Parameters for data acquistion.

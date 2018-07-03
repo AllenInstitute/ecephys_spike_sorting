@@ -1,51 +1,36 @@
 from argschema import ArgSchemaParser
 import os
 import logging
-import subprocess
 import time
 
-import numpy as np
+from ecephys_spike_sorting.modules.noise_templates.id_noise_templates import id_noise_templates_rf
 
-from id_noise_templates import id_noise_templates
-from ecephys_spike_sorting.common.write_cluster_group_tsv import write_cluster_group_tsv
-
-from _schemas import InputParameters, OutputParameters
+from ecephys_spike_sorting.common.utils import write_cluster_group_tsv, load_kilosort_data
 
 
 def classify_noise_templates(args):
 
-    folder = args['input_directory']
-    
     logging.info('Running noise template identification')
     
     start = time.time()
+
+    spike_times, spike_clusters, amplitudes, templates, channel_map, cluster_ids, cluster_quality = \
+            load_kilosort_data(args['directories']['kilosort_output_directory'], \
+                args['ephys_params']['sample_rate'], \
+                convert_to_seconds = True)
     
-    spike_times = np.load(folder + '/spike_times.npy')
-    spike_templates = np.load(folder + '/spike_templates.npy')
-    amplitudes = np.load(folder + '/amplitudes.npy')
-    templates = np.load(folder + '/templates.npy')
-    unwhitening_mat = np.load(folder + '/whitening_mat_inv.npy')
-                    
-    templates = templates[:,21:,:] # remove zeros
-    spike_templates = np.squeeze(spike_templates) # fix dimensions
-    spike_times = np.squeeze(spike_times) / args['sample_rate'] # fix dimensions and convert to seconds
-                    
-    unwhitened_temps = np.zeros((templates.shape))
+    #cluster_ids, is_noise = id_noise_templates(spike_times, spike_clusters, \
+    #    cluster_ids, templates, \
+    #    args['noise_waveform_params'])
+
+    cluster_ids, is_noise = id_noise_templates_rf(spike_times, spike_clusters, \
+        cluster_ids, templates, \
+        args['noise_waveform_params'])
+
+    write_cluster_group_tsv(cluster_ids, is_noise, args['directories']['kilosort_output_directory'])
     
-    for temp_idx in range(templates.shape[0]):
-        
-        unwhitened_temps[temp_idx,:,:] = np.dot(np.ascontiguousarray(templates[temp_idx,:,:]),np.ascontiguousarray(unwhitening_mat))
-                    
-        
-     # LOTS OF HARD-CODED PARAMETERS IN HERE:
-    templateIDs, is_noise = id_noise_templates(spike_templates, unwhitened_temps, spike_times)
-    
-    quality = np.zeros(is_noise.shape)
-    quality[is_noise] = -1
-    
-    logging.info('Writing cluster groups file')
-    write_cluster_group_tsv(templateIDs, quality, folder)
-        
+    print(is_noise)
+
     execution_time = time.time() - start
     
     return {"execution_time" : execution_time} # output manifest
@@ -53,7 +38,8 @@ def classify_noise_templates(args):
 
 def main():
 
-    """Main entry point:"""
+    from ._schemas import InputParameters, OutputParameters
+
     mod = ArgSchemaParser(schema_type=InputParameters,
                           output_schema_type=OutputParameters)
 

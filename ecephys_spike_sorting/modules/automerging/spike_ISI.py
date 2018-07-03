@@ -153,7 +153,8 @@ def normalize_smoothed_ISI(smoothedISI):
     unitnorm_smoothISI = norm_smoothISI/norm\
     """
     total = np.sum(smoothedISI)
-    smoothedISI = smoothedISI/total
+    if total > 0:
+        smoothedISI = smoothedISI/total
     avg = np.average(smoothedISI)
     norm_smoothISI = smoothedISI - avg
     return norm_smoothISI

@@ -1,0 +1,97 @@
+{
+    "test.npx": {
+        "local_path": "test.npx",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/test.npx",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/test.npx"
+    },
+    "probe_info.json": {
+        "local_path": "probe_info.json",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/probe_info.json",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/probe_info.json"
+    },
+    "channel_states.npy": {
+        "local_path": "channel_states.npy",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/channel_states.npy",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/channel_states.npy"
+    },
+    "event_timestamps.npy": {
+        "local_path": "event_timestamps.npy",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/event_timestamps.npy",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/event_timestamps.npy"
+    },
+    "ap_timestamps.npy": {
+        "local_path": "ap_timestamps.npy",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/ap_timestamps.npy",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/ap_timestamps.npy"
+    },
+    "lfp_timestamps.npy": {
+        "local_path": "lfp_timestamps.npy",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/lfp_timestamps.npy",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/lfp_timestamps.npy"
+    },
+    "continuous_ap_pre.dat": {
+        "local_path": "continuous_ap_pre.dat",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/continuous_ap_pre.dat",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/continuous_ap_pre.dat"
+    },
+    "continuous_ap_post.dat": {
+        "local_path": "continuous_ap_post.dat",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/continuous_ap_post.dat",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/continuous_ap_post.dat"
+    },
+    "continuous_lfp_pre.dat": {
+        "local_path": "continuous_lfp_pre.dat",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/continuous_lfp_pre.dat",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/continuous_lfp_pre.dat"
+    },
+    "spike_times.npy": {
+        "local_path": "spike_times.npy",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/spike_times.npy",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/spike_times.npy"
+    },
+    "amplitudes.npy": {
+        "local_path": "amplitudes.npy",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/amplitudes.npy",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/amplitudes.npy"
+    },
+    "spike_clusters.npy": {
+        "local_path": "spike_clusters.npy",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/spike_clusters.npy",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/spike_clusters.npy"
+    },
+    "templates.npy": {
+        "local_path": "templates.npy",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/templates.npy",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/templates.npy"
+    },
+    "whitening_mat_inv.npy": {
+        "local_path": "whitening_mat_inv.npy",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/whitening_mat_inv.npy",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/whitening_mat_inv.npy"
+    },
+    "channel_map.npy": {
+        "local_path": "channel_map.npy",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/channel_map.npy",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/channel_map.npy"
+    },
+    "channel_positions.npy": {
+        "local_path": "channel_positions.npy",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/channel_positions.npy",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/channel_positions.npy"
+    },
+    "cluster_group.tsv": {
+        "local_path": "cluster_group.tsv",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/cluster_group.tsv",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/cluster_group.tsv"
+    },
+    "settings.xml": {
+        "local_path": "settings.xml",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/settings.xml",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/settings.xml"
+    },
+    "classifier.pkl": {
+        "local_path": "classifier.pkl",
+        "hash_uri": "http://axon:8090/hash/ecephys_spike_sorting/classifier.pkl",
+        "data_uri": "http://axon:8090/file/ecephys_spike_sorting/classifier.pkl"
+    }
+}

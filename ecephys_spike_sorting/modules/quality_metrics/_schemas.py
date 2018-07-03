@@ -1,14 +1,20 @@
 from argschema import ArgSchema, ArgSchemaParser 
 from argschema.schemas import DefaultSchema
 from argschema.fields import Nested, InputDir, String, Float, Dict, Int
- 
+from ecephys_spike_sorting.common.schemas import EphysParams, Directories
+
+
+class QualityMetricsParams(DefaultSchema):
+    isi_threshold = Float(required=True, default=0.015, help='Maximum time (in seconds) for ISI violation')
+    snr_spike_count = Int(required=True, default=100, help='Number of waveforms used to compute SNR')
+    samples_per_spike = Int(required=True, default=82, help='Number of samples to extract for each spike')
+    pre_samples = Int(required=True, default=20, help='Number of samples between start of spike and the peak')
 
 class InputParameters(ArgSchema):
     
-    raw_data_location = String()
-    spike_times_location = String()
-    spike_clusters_location = String()
-    num_channels = Int()
+    quality_metrics_params = Nested(QualityMetricsParams)
+    ephys_params = Nested(EphysParams)
+    directories = Nested(Directories)
     
 
 class OutputSchema(DefaultSchema): 
@@ -18,6 +24,7 @@ class OutputSchema(DefaultSchema):
                               required=True) 
  
 class OutputParameters(OutputSchema): 
-    # Add your output parameters 
+
     execution_time = Float()
+    quality_metrics_output_file = String()
     
