@@ -6,9 +6,8 @@ from create_input_json import createInputJson
 
 #import ecephys_spike_sorting.modules.extract_from_npx as extract_from_npx
 
-npx_files = [r'E:\704166722_380486_20180531_probeC\recording1.npx', 
-             r'E:\704514354_380485_20180601_probeC\recording2.npx',
-             r'E:\704514354_380485_20180601_probeB\recording1.npx']
+npx_files = [r'E:\704166722_380486_20180531_probeE\recording1.npx', 
+             r'E:\704166722_380486_20180531_probeD\recording1.npx']
 
 json_directory = r'C:\Users\svc_neuropix\Documents\json_files'
 
@@ -19,12 +18,12 @@ def copy_data_to_backup_drive(info):
 
 for idx, npx_file in enumerate(npx_files):
 
-	if idx == 0:
+	if idx > -1:
 
 		probe_directory = os.path.dirname(npx_file)
 		session_id = os.path.basename(probe_directory)
 
-		commands = ('noise_templates', 'quality_metrics')
+		commands = ('noise_templates', 'mean_waveforms', 'quality_metrics')
 
 		for command in commands:
 
