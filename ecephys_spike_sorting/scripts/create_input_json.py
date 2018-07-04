@@ -69,7 +69,7 @@ def createInputJson(npx_file, output_file):
 			"samples_per_spike" : 82,
 			"pre_samples" : 20,
 			"num_epochs" : 1,
-			"spikes_per_epoch" : 10
+			"spikes_per_epoch" : 500
 		},
 
 		"noise_waveform_params" : {
@@ -80,7 +80,7 @@ def createInputJson(npx_file, output_file):
 		"quality_metrics_params" : {
 
 			"isi_threshold" : 0.015,
-			"snr_spike_count" : 10,
+			"snr_spike_count" : 500,
 			"samples_per_spike" : 82,
 			"pre_samples" : 20
 		}
