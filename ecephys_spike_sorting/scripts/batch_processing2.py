@@ -5,8 +5,12 @@ import time
 
 from create_input_json import createInputJson
 
+######################### UPDATE ME ###############################
+
 npx_files = [r'E:\703270608_380480_20180529_probeC\recording1.npx', 
              r'E:\703270608_380480_20180529_probeB\recording1.npx']
+
+####################################################################
 
 json_directory = r'C:\Users\svc_neuropix\Documents\json_files'
 
