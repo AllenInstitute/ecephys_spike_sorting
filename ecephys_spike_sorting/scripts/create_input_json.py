@@ -38,7 +38,7 @@ def createInputJson(npx_file, output_file):
 			"lfp_sample_rate" : 2500,
 			"bit_volts" : 0.195,
 			"num_channels" : 384,
-			"reference_channels" : [37, 76, 113, 152, 189, 228, 265, 304, 341, 380]
+			"reference_channels" : [36, 75, 112, 151, 188, 227, 264, 303, 340, 379]
 		}, 
 
 		"depth_estimation_params" : {
@@ -68,8 +68,8 @@ def createInputJson(npx_file, output_file):
 		"mean_waveform_params" : {
 			"samples_per_spike" : 82,
 			"pre_samples" : 20,
-			"num_epochs" : 3,
-			"spikes_per_epoch" : 100
+			"num_epochs" : 1,
+			"spikes_per_epoch" : 10
 		},
 
 		"noise_waveform_params" : {
@@ -80,7 +80,7 @@ def createInputJson(npx_file, output_file):
 		"quality_metrics_params" : {
 
 			"isi_threshold" : 0.015,
-			"snr_spike_count" : 100,
+			"snr_spike_count" : 10,
 			"samples_per_spike" : 82,
 			"pre_samples" : 20
 		}

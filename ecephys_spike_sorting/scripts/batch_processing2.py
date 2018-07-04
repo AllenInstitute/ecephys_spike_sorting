@@ -1,5 +1,6 @@
-import os
+import subprocess
 import shutil
+import os
 
 from create_input_json import createInputJson
 
@@ -9,7 +10,7 @@ npx_files = [r'E:\704166722_380486_20180531_probeC\recording1.npx',
              r'E:\704514354_380485_20180601_probeC\recording2.npx',
              r'E:\704514354_380485_20180601_probeB\recording1.npx']
 
-json_directory = r'C:\Users\svc_neuropix\Documents\GitHub\ecephys_spike_sorting\ecephys_spike_sorting\scripts'
+json_directory = r'C:\Users\svc_neuropix\Documents\json_files'
 
 def copy_data_to_backup_drive(info):
 	extracted_data_location = info['directories']['extracted_data_directory']
@@ -23,19 +24,20 @@ for idx, npx_file in enumerate(npx_files):
 		probe_directory = os.path.dirname(npx_file)
 		session_id = os.path.basename(probe_directory)
 
-		info = createInputJson(npx_file, input_json)
-
-		commands = ('noise_templates', 'mean_waveforms', 'metrics')
+		commands = ('noise_templates', 'quality_metrics')
 
 		for command in commands:
 
-			input_json = os.path.join(json_directory, session_id + '-input.json')
-			output_json = os.path.join(json_directory, session_id + '-output.json')
+			input_json = os.path.join(json_directory, session_id + '_' + command + '-input.json')
+			output_json = os.path.join(json_directory, session_id + '_' + command +'-output.json')
 
-			command = "python -m ecephys_spike_sorting.modules." + command + " --input_json " + input_json \
-			          + " --output_json " + output_json
+			info = createInputJson(npx_file, input_json)
 
-			os.system(command)
+			command = ["python", "-m", "ecephys_spike_sorting.modules." + command, 
+						"--input_json", input_json,
+			            "--output_json", output_json]
+
+			subprocess.check_call(command)
 
 		#copy_data_to_backup_drive(info)
 

@@ -60,7 +60,7 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, clusterIDs, cluster
 
     for cluster_idx, clusterID in enumerate(good_clusters):
 
-        #print(clusterID)
+        print(clusterID)
 
         in_cluster = (spike_clusters == clusterID)
         times_for_cluster = spike_times[in_cluster]
@@ -173,7 +173,7 @@ def writeDataAsNpy(waveforms, output_file):
 
     mean_waveforms = waveforms[:,-1,0,:,:] # extract overall mean
 
-    np.save(mean_waveforms, output_file)
+    np.save(output_file, mean_waveforms)
     
     
 

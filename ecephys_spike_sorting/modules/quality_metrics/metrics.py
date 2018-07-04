@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn import decomposition, neighbors
+from collections import OrderedDict
 
 from ecephys_spike_sorting.common.spike_template_helpers import find_depth
 
@@ -8,17 +9,21 @@ def calculate_metrics(data, spike_times, spike_clusters, amplitudes, sample_rate
 
 	#iso = calculate_isolation_quality(data, spike_times, spike_clusters)
 	#noise_o = calculate_noise_overlap(data, spike_times, spike_clusters)
+	print("Calculating SNR")
 	snr, peak_chan = calculate_snr_and_peak_chan(data, spike_times.astype('int64'), spike_clusters, params['snr_spike_count'], params['samples_per_spike'], params['pre_samples'])
+	print("Calculating isi violations")
 	isi_viol = calculate_isi_violations(spike_times / sample_rate, spike_clusters, params['isi_threshold'])
+	print("Calculating firing rate")
 	firing_rate = calculate_firing_rate(spike_times / sample_rate, spike_clusters)
 
 	cluster_ids = np.unique(spike_clusters)
 
 	# package it into a DataFrame called metrics
-	metrics = pd.DataFrame(data={'cluster_ids': cluster_ids, 
-		                    'peak_chan' : peak_chan,
-		                    'snr' : snr,
-		                    'firing_rate' : firing_rate})
+	metrics = pd.DataFrame(data= OrderedDict((('cluster_ids', cluster_ids), 
+		                    ('peak_chan' , peak_chan),
+		                    ('snr' , snr),
+		                    ('firing_rate' , firing_rate),
+		                    ('isi_viol' , isi_viol))))
 
 	return metrics 
 
@@ -71,10 +76,11 @@ def calculate_snr_and_peak_chan(data, spike_times, spike_clusters, spike_count, 
 		if waveforms is not None:
 			mean_waveform = np.nanmean(waveforms, 0)
 			peak_chans[idx] = int(find_depth(mean_waveform))
-			try:
-				snrs[idx] = snr(waveforms[:,peak_chans[idx]])
-			except IndexError:
-				snrs[idx] = np.nan
+			print(waveforms.shape)
+			#try:
+			snrs[idx] = snr(waveforms[:,:,peak_chans[idx]])
+			#except IndexError:
+		#		print(idx)
 
 	return snrs, peak_chans
 
