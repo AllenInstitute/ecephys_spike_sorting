@@ -45,7 +45,7 @@ def id_noise_templates_rf(spike_times, spike_clusters, cluster_ids, templates, p
         
         template = templates[unit,:,:]
         depth = find_depth(template)
-        feature_matrix[unit,:] = template[:,depth]
+        feature_matrix[idx,:] = template[:,depth]
 
     is_noise = 1-2*classifier.predict(feature_matrix)
     
