@@ -36,7 +36,7 @@ def run_npx_extractor(args):
     output_file = os.path.join(args['directories']['extracted_data_directory'], 'open-ephys.json')
 
     start = time.time()
-    subprocess.check_call([args['npx_extractor_executable'], args['npx_file'], args['directories']['extracted_data_directory']])
+    subprocess.check_call([args['npx_extractor_executable'], args['npx_file'], args['directories']['extracted_data_directory'], str(60)])
     execution_time = time.time() - start
 
     #with io.open(output_file, 'w', encoding='utf-8') as f:

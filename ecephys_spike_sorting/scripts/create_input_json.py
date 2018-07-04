@@ -7,7 +7,7 @@ def createInputJson(npx_file, output_file):
 
 	drive, tail = os.path.split(probe_directory)
 
-	extracted_data_directory = os.path.join('E:\\', tail + '_sorted')
+	extracted_data_directory = os.path.join(r'C:\data', tail + '_sorted')
 	probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
 	kilosort_output_directory = os.path.join(extracted_data_directory, r'continuous\Neuropix-3a-100.0')
 
@@ -45,7 +45,7 @@ def createInputJson(npx_file, output_file):
 			"hi_noise_thresh" : 50.0,
 			"lo_noise_thresh" : 3.0,
 			"save_figure" : 1,
-			"figure_location" : "C:\\data\\test_run",
+			"figure_location" : extracted_data_directory,
 			"smoothing_amount" : 5,
 			"power_thresh" : 2.5,
 			"diff_thresh" : 0.07,
