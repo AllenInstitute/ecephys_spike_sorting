@@ -8,11 +8,13 @@ import numpy as np
 from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file
 from ecephys_spike_sorting.common.utils import load_kilosort_data
 
-from ecephys_spike_sorting.modules.mean_waveforms.extract_waveforms import extract_waveforms, writeDataAsXarray
+from ecephys_spike_sorting.modules.mean_waveforms.extract_waveforms import extract_waveforms, writeDataAsNpy
 
 def calculate_mean_waveforms(args):
     
     start = time.time()
+
+    print("Calculating mean waveforms...")
 
     rawDataFile = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
     rawData = np.memmap(rawDataFile, dtype='int16', mode='r')
@@ -23,7 +25,7 @@ def calculate_mean_waveforms(args):
                 args['ephys_params']['sample_rate'], \
                 convert_to_seconds = False)
 
-    output_file = os.path.join(args['directories']['kilosort_output_directory'], 'mean_waveforms.nc')
+    output_file = os.path.join(args['directories']['kilosort_output_directory'], 'mean_waveforms.npy')
 
     waveforms, spike_counts, coords, labels = extract_waveforms(data, spike_times, \
                 spike_clusters, clusterIDs, \

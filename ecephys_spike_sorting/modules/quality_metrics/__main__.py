@@ -13,11 +13,13 @@ from ecephys_spike_sorting.modules.quality_metrics.metrics import calculate_metr
 
 def calculate_quality_metrics(args):
 
+    print("Calculating quality metrics...")
+
     start = time.time()
 
     rawDataFile = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
     rawData = np.memmap(rawDataFile, dtype='int16', mode='r')
-    data = np.reshape(rawData, (int(rawData.size/ephys_params['num_channels']), ephys_params['num_channels']))
+    data = np.reshape(rawData, (int(rawData.size/args['ephys_params']['num_channels']), args['ephys_params']['num_channels']))
 
     spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
             load_kilosort_data(args['directories']['kilosort_output_directory'], \
@@ -28,6 +30,7 @@ def calculate_quality_metrics(args):
     
     output_file = os.path.join(args['directories']['kilosort_output_directory'], 'metrics.csv')
 
+    print("Saving data")
     metrics.to_csv(output_file)
 
     execution_time = time.time() - start
@@ -38,7 +41,7 @@ def calculate_quality_metrics(args):
 
 def main():
 
-    from _schemas import InputParameters, OutputParameters
+    from ._schemas import InputParameters, OutputParameters
 
     mod = ArgSchemaParser(schema_type=InputParameters,
                           output_schema_type=OutputParameters)

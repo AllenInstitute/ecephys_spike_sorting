@@ -38,14 +38,14 @@ def createInputJson(npx_file, output_file):
 			"lfp_sample_rate" : 2500,
 			"bit_volts" : 0.195,
 			"num_channels" : 384,
-			"reference_channels" : [37, 76, 113, 152, 189, 228, 265, 304, 341, 380]
+			"reference_channels" : [36, 75, 112, 151, 188, 227, 264, 303, 340, 379]
 		}, 
 
 		"depth_estimation_params" : {
 			"hi_noise_thresh" : 50.0,
 			"lo_noise_thresh" : 3.0,
 			"save_figure" : 1,
-			"figure_location" : "C:\\data\\test_run",
+			"figure_location" : extracted_data_directory,
 			"smoothing_amount" : 5,
 			"power_thresh" : 2.5,
 			"diff_thresh" : 0.07,
@@ -58,23 +58,55 @@ def createInputJson(npx_file, output_file):
 		}, 
 
 		"kilosort2_params" : {
+			"chanMap" : "'chanMap.mat'",
+			"trange" : '[0 Inf]',
+			"fproc" : "fullfile('C:/data/kilosort', 'temp_wh.dat')",
+			"fbinary" : "fullfile(ops.rootZ, 'continuous.dat')",
+			"datatype" : "'.dat'",
+			"fshigh" : 150,
+			"Th" : '[12 12]',
+			"lam" : 100,
+			"mergeThreshold" : 0.25,
+			"ccsplit" : 0.97,
+			"minFR" : 1/50.,
+			"ThS" : '[8 8]',
+			"momentum" : '[20 400]',
+			"sigmaMask" : 30,
 			"Nfilt" : 1024,
-			"Threshold" : "[4, 10, 10",
-			"lam" : "[5, 20, 20]",
-			"InitializeTh" : -4,
-			"InitializeNFilt" : 10000
+			"nPCs" : 3,
+			"useRAM" : 0,
+			"ThPre" : 8,
+			"GPU" : 1,
+			"nSkipCov" : 5,
+			"ntbuff" : 64,
+			"scaleproc" : 200,
+			"NT" : '64*1024 + ops.ntbuff',
+			"spkTh" : -6,
+			"loc_range" : '[5 4]',
+			"long_range" : '[30 6]',
+			"maskMaxChannels" : 5,
+			"criterionNoiseChannels" : 0.2,
+			"whiteningRange" : 32
 		},
 
 		"mean_waveform_params" : {
 			"samples_per_spike" : 82,
 			"pre_samples" : 20,
-			"num_epochs" : 3,
+			"num_epochs" : 1,
 			"spikes_per_epoch" : 100
 		},
 
 		"noise_waveform_params" : {
 			"classifier_path" : "C:\\Users\\svc_neuropix\\Documents\\GitHub\\ecephys_spike_sorting\\ecephys_spike_sorting\\modules\\noise_templates\\classifier.pkl"
 
+		},
+
+		"quality_metrics_params" : {
+
+			"isi_threshold" : 0.015,
+			"snr_spike_count" : 100,
+			"samples_per_spike" : 82,
+			"pre_samples" : 20
 		}
 
 	}
