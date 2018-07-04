@@ -22,6 +22,7 @@ def copy_data_to_backup_drive(info):
 
 for idx, npx_file in enumerate(npx_files):
 
+
 	if idx > -1:
 
 		probe_directory = os.path.dirname(npx_file)

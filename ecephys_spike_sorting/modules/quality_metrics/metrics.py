@@ -74,9 +74,16 @@ def calculate_snr_and_peak_chan(data, spike_times, spike_clusters, spike_count, 
 		waveforms = extract_clips(data, times_for_snr, samples_per_spike, pre_samples)
 
 		if waveforms is not None:
+			
 			mean_waveform = np.nanmean(waveforms, 0)
-			peak_chans[idx] = int(find_depth(mean_waveform))
-			print(waveforms.shape)
+
+			# subtract offset
+			for channel in range(0, mean_waveform.shape[1]):
+				mean_waveform[:, channel] = \
+				mean_waveform[:,channel] - mean_waveform[0, channel]
+            
+			peak_chans[idx] = find_depth(mean_waveform)
+			#print(waveforms.shape)
 			#try:
 			snrs[idx] = snr(waveforms[:,:,peak_chans[idx]])
 			#except IndexError:

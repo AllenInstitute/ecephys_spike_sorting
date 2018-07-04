@@ -113,6 +113,12 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, clusterIDs, cluster
             warnings.simplefilter("ignore", category=RuntimeWarning)
             mean_waveforms[cluster_idx, num_epochs, 0, :, :] = np.nanmean(waveforms, 0)
             mean_waveforms[cluster_idx, num_epochs, 1, :, :] = np.nanstd(waveforms, 0)
+
+        # subtract offset for each channel
+        for epoch, start_time in enumerate(epoch_start_times):
+            for channel in range(0, mean_waveforms.shape[3]):
+                mean_waveforms[cluster_idx, epoch, 0, channel, :] = \
+                 mean_waveforms[cluster_idx, epoch, 0, channel, :] - mean_waveforms[cluster_idx, epoch, 0, channel, 0]
             
         spike_count[cluster_idx, num_epochs] = np.sum(spike_count[cluster_idx, :])
 
