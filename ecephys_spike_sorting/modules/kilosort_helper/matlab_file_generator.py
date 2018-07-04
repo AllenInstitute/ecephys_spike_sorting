@@ -24,7 +24,7 @@ def create_config2(kilosort_location,forwardslash_data_file_location, data_file_
     with open(config_path,"w+") as f:
         f.write(config_string)
 
-def make_chanmap_string(EndChan = 384, StartChan = 1, Nchannels = 384, BadChannels = '[ ]'):
+def make_chanmap_string(EndChan = 384, StartChan = 1, Nchannels = 384, MaskChannels = '[ ]'):
     chanmap_string = """map = load('neuropixPhase3A_kilosortChanMap.mat');
 
         chanMap = map.chanMap;
@@ -38,10 +38,8 @@ def make_chanmap_string(EndChan = 384, StartChan = 1, Nchannels = 384, BadChanne
         EndChan =   """ + str(EndChan) + """;
         NChannelsInRange = EndChan-(StartChan-1);
         connected = [false(StartChan-1,1);true(NChannelsInRange, 1); false(Nchannels-EndChan, 1)];
-        reference_channels = [37 76 113 152 189 228 265 304 341 380];
-        bad_channels = """ + BadChannels + """;    
-        connected(reference_channels) = false;
-        connected(bad_channels) = false;
+        mask_channels = """ + MaskChannels + """;    
+        connected(mask_channels) = false;
 
         save('chanMap.mat', ...
             'chanMap','chanMap0ind','connected','shankInd', 'xcoords', 'ycoords')
