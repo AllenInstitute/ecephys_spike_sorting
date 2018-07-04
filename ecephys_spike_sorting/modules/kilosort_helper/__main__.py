@@ -23,17 +23,15 @@ def run_kilosort(args):
 
     mask, offset, scaling, surface_channel, air_channel = read_probe_json(args['probe_json'])
 
-    top_channel = np.min([384, int(surface_channel) + args['surface_channel_buffer']])
-    num_templates = top_channel * 3
-    num_templates = num_templates - (num_templates % 32)
+    top_channel = np.min([args['ephys_params']['num_channels'], int(surface_channel) + args['surface_channel_buffer']])
 
     matlab_file_generator.create_chanmap(args['kilosort_location'], \
                                         EndChan = top_channel, \
-                                        BadChannels = np.where(mask == False)[0])
+                                        MaskChannels = np.where(mask == False)[0])
     if args['kilosort_version'] == 1:
         matlab_file_generator.create_config(args['kilosort_location'], spike_dir_forward_slash, 'continuous.dat', args['kilosort_params'])
     elif args['kilosort_version'] == 2:
-        matlab_file_generator.create_config2(args['kilosort_location'], spike_dir_forward_slash, 'continuous.dat', args['kilosort2_params'])
+        matlab_file_generator.create_config2(args['kilosort_location'], spike_dir_forward_slash, args['ephys_params'], args['kilosort2_params'])
     else:
         return
 

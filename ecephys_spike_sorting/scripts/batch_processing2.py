@@ -20,7 +20,14 @@ def copy_data_to_backup_drive(info):
 	shutil.move(extracted_data_location, new_location)
 
 
-modules = ('extract_from_npx', 'depth_estimation', 'median_subtraction', 'kilosort_helper', 'noise_templates', 'mean_waveforms', 'quality_metrics','copy_data')
+modules = (#'extract_from_npx', 
+		   #'depth_estimation',
+		   #'median_subtraction',
+		   'kilosort_helper', #,
+		   'noise_templates')
+		   #'mean_waveforms',
+		   #'quality_metrics')
+		   #'copy_data')
 
 for module in modules:
 
