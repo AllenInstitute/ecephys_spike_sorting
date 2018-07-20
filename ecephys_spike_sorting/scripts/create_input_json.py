@@ -48,7 +48,7 @@ def createInputJson(npx_file, output_file):
 			"figure_location" : extracted_data_directory,
 			"smoothing_amount" : 5,
 			"power_thresh" : 2.5,
-			"diff_thresh" : 0.07,
+			"diff_thresh" : -0.07,
 			"freq_range" : [0, 10],
 			"max_freq" : 150,
 			"channel_range" : [370, 380],
