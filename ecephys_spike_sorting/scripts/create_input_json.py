@@ -1,19 +1,18 @@
 import os, io, json
 
-def createInputJson(npx_file, output_file):
+def createInputJson(npx_directory, output_file):
 
-	probe_directory = os.path.dirname(npx_file)
-	settings_xml = os.path.join(probe_directory, 'settings.xml')
+	settings_xml = os.path.join(npx_directory, 'settings.xml')
 
-	drive, tail = os.path.split(probe_directory)
+	drive, tail = os.path.split(npx_directory)
 
-	extracted_data_directory = os.path.join(r'C:\data', tail + '_sorted')
+	extracted_data_directory = os.path.join(r'E:\\', tail + '_sorted')
 	probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
 	kilosort_output_directory = os.path.join(extracted_data_directory, r'continuous\Neuropix-3a-100.0')
 
 	dictionary = \
 	{
-		"npx_file": npx_file,
+		"npx_file": npx_directory,
 		"settings_xml": settings_xml,
 		"probe_json" : probe_json,
 
@@ -48,7 +47,7 @@ def createInputJson(npx_file, output_file):
 			"figure_location" : extracted_data_directory,
 			"smoothing_amount" : 5,
 			"power_thresh" : 2.5,
-			"diff_thresh" : 0.07,
+			"diff_thresh" : -0.07,
 			"freq_range" : [0, 10],
 			"max_freq" : 150,
 			"channel_range" : [370, 380],

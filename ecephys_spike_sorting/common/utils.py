@@ -30,7 +30,7 @@ def find_range(x,a,b,option='within'):
 def rms(data):
     return np.power(np.mean(np.power(data.astype('float32'),2)),0.5)
 
-def write_probe_json(output_file, channels, offset, scaling, mask, surface_chan, air_chan):
+def write_probe_json(output_file, channels, offset, scaling, mask, surface_chan, air_chan, vertical_pos, horizontal_pos):
 
     with open(output_file, 'w') as outfile:
         json.dump( 
@@ -40,7 +40,9 @@ def write_probe_json(output_file, channels, offset, scaling, mask, surface_chan,
                         'scaling' : scaling.tolist(), 
                         'mask' : mask.tolist(), 
                         'surface_channel' : surface_chan, 
-                        'air_channel' : air_chan
+                        'air_channel' : air_chan,
+                        'vertical_pos' : vertical_pos,
+                        'horizontal_pos' : horizontal_pos
                    },
                  
                   outfile, 
