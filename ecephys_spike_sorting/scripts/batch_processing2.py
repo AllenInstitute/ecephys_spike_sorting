@@ -56,6 +56,3 @@ for module in modules:
 	for p in processes:
 		while p.poll() is None: 
 			time.sleep(0.5)
-
-
-
