@@ -139,7 +139,7 @@ def compute_offset_and_surface_channel(ap_data, lfp_data, ephys_params, params):
     mask = np.ones((channels.shape), dtype=bool)
     mask[mask_chans2] = False
     scaling = np.ones((numChannels,))
-    vertical_pos = 20*(np.floor(np.arange(0.384)/2)+1).astype('int')
+    vertical_pos = 20*(np.floor(np.arange(0,384)/2)+1).astype('int')
     horizontal_pos = np.array([43,11,59,27]*96)
 
     output_dict = {}

@@ -29,7 +29,7 @@ def run_depth_estimation(args):
                 args['ephys_params'], args['depth_estimation_params'])
 
     write_probe_json(output_file, info['channels'], info['offsets'], \
-        info['scaling'], info['mask'], info['surface_channel'], info['air_channel'], info['horizontal_pos'], info['vertical_pos'])
+        info['scaling'], info['mask'], info['surface_channel'], info['air_channel'], info['vertical_pos'], info['horizontal_pos'])
 
 
     execution_time = time.time() - start

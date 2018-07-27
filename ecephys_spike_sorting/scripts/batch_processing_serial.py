@@ -26,7 +26,7 @@ modules = (#'extract_from_npx',
 		   'depth_estimation',
 		   #'median_subtraction',
 		   #'kilosort_helper',
-		   #'noise_templates',
+		   'noise_templates',
 		   #'mean_waveforms',
 		   'quality_metrics') #,
 		   #'copy_data')

@@ -41,8 +41,8 @@ def write_probe_json(output_file, channels, offset, scaling, mask, surface_chan,
                         'mask' : mask.tolist(), 
                         'surface_channel' : surface_chan, 
                         'air_channel' : air_chan,
-                        'vertical_pos' : vertical_pos,
-                        'horizontal_pos' : horizontal_pos
+                        'vertical_pos' : vertical_pos.tolist(),
+                        'horizontal_pos' : horizontal_pos.tolist()
                    },
                  
                   outfile, 
