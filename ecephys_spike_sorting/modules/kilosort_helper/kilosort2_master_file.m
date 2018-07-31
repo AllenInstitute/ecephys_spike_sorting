@@ -41,3 +41,6 @@ rez.cProjPC = [];
 % save final results as rez2 
 fname = fullfile(ops.rootZ, 'rez2.mat');
 save(fname, 'rez', '-v7.3');
+
+% delete the whitened file
+delete ops.fproc
