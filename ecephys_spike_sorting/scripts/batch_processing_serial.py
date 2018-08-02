@@ -7,9 +7,9 @@ from create_input_json import createInputJson
 
 ######################### UPDATE ME ###############################
 
-npx_directories = [r"J:\712089388_384647_20180620_probeD",
-					r"K:\712089388_384647_20180620_probeE",
-					r"L:\712089388_384647_20180620_probeF"]
+npx_directories = [
+					r"L:\724543052_392805_20180725_probeE"
+					]
 
 
 ####################################################################
@@ -22,41 +22,46 @@ def copy_data_to_backup_drive(info):
 	shutil.move(extracted_data_location, new_location)
 
 
-modules = (#'extract_from_npx',
-		   'depth_estimation',
+modules = [#'extract_from_npx',
+		   #'depth_estimation',
 		   #'median_subtraction',
-		   #'kilosort_helper',
+		   'kilosort_helper',
 		   'noise_templates',
-		   #'mean_waveforms',
-		   'quality_metrics') #,
+		   'mean_waveforms',
+		   'quality_metrics'] #,
 		   #'copy_data')
 
 for idx, npx_directory in enumerate(npx_directories):
 
-	for module in modules:
+	try:
 
-		processes = []
+		for module in modules:
 
-		session_id = os.path.basename(npx_directory)
+			processes = []
 
-		input_json = os.path.join(json_directory, session_id + '_' + module + '-input.json')
-		output_json = os.path.join(json_directory, session_id + '_' + module +'-output.json')
+			session_id = os.path.basename(npx_directory)
 
-		info = createInputJson(npx_directory, input_json)
+			input_json = os.path.join(json_directory, session_id + '_' + module + '-input.json')
+			output_json = os.path.join(json_directory, session_id + '_' + module +'-output.json')
 
-		command_string = ["python", "-m", "ecephys_spike_sorting.modules." + module, 
-					"--input_json", input_json,
-		            "--output_json", output_json]
+			info = createInputJson(npx_directory, input_json)
 
-		print(command_string)
+			command_string = ["python", "-m", "ecephys_spike_sorting.modules." + module, 
+						"--input_json", input_json,
+			            "--output_json", output_json]
 
-		if module == 'kilosort_helper':
-			subprocess.check_call(command_string) # not in parallel -- requires GPU
-		elif module == 'copy_data':
-			copy_data_to_backup_drive(info) # not in parallel
-		else:
-			subprocess.check_call(command_string)
-			#processes.append(subprocess.Popen(command_string)) # parallel
+			print(command_string)
+
+			if module == 'kilosort_helper':
+				subprocess.check_call(command_string) # not in parallel -- requires GPU
+			elif module == 'copy_data':
+				copy_data_to_backup_drive(info) # not in parallel
+			else:
+				subprocess.check_call(command_string)
+				#processes.append(subprocess.Popen(command_string)) # parallel
+
+	except:
+		print("Error processing " + npx_directory)
 
 	#for p in processes:
 	#	while p.poll() is None: 
