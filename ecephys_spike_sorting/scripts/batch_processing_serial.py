@@ -23,7 +23,7 @@ def copy_processed_data_to_backup_drive(info):
 
 def copy_raw_data_to_backup_drive(npx_directory):
 	new_location = os.path.join(r'D:', os.path.basename(npx_directory))
-	shutil.copy(npx_directory, new_location)
+	shutil.copytree(npx_directory, new_location)
 
 
 modules = ('extract_from_npx',
@@ -37,7 +37,7 @@ modules = ('extract_from_npx',
 
 for idx, npx_directory in enumerate(npx_directories):
 
-	copy_data_to_backup_drive(npx_directory)
+	copy_raw_data_to_backup_drive(npx_directory)
 
 	try:
 
