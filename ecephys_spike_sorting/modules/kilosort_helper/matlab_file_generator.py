@@ -1,13 +1,13 @@
 import os
         
-def create_chanmap(kilosort_location, EndChan, StartChan = 1, Nchannels = 384, BadChannels = []):
+def create_chanmap(kilosort_location, EndChan, StartChan = 1, Nchannels = 384, MaskChannels = []):
     mask_string = '['
-    for channel in BadChannels:
+    for channel in MaskChannels:
         mask_string += str(channel+1)
         mask_string += ' '
     mask_string += ']'
 
-    chanmap_string = make_chanmap_string(EndChan, StartChan, Nchannels, BadChannels = mask_string)   
+    chanmap_string = make_chanmap_string(EndChan, StartChan, Nchannels, MaskChannels = mask_string)   
     chanmap_path = os.path.join(kilosort_location,'createChannelMapFile.m')    
     with open(chanmap_path,"w+") as f:
         f.write(chanmap_string)
@@ -18,13 +18,13 @@ def create_config(kilosort_location,forwardslash_data_file_location, data_file_n
     with open(config_path,"w+") as f:
         f.write(config_string)
 
-def create_config2(kilosort_location,forwardslash_data_file_location, data_file_name, params):
-    config_string = make_config_string2(forwardslash_data_file_location, data_file_name, params)   
+def create_config2(kilosort_location,forwardslash_data_file_location, ephys_params, params):
+    config_string = make_config_string2(forwardslash_data_file_location, ephys_params, params)   
     config_path = os.path.join(kilosort_location,'kilosort2_config_file.m')    
     with open(config_path,"w+") as f:
         f.write(config_string)
 
-def make_chanmap_string(EndChan = 384, StartChan = 1, Nchannels = 384, BadChannels = '[ ]'):
+def make_chanmap_string(EndChan = 384, StartChan = 1, Nchannels = 384, MaskChannels = '[ ]'):
     chanmap_string = """map = load('neuropixPhase3A_kilosortChanMap.mat');
 
         chanMap = map.chanMap;
@@ -38,10 +38,8 @@ def make_chanmap_string(EndChan = 384, StartChan = 1, Nchannels = 384, BadChanne
         EndChan =   """ + str(EndChan) + """;
         NChannelsInRange = EndChan-(StartChan-1);
         connected = [false(StartChan-1,1);true(NChannelsInRange, 1); false(Nchannels-EndChan, 1)];
-        reference_channels = [37 76 113 152 189 228 265 304 341 380];
-        bad_channels = """ + BadChannels + """;    
-        connected(reference_channels) = false;
-        connected(bad_channels) = false;
+        mask_channels = """ + MaskChannels + """;    
+        connected(mask_channels) = false;
 
         save('chanMap.mat', ...
             'chanMap','chanMap0ind','connected','shankInd', 'xcoords', 'ycoords')
@@ -49,50 +47,22 @@ def make_chanmap_string(EndChan = 384, StartChan = 1, Nchannels = 384, BadChanne
 
     return chanmap_string
 
-def make_config_string2(forwardslash_data_file_location, data_file_name, params):
+def make_config_string2(forwardslash_data_file_location, ephys_params, params):
 
-    config_string = """createChannelMapFile; 
-        ops.rootZ = '""" + forwardslash_data_file_location + """';
-        ops.chanMap = 'C:/Users/svc_neuropix/Documents/MATLAB/chanMap.mat';
-        ops.trange = [0 Inf]; % TIME RANGE IN SECONDS TO PROCESS
-        ops.fproc       = fullfile('C:/data/kilosort', 'temp_wh.dat'); % proc file on a fast SSD
-        ops.Nchan = 384;
-        ops.NchanTOT = 384; % total number of channels in your recording
-        ops.fbinary     = fullfile(ops.rootZ,  '""" + data_file_name + """');
-        ops.datatype            = 'dat';  % binary ('dat', 'bin') or 'openEphys'
-        ops.fs                  = 30000;  % sample frequency (Hz)     
-        ops.fshigh              = 150;   % filter cutoff frequency
-        ops.Th       = [12 12];  % threshold (last pass can be lower)
-        ops.lam      = 10^2;   
+    # these params need to be written first:
+    config_string = "ops.rootZ = '" + forwardslash_data_file_location + "';\n"
+    config_string += ("ops.ntbuff = " + str(params['ntbuff']) + "';\n")
 
-        ops.mergeThreshold = 1/4; % merge when explained variance loss is below this number as a sqrt fraction of the unit's mean (try 1/4)
-        ops.ccsplit     = 0.97; % splitting a cluster at the end requires at least this much isolation (max = 1)
-        ops.minFR    = 1/50; % minimum spike rate (Hz)
-        ops.ThS      = [8 8];  % lower bound on acceptable single spike quality
-        ops.momentum = [20 400]; % number of samples to average over (annealed) 
-        ops.sigmaMask  = 30; % spatial constant in um for computing residual variance of spike
-        ops.Nfilt       = """ + str(params['Nfilt']) + """; % max number of clusters (even temporary ones)
-        ops.nPCs        = 3; % how many PCs to project the spikes into
-        ops.useRAM      = 0; % whether to hold data in RAM (won't check if there's enough RAM)
-        ops.ThPre       = 8; % threshold crossings for pre-clustering (in PCA projection space)
+    for param in params.keys():
+        if param != 'ntbuff':
+            config_string += ("ops." + param + " = " + str(params[param]) + ";\n")
 
-        % changing these settings can cause fatal errors
-        ops.GPU                 = 1; % whether to run this code on an Nvidia GPU (much faster, mexGPUall first)
-        ops.nSkipCov            = 5; % compute whitening matrix from every N-th batch (1)
-        ops.ntbuff              = 64;    % samples of symmetrical buffer for whitening and spike detection
-        ops.scaleproc           = 200;   % int16 scaling of whitened data
-        ops.NT                  = 64*1024+ ops.ntbuff; % this is the batch size (try decreasing if out of memory) 
-        % for GPU should be multiple of 32 + ntbuff
-        
-        % options for determining PCs
-        ops.spkTh           = -6;      % spike threshold in standard deviations (-6)
-        ops.loc_range       = [5  4];  % ranges to detect peaks; plus/minus in time and channel ([3 1])
-        ops.long_range      = [30  6]; % ranges to detect isolated peaks ([30 6])
-        ops.maskMaxChannels = 5;       % how many channels to mask up/down ([5])
-        ops.criterionNoiseChannels = 0.2; % fraction of "noise" templates allowed to span all channel groups (see createChannelMapFile for more info). 
-        ops.whiteningRange = 32;"""
+    config_string += ("ops.Nchan = " + str(ephys_params['num_channels']) + ";\n")
+    config_string += ("ops.NchanTOT = " + str(ephys_params['num_channels']) + ";\n")
+    config_string += ("ops.fs = " + str(ephys_params['sample_rate']) + ";\n")
 
     return config_string 
+
 
 def make_config_string(forwardslash_data_file_location, data_file_name, Nfilt = 512, Threshold = [4, 10, 10], lam = [5, 20, 20], IntitalizeTh = -4, InitializeNfilt=10000):
     config_string = """createChannelMapFile; 
