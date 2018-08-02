@@ -6,7 +6,7 @@ def createInputJson(npx_directory, output_file):
 
 	drive, tail = os.path.split(npx_directory)
 
-	extracted_data_directory = os.path.join(r'E:\\', tail + '_sorted')
+	extracted_data_directory = npx_directory + '_sorted'
 	probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
 	kilosort_output_directory = os.path.join(extracted_data_directory, r'continuous\Neuropix-3a-100.0')
 
