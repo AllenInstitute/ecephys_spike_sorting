@@ -8,36 +8,36 @@ from create_input_json import createInputJson
 ######################### UPDATE ME ###############################
 
 
-npx_directories = [ r"J:\732550069_404553_20180808_probeD",
-					r"K:\732550069_404553_20180808_probeE",
-					r"L:\732550069_404553_20180808_probeF"]
+npx_directories = [ r"J:\732550069_404553_20180808_probeD"]#,
+					#r"K:\732550069_404553_20180808_probeE",
+					#r"L:\732550069_404553_20180808_probeF"]
 
 ####################################################################
 
 json_directory = r'C:\Users\svc_neuropix\Documents\json_files'
 
 def copy_processed_data_to_backup_drive(info):
+	print("Copying processed data to backup drive...")
 	extracted_data_location = info['directories']['extracted_data_directory']
 	new_location = os.path.join(r'F:', os.path.basename(extracted_data_location))
 	shutil.copytree(extracted_data_location, new_location)
 
 def copy_raw_data_to_backup_drive(npx_directory):
+	print("Copying raw data to backup drive...")
 	new_location = os.path.join(r'F:', os.path.basename(npx_directory))
 	shutil.copytree(npx_directory, new_location)
 
-
-modules = ('extract_from_npx',
-		   'depth_estimation',
-		   'median_subtraction',
-		   'kilosort_helper',
-		   'noise_templates',
-		   'mean_waveforms',
-		   'quality_metrics',
-		   'copy_data')
+modules = [#'copy_raw_data',
+		   #'extract_from_npx',
+		   #'depth_estimation',
+		   #'median_subtraction',
+		   #'kilosort_helper',
+		   #'noise_templates',
+		   #'mean_waveforms',
+		   'quality_metrics']#,
+		   #'copy_processed_data']
 
 for idx, npx_directory in enumerate(npx_directories):
-
-	copy_raw_data_to_backup_drive(npx_directory)
 
 	try:
 
@@ -60,8 +60,10 @@ for idx, npx_directory in enumerate(npx_directories):
 
 			if module == 'kilosort_helper':
 				subprocess.check_call(command_string) # not in parallel -- requires GPU
-			elif module == 'copy_data':
+			elif module == 'copy_processed_data':
 				copy_processed_data_to_backup_drive(info) # not in parallel
+			elif module == 'copy_raw_data':
+				copy_raw_data_to_backup_drive(npx_directory)
 			else:
 				subprocess.check_call(command_string)
 				#processes.append(subprocess.Popen(command_string)) # parallel

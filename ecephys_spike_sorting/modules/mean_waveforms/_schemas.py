@@ -11,6 +11,8 @@ class MeanWaveformParams(DefaultSchema):
 
 class InputParameters(ArgSchema):
     
+    mean_waveforms_file = String(required=True, help='Path to mean waveforms file')
+
     mean_waveform_params = Nested(MeanWaveformParams)
     ephys_params = Nested(EphysParams)
     directories = Nested(Directories)

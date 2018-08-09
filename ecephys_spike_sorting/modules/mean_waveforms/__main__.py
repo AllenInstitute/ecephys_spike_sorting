@@ -25,8 +25,6 @@ def calculate_mean_waveforms(args):
                 args['ephys_params']['sample_rate'], \
                 convert_to_seconds = False)
 
-    output_file = os.path.join(args['directories']['kilosort_output_directory'], 'mean_waveforms.npy')
-
     waveforms, spike_counts, coords, labels = extract_waveforms(data, spike_times, \
                 spike_clusters, clusterIDs, \
                 cluster_quality, args['ephys_params']['bit_volts'], \
@@ -34,12 +32,11 @@ def calculate_mean_waveforms(args):
                 args['mean_waveform_params'])
 
     #writeDataAsXarray(waveforms, spike_counts, coords, labels, output_file)
-    writeDataAsNpy(waveforms, output_file)
+    writeDataAsNpy(waveforms, args['mean_waveforms_file'])
 
     execution_time = time.time() - start
     
-    return {"execution_time" : execution_time,
-            "mean_waveforms_file" : output_file} # output manifest
+    return {"execution_time" : execution_time} # output manifest
 
 
 def main():

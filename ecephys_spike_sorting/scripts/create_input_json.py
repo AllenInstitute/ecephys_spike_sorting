@@ -27,6 +27,8 @@ def createInputJson(npx_directory, output_file):
 	    "kilosort_version" : 2,
 	    "surface_channel_buffer" : 15,
 
+	    "mean_waveforms_file" : os.path.join(kilosort_output_directory, 'mean_waveforms.npy'),
+
 		"directories": {
 			"extracted_data_directory": extracted_data_directory,
 			"kilosort_output_directory": kilosort_output_directory
