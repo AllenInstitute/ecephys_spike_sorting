@@ -3,14 +3,14 @@ import pandas as pd
 from sklearn import decomposition, neighbors
 from collections import OrderedDict
 
-from ecephys_spike_sorting.common.spike_template_helpers import find_depth
+from ecephys_spike_sorting.common.spike_template_helpers import find_depth_std
 
 def calculate_metrics(data, spike_times, spike_clusters, amplitudes, cluster_quality, mean_waveforms, sample_rate, params):
 
 	#iso = calculate_isolation_quality(data, spike_times, spike_clusters)
 	#noise_o = calculate_noise_overlap(data, spike_times, spike_clusters)
 	print("Calculating SNR")
-	snr, peak_chan, is_noise = calculate_snr_and_peak_chan(data, spike_times.astype('int64'), spike_clusters, mean_waveforms, params['mean_waveforms_diff_thresh'], params['snr_spike_count'], params['samples_per_spike'], params['pre_samples'])
+	snr, peak_chan, is_noise = calculate_snr_and_peak_chan(data, spike_times.astype('int64'), spike_clusters, mean_waveforms, params['mean_waveform_diff_thresh'], params['snr_spike_count'], params['samples_per_spike'], params['pre_samples'])
 	print("Calculating isi violations")
 	isi_viol = calculate_isi_violations(spike_times / sample_rate, spike_clusters, params['isi_threshold'])
 	print("Calculating firing rate")
@@ -18,7 +18,7 @@ def calculate_metrics(data, spike_times, spike_clusters, amplitudes, cluster_qua
 
 	cluster_ids = np.unique(spike_clusters)
 
-    cluster_quality[is_noise] = 'noise'
+	cluster_quality[is_noise] = 'noise'
 
 	# package it into a DataFrame called metrics
 	metrics = pd.DataFrame(data= OrderedDict((('cluster_ids', cluster_ids), 
@@ -57,20 +57,20 @@ def calculate_isi_violations(spike_times, spike_clusters, isi_threshold):
 	return viol_rate
 
 
-def calculate_snr_and_peak_chan(data, spike_times, spike_clusters, mean_waveforms, mean_waveforms_diff_thresh, spike_count, samples_per_spike, pre_samples):
+def calculate_snr_and_peak_chan(data, spike_times, spike_clusters, mean_waveforms, mean_waveform_diff_thresh, spike_count, samples_per_spike, pre_samples):
 
 	cluster_ids = np.unique(spike_clusters)
 
 	snrs = np.empty(cluster_ids.shape, dtype='float64')
 	peak_chans = np.empty(cluster_ids.shape, dtype='int32')
-    is_noise = np.empty(cluster_ids.shape, dtype='bool')
+	is_noise = np.empty(cluster_ids.shape, dtype='bool')
 
 	snrs[:] = np.nan
 	peak_chans[:] = np.nan
-    is_noise[:] = np.nan
+	is_noise[:] = np.nan
 
-    avg_std_diff = np.mean(np.std(np.diff(mean_waveforms,1),2),0)
-    channels_to_ignore = (avg_std_diff > mean_waveforms_diff_thresh)
+	avg_std_diff = np.mean(np.std(np.diff(mean_waveforms,1),2),0)
+	channels_to_ignore = (avg_std_diff > mean_waveform_diff_thresh)
 
 	for idx, cluster_id in enumerate(cluster_ids):
 

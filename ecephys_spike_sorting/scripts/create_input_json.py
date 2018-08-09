@@ -107,7 +107,8 @@ def createInputJson(npx_directory, output_file):
 			"isi_threshold" : 0.015,
 			"snr_spike_count" : 100,
 			"samples_per_spike" : 82,
-			"pre_samples" : 20
+			"pre_samples" : 20,
+			"mean_waveform_diff_thresh" : 4.5
 		}
 
 	}
