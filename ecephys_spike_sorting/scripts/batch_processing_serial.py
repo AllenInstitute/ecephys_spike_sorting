@@ -17,11 +17,13 @@ npx_directories = [ r"J:\727666025_394208_20180731_probeA",
 json_directory = r'C:\Users\svc_neuropix\Documents\json_files'
 
 def copy_processed_data_to_backup_drive(info):
+    print("Copying processed data to backup drive...")
 	extracted_data_location = info['directories']['extracted_data_directory']
 	new_location = os.path.join(r'D:', os.path.basename(extracted_data_location))
 	shutil.move(extracted_data_location, new_location)
 
 def copy_raw_data_to_backup_drive(npx_directory):
+    print("Copying raw data to backup drive...")
 	new_location = os.path.join(r'D:', os.path.basename(npx_directory))
 	shutil.copy(npx_directory, new_location)
 
@@ -37,7 +39,7 @@ modules = ('extract_from_npx',
 
 for idx, npx_directory in enumerate(npx_directories):
 
-	copy_data_to_backup_drive(npx_directory)
+	copy_raw_data_to_backup_drive(npx_directory)
 
 	try:
 
@@ -61,7 +63,7 @@ for idx, npx_directory in enumerate(npx_directories):
 			if module == 'kilosort_helper':
 				subprocess.check_call(command_string) # not in parallel -- requires GPU
 			elif module == 'copy_data':
-				copy_data_to_backup_drive(info) # not in parallel
+				copy_processed_data_to_backup_drive(info) # not in parallel
 			else:
 				subprocess.check_call(command_string)
 				#processes.append(subprocess.Popen(command_string)) # parallel
