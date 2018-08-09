@@ -7,9 +7,8 @@ from create_input_json import createInputJson
 
 ######################### UPDATE ME ###############################
 
-npx_directories = [ r"J:\727666025_394208_20180731_probeA",
-					r"K:\727666025_394208_20180731_probeB",
-					r"L:\727666025_394208_20180731_probeC"]
+npx_directories = [ r"K:\732550069_404553_20180808_probeB",
+					r"L:\732550069_404553_20180808_probeC"]
 
 
 ####################################################################
@@ -19,9 +18,10 @@ json_directory = r'C:\Users\svc_neuropix\Documents\json_files'
 def copy_processed_data_to_backup_drive(info):
 	extracted_data_location = info['directories']['extracted_data_directory']
 	new_location = os.path.join(r'D:', os.path.basename(extracted_data_location))
-	shutil.move(extracted_data_location, new_location)
+	shutil.copytree(extracted_data_location, new_location)
 
 def copy_raw_data_to_backup_drive(npx_directory):
+	print("Copying data to backup drive...")
 	new_location = os.path.join(r'D:', os.path.basename(npx_directory))
 	shutil.copytree(npx_directory, new_location)
 
@@ -61,7 +61,7 @@ for idx, npx_directory in enumerate(npx_directories):
 			if module == 'kilosort_helper':
 				subprocess.check_call(command_string) # not in parallel -- requires GPU
 			elif module == 'copy_data':
-				copy_data_to_backup_drive(info) # not in parallel
+				copy_processed_data_to_backup_drive(info) # not in parallel
 			else:
 				subprocess.check_call(command_string)
 				#processes.append(subprocess.Popen(command_string)) # parallel
