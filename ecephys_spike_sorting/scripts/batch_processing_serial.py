@@ -7,31 +7,37 @@ from create_input_json import createInputJson
 
 ######################### UPDATE ME ###############################
 
-npx_directories = [
-					r"L:\724543052_392805_20180725_probeE"
-					]
 
+npx_directories = [ r"J:\732550069_404553_20180808_probeD",
+					r"K:\732550069_404553_20180808_probeE",
+					r"L:\732550069_404553_20180808_probeF"]
 
 ####################################################################
 
 json_directory = r'C:\Users\svc_neuropix\Documents\json_files'
 
-def copy_data_to_backup_drive(info):
+def copy_processed_data_to_backup_drive(info):
 	extracted_data_location = info['directories']['extracted_data_directory']
-	new_location = os.path.join(r'D:', os.path.basename(extracted_data_location))
-	shutil.move(extracted_data_location, new_location)
+	new_location = os.path.join(r'F:', os.path.basename(extracted_data_location))
+	shutil.copytree(extracted_data_location, new_location)
+
+def copy_raw_data_to_backup_drive(npx_directory):
+	new_location = os.path.join(r'F:', os.path.basename(npx_directory))
+	shutil.copytree(npx_directory, new_location)
 
 
-modules = [#'extract_from_npx',
-		   #'depth_estimation',
-		   #'median_subtraction',
+modules = ('extract_from_npx',
+		   'depth_estimation',
+		   'median_subtraction',
 		   'kilosort_helper',
 		   'noise_templates',
 		   'mean_waveforms',
-		   'quality_metrics'] #,
-		   #'copy_data')
+		   'quality_metrics',
+		   'copy_data')
 
 for idx, npx_directory in enumerate(npx_directories):
+
+	copy_raw_data_to_backup_drive(npx_directory)
 
 	try:
 
@@ -55,7 +61,7 @@ for idx, npx_directory in enumerate(npx_directories):
 			if module == 'kilosort_helper':
 				subprocess.check_call(command_string) # not in parallel -- requires GPU
 			elif module == 'copy_data':
-				copy_data_to_backup_drive(info) # not in parallel
+				copy_processed_data_to_backup_drive(info) # not in parallel
 			else:
 				subprocess.check_call(command_string)
 				#processes.append(subprocess.Popen(command_string)) # parallel
@@ -63,7 +69,7 @@ for idx, npx_directory in enumerate(npx_directories):
 	except:
 		print("Error processing " + npx_directory)
 
-	#for p in processes:
+		#for p in processes:
 	#	while p.poll() is None: 
 	#		time.sleep(0.5)
 
