@@ -27,6 +27,8 @@ def createInputJson(npx_directory, output_file):
 	    "kilosort_version" : 2,
 	    "surface_channel_buffer" : 15,
 
+	    "mean_waveforms_file" : os.path.join(kilosort_output_directory, 'mean_waveforms.npy'),
+
 		"directories": {
 			"extracted_data_directory": extracted_data_directory,
 			"kilosort_output_directory": kilosort_output_directory
@@ -57,11 +59,35 @@ def createInputJson(npx_directory, output_file):
 		}, 
 
 		"kilosort2_params" : {
+			"chanMap" : "'chanMap.mat'",
+			"trange" : '[0 Inf]',
+			"fproc" : "fullfile('C:/data/kilosort', 'temp_wh.dat')",
+			"fbinary" : "fullfile(ops.rootZ, 'continuous.dat')",
+			"datatype" : "'.dat'",
+			"fshigh" : 150,
+			"Th" : '[12 12]',
+			"lam" : 100,
+			"mergeThreshold" : 0.25,
+			"ccsplit" : 0.97,
+			"minFR" : 1/50.,
+			"ThS" : '[8 8]',
+			"momentum" : '[20 400]',
+			"sigmaMask" : 30,
 			"Nfilt" : 1024,
-			"Threshold" : "[4, 10, 10",
-			"lam" : "[5, 20, 20]",
-			"InitializeTh" : -4,
-			"InitializeNFilt" : 10000
+			"nPCs" : 3,
+			"useRAM" : 0,
+			"ThPre" : 8,
+			"GPU" : 1,
+			"nSkipCov" : 5,
+			"ntbuff" : 64,
+			"scaleproc" : 200,
+			"NT" : '64*1024 + ops.ntbuff',
+			"spkTh" : -6,
+			"loc_range" : '[5 4]',
+			"long_range" : '[30 6]',
+			"maskMaxChannels" : 5,
+			"criterionNoiseChannels" : 0.2,
+			"whiteningRange" : 32
 		},
 
 		"mean_waveform_params" : {
@@ -81,7 +107,8 @@ def createInputJson(npx_directory, output_file):
 			"isi_threshold" : 0.015,
 			"snr_spike_count" : 100,
 			"samples_per_spike" : 82,
-			"pre_samples" : 20
+			"pre_samples" : 20,
+			"mean_waveform_diff_thresh" : 4.5
 		}
 
 	}
