@@ -9,6 +9,7 @@ class QualityMetricsParams(DefaultSchema):
     snr_spike_count = Int(required=True, default=100, help='Number of waveforms used to compute SNR')
     samples_per_spike = Int(required=True, default=82, help='Number of samples to extract for each spike')
     pre_samples = Int(required=True, default=20, help='Number of samples between start of spike and the peak')
+    mean_waveform_diff_thresh = Float(required=True, help='Parameter for determining noisy channels to ignore')
 
 class InputParameters(ArgSchema):
     
@@ -16,6 +17,7 @@ class InputParameters(ArgSchema):
     ephys_params = Nested(EphysParams)
     directories = Nested(Directories)
     
+    mean_waveforms_file = String(required=True, help='Path to mean waveforms file (.npy)')
 
 class OutputSchema(DefaultSchema): 
     input_parameters = Nested(InputParameters, 

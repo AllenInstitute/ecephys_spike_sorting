@@ -8,11 +8,36 @@ Created on Thu Feb  1 19:00:45 2018
 
 from scipy.interpolate import griddata
 from scipy.signal import correlate
+from scipy.ndimage.filters import gaussian_filter1d
+
 import numpy as np
 
 def find_depth(template):
     
     return np.argmax(np.max(template,0)-np.min(template,0))
+
+def find_depth_std(template, channels_to_ignore=None):
+
+    waveform_std = np.std(template,0)
+
+    if channels_to_ignore is not None:
+        waveform_std[channels_to_ignore] = 0
+
+    waveform_std_smooth = gaussian_filter1d(waveform_std, 2)
+
+    threshold = np.max(waveform_std) / 2
+    above_threshold = np.where(waveform_std > threshold)[0]
+    diffs = np.diff(above_threshold)
+    continuous_segments = np.where(diffs > 1)[0]
+
+    peak_chan = np.argmax(waveform_std_smooth)
+
+    if len(continuous_segments) > 8 or len(above_threshold) > 10:
+        is_noise = True
+    else:
+        is_noise = False
+
+    return peak_chan, is_noise
 
 def find_height(template):
     

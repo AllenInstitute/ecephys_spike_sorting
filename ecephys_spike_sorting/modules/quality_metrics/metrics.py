@@ -5,12 +5,12 @@ from collections import OrderedDict
 
 from ecephys_spike_sorting.common.spike_template_helpers import find_depth
 
-def calculate_metrics(data, spike_times, spike_clusters, amplitudes, sample_rate, params):
+def calculate_metrics(data, spike_times, spike_clusters, amplitudes, cluster_quality, mean_waveforms, sample_rate, params):
 
 	#iso = calculate_isolation_quality(data, spike_times, spike_clusters)
 	#noise_o = calculate_noise_overlap(data, spike_times, spike_clusters)
 	print("Calculating SNR")
-	snr, peak_chan = calculate_snr_and_peak_chan(data, spike_times.astype('int64'), spike_clusters, params['snr_spike_count'], params['samples_per_spike'], params['pre_samples'])
+	snr, peak_chan, is_noise = calculate_snr_and_peak_chan(data, spike_times.astype('int64'), spike_clusters, mean_waveforms, params['mean_waveforms_diff_thresh'], params['snr_spike_count'], params['samples_per_spike'], params['pre_samples'])
 	print("Calculating isi violations")
 	isi_viol = calculate_isi_violations(spike_times / sample_rate, spike_clusters, params['isi_threshold'])
 	print("Calculating firing rate")
@@ -18,9 +18,12 @@ def calculate_metrics(data, spike_times, spike_clusters, amplitudes, sample_rate
 
 	cluster_ids = np.unique(spike_clusters)
 
+    cluster_quality[is_noise] = 'noise'
+
 	# package it into a DataFrame called metrics
 	metrics = pd.DataFrame(data= OrderedDict((('cluster_ids', cluster_ids), 
 		                    ('peak_chan' , peak_chan),
+                            ('unit_quality' , cluster_quality),
 		                    ('snr' , snr),
 		                    ('firing_rate' , firing_rate),
 		                    ('isi_viol' , isi_viol))))
@@ -54,15 +57,20 @@ def calculate_isi_violations(spike_times, spike_clusters, isi_threshold):
 	return viol_rate
 
 
-def calculate_snr_and_peak_chan(data, spike_times, spike_clusters, spike_count, samples_per_spike, pre_samples):
+def calculate_snr_and_peak_chan(data, spike_times, spike_clusters, mean_waveforms, mean_waveforms_diff_thresh, spike_count, samples_per_spike, pre_samples):
 
 	cluster_ids = np.unique(spike_clusters)
 
 	snrs = np.empty(cluster_ids.shape, dtype='float64')
 	peak_chans = np.empty(cluster_ids.shape, dtype='int32')
+    is_noise = np.empty(cluster_ids.shape, dtype='bool')
 
 	snrs[:] = np.nan
 	peak_chans[:] = np.nan
+    is_noise[:] = np.nan
+
+    avg_std_diff = np.mean(np.std(np.diff(mean_waveforms,1),2),0)
+    channels_to_ignore = (avg_std_diff > mean_waveforms_diff_thresh)
 
 	for idx, cluster_id in enumerate(cluster_ids):
 
@@ -84,12 +92,11 @@ def calculate_snr_and_peak_chan(data, spike_times, spike_clusters, spike_count, 
 					mean_waveform[:, channel] = \
 					mean_waveform[:,channel] - mean_waveform[0, channel]
 	            
-				peak_chans[idx] = find_depth(mean_waveform)
+				peak_chans[idx], is_noise[idx] = find_depth_std(mean_waveform, channels_to_ignore)
 
 				snrs[idx] = snr(waveforms[:,:,peak_chans[idx]])
 
-
-	return snrs, peak_chans
+	return snrs, peak_chans, is_noise
 
 
 def calculate_firing_rate(spike_times, spike_clusters):
