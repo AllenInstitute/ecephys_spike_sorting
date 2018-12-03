@@ -279,7 +279,6 @@ def isi_violations(spike_train, isi_threshold, min_isi=0):
 
 	return fpRate, num_violations
 
-
 def snr(W):
 	"""Calculate SNR of spike waveforms.
 
@@ -302,3 +301,24 @@ def snr(W):
 	snr = A/(2*np.nanstd(e.flatten()))
 
 	return snr   
+
+#---------------new code to compute ISI and ISI violation from Xiaoxuan--------
+def inter_spike_interval(spike_times):
+    return np.diff(spike_times)
+
+def ISI_histogram(ISI, bins=np.arange(0,0.061,0.002)):
+    # binned for 60ms binsize=2ms
+    hist, bin_edges = np.histogram(ISI,bins=bins)
+    #normalized to 1 for probability distribution
+    return hist/float(sum(hist))
+
+def ISI_violation_rate(spike_times, bins=np.arange(0,0.061,0.002)):
+	"""
+		ISI violation based on ISI distribution, normalized by total firing rate
+		the output is violation rate in the first bin, which is 0.002ms by default.
+	""" 
+	ISI = inter_spike_interval(times)
+	tmp = ISI_histogram(ISI, bins=bins)
+	# the distribution of percent of violation spikes is below 0.2
+	return tmp[0]
+
