@@ -269,7 +269,10 @@ def isi_violations(spike_train, isi_threshold, min_isi=0):
 
 	Outputs:
 	--------
-	fpRate : rate of isi violations as a fraction of overall rate
+	fpRate : rate of contaminating spikes as a fraction of overall rate
+        A perfect unit has a fpRate = 0
+        A unit with some contamination has a fpRate < 0.05
+        A unit with lots of contamination has a fpRate > 0.1
 	num_violations : total number of violations
 
 	"""
@@ -281,8 +284,6 @@ def isi_violations(spike_train, isi_threshold, min_isi=0):
 	total_rate = firing_rate(spike_train)
 	violation_rate = num_violations/violation_time
 	fpRate = violation_rate/total_rate
-
-	#assert(fpRate < 1.0) # it is nonsense to have a rate > 1; a rate > 1 means the assumputions of this analysis are failing
 
 	return fpRate, num_violations
 
