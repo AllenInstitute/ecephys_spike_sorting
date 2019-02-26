@@ -22,6 +22,78 @@ from scipy.stats import linregress
 from scipy.signal import argrelextrema, resample
 from scipy.cluster.vq import kmeans2
 
+def calculate_waveform_metrics(waveforms, cluster_id, epoch_name):
+
+    
+
+    return metrics # pandas dataframe
+
+
+def calculate_snr_and_peak_chan(data, spike_times, spike_clusters, mean_waveforms, mean_waveform_diff_thresh, spike_count, samples_per_spike, pre_samples):
+
+    cluster_ids = np.unique(spike_clusters)
+
+    snrs = np.empty(cluster_ids.shape, dtype='float64')
+    peak_chans = np.empty(cluster_ids.shape, dtype='int32')
+    is_noise = np.empty(cluster_ids.shape, dtype='bool')
+
+    snrs[:] = np.nan
+    peak_chans[:] = np.nan
+    is_noise[:] = np.nan
+
+    avg_std_diff = np.mean(np.std(np.diff(mean_waveforms,1),2),0)
+    channels_to_ignore = (avg_std_diff > mean_waveform_diff_thresh)
+
+    for idx, cluster_id in enumerate(cluster_ids):
+
+        for_this_cluster = (spike_clusters == cluster_id)
+        times = spike_times[for_this_cluster]
+        np.random.shuffle(times)
+        total_waveforms = np.min([spike_count, times.size])
+        times_for_snr = times[:total_waveforms]
+        waveforms = extract_clips(data, times_for_snr, samples_per_spike, pre_samples)
+
+        if waveforms is not None:
+            
+            mean_waveform = np.nanmean(waveforms, 0)
+
+            if len(mean_waveform.shape) == 2:
+
+                # subtract offset
+                for channel in range(0, mean_waveform.shape[1]):
+                    mean_waveform[:, channel] = \
+                    mean_waveform[:,channel] - mean_waveform[0, channel]
+                
+                peak_chans[idx], is_noise[idx] = find_depth_std(mean_waveform, channels_to_ignore)
+
+                snrs[idx] = snr(waveforms[:,:,peak_chans[idx]])
+
+    return snrs, peak_chans, is_noise
+
+
+def snr(W):
+    """Calculate SNR of spike waveforms.
+
+    based on Xiaoxuan's Matlab code. 
+
+    ref: (Nordhausen et al., 1996; Suner et al., 2005)
+
+    Input:
+    -------
+    W : array of N waveforms (N x samples)
+
+    Output:
+    snr : signal-to-noise ratio for unit (scalar)
+
+    """
+
+    W_bar = np.nanmean(W,axis=0)
+    A = np.max(W_bar) - np.min(W_bar)
+    e = W - np.tile(W_bar,(np.shape(W)[0],1))
+    snr = A/(2*np.nanstd(e.flatten()))
+
+    return snr   
+
 
 # general functions used by class
 def interpolation_array(a1, a2):
