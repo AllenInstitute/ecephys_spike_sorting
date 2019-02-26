@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
-from sklearn import decomposition, neighbors
+from sklearn import neighbors
+from numpy.linalg import svd
 from collections import OrderedDict
 
 from ecephys_spike_sorting.common.spike_template_helpers import find_depth_std
