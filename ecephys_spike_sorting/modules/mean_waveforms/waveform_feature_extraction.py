@@ -274,53 +274,53 @@ def get_2d_features(waveform_all_40, site_range=15, plot=False):
         Amplitude.append(amplitude)
         peak_ch = int(site_range/2)
         waveform=ttemp[:,peak_ch]
-    	Velo.append([((np.arange(site_range)-peak_ch)*site_range)[spread_idx], ((time_to_trough-time_to_trough[peak_ch])*1/30.*1000.)[spread_idx]])
+        Velo.append([((np.arange(site_range)-peak_ch)*site_range)[spread_idx], ((time_to_trough-time_to_trough[peak_ch])*1/30.*1000.)[spread_idx]])
         
         if plot==True:
-	        plt.figure(figsize=(16,8))
-	        plt.subplot(231)
-	        plt.imshow(ttemp.T, aspect=4)
-	        plt.scatter(peak_idx, range(site_range))
-	        plt.scatter(trough_idx, range(site_range))
-	        plt.grid(False)
-	        plt.plot([0,81],[spread_idx[0],spread_idx[0]],':r')
-	        plt.plot([0,81],[spread_idx[-1],spread_idx[-1]],':r')
-	        plt.title('0 is deep into cortex', fontsize=16)
+            plt.figure(figsize=(16,8))
+            plt.subplot(231)
+            plt.imshow(ttemp.T, aspect=4)
+            plt.scatter(peak_idx, range(site_range))
+            plt.scatter(trough_idx, range(site_range))
+            plt.grid(False)
+            plt.plot([0,81],[spread_idx[0],spread_idx[0]],':r')
+            plt.plot([0,81],[spread_idx[-1],spread_idx[-1]],':r')
+            plt.title('0 is deep into cortex', fontsize=16)
 
-	        plt.subplot(232)
-	        tttemp=ttemp[:, spread_idx]
-	        for i in range(len(spread_idx)):
-	            plt.plot(tttemp[:,i]+400*i)
-	        plt.yticks([])
+            plt.subplot(232)
+            tttemp=ttemp[:, spread_idx]
+            for i in range(len(spread_idx)):
+                plt.plot(tttemp[:,i]+400*i)
+            plt.yticks([])
 
-	        plt.subplot(233)
-	        peak_ch = int(site_range/2)
-	        waveform=ttemp[:,peak_ch]
-	        plt.plot(waveform)
-	        plt.scatter(peak_idx[peak_ch], amplitude_peak[peak_ch])
-	        plt.scatter(trough_idx[peak_ch], amplitude_trough[peak_ch])
-	        plt.grid(False)
-	        plt.title('Peak waveform', fontsize=16)
+            plt.subplot(233)
+            peak_ch = int(site_range/2)
+            waveform=ttemp[:,peak_ch]
+            plt.plot(waveform)
+            plt.scatter(peak_idx[peak_ch], amplitude_peak[peak_ch])
+            plt.scatter(trough_idx[peak_ch], amplitude_trough[peak_ch])
+            plt.grid(False)
+            plt.title('Peak waveform', fontsize=16)
 
-	        plt.subplot(234)
-	        plt.plot(((np.arange(site_range)-peak_ch)*site_range),amplitude_peak)
-	        plt.plot(((np.arange(site_range)-peak_ch)*site_range),amplitude_trough)
-	        #plt.scatter(((np.arange(20)-10)*20)[idx_minima], amplitude_trough[idx_minima], c = 'b') #before smoothing
-	        plt.grid(False)
+            plt.subplot(234)
+            plt.plot(((np.arange(site_range)-peak_ch)*site_range),amplitude_peak)
+            plt.plot(((np.arange(site_range)-peak_ch)*site_range),amplitude_trough)
+            #plt.scatter(((np.arange(20)-10)*20)[idx_minima], amplitude_trough[idx_minima], c = 'b') #before smoothing
+            plt.grid(False)
 
-	        plt.subplot(235)
-	        plt.plot((np.arange(site_range)-peak_ch)*site_range, amplitude/max(amplitude))
-	        plt.plot((np.arange(site_range)-peak_ch)*site_range,np.ones(site_range)*threshold,'k:')
-	        plt.title('Amplitude', fontsize=16)
-	        plt.xlabel('Distance from soma',fontsize=14)
-	        plt.grid(False)
+            plt.subplot(235)
+            plt.plot((np.arange(site_range)-peak_ch)*site_range, amplitude/max(amplitude))
+            plt.plot((np.arange(site_range)-peak_ch)*site_range,np.ones(site_range)*threshold,'k:')
+            plt.title('Amplitude', fontsize=16)
+            plt.xlabel('Distance from soma',fontsize=14)
+            plt.grid(False)
 
-	        plt.subplot(236)
-	        plt.plot(((np.arange(site_range)-peak_ch)*site_range)[spread_idx], ((time_to_trough-time_to_trough[peak_ch])*1/30.*1000.)[spread_idx])
-	        plt.title('Velocity', fontsize=16)
-	        plt.xlabel('Distance',fontsize=14)
-	        plt.ylabel('Time',fontsize=12)
-	        plt.grid(False)
+            plt.subplot(236)
+            plt.plot(((np.arange(site_range)-peak_ch)*site_range)[spread_idx], ((time_to_trough-time_to_trough[peak_ch])*1/30.*1000.)[spread_idx])
+            plt.title('Velocity', fontsize=16)
+            plt.xlabel('Distance',fontsize=14)
+            plt.ylabel('Time',fontsize=12)
+            plt.grid(False)
 
 
     Spread = np.array(Spread)
@@ -337,16 +337,16 @@ def get_velocity(Velo, plot=False):
             regress = linregress(v[0][v[0]>=0], v[1][v[0]>=0])
             slope[idx, 1]=regress[0]
             if plot==True:
-	            plt.figure()
-	            plt.plot(v[0][v[0]>=0], v[1][v[0]>=0])
-	            plt.plot([0,v[0][-1]],[0,v[0][-1]*regress[0]])
+                plt.figure()
+                plt.plot(v[0][v[0]>=0], v[1][v[0]>=0])
+                plt.plot([0,v[0][-1]],[0,v[0][-1]*regress[0]])
 
             if len(v[0][v[0]<=0])>1:
                 regress = linregress(v[0][v[0]<=0], v[1][v[0]<=0])
                 slope[idx, 0]=regress[0]
                 if plot==True:
-	                plt.plot(v[0][v[0]<=0], v[1][v[0]<=0])
-	                plt.plot([0,v[0][0]],[0,v[0][0]*regress[0]])
+                    plt.plot(v[0][v[0]<=0], v[1][v[0]<=0])
+                    plt.plot([0,v[0][0]],[0,v[0][0]*regress[0]])
             else:
                 slope[idx, 0]=np.NaN
         else:
@@ -356,10 +356,10 @@ def get_velocity(Velo, plot=False):
 
 
 #def get_waveform_class(durations, PTratio, peak_waveform):
-#	"""Label FS and RS for kmeans classification according to duration. """
+#    """Label FS and RS for kmeans classification according to duration. """
 #    if len(durations)>1:
-#    	labels = cluster_rsfs(durations, PTratio)
-    	#labels = plot_rsfs_waveforms(peak_waveform, durations, labels_tmp)
+#        labels = cluster_rsfs(durations, PTratio)
+        #labels = plot_rsfs_waveforms(peak_waveform, durations, labels_tmp)
 #    else:
 #        labels = 0
 

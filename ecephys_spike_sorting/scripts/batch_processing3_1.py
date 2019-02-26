@@ -171,7 +171,7 @@ while sum(finished_list) > 0:
 		for p in process_dict[npx_directory]:
 			if p.poll() is None:
 				busy = True	
-		if not busy and current_modules[idx]
+		if not busy and current_modules[idx]:
 			if info_dict[npx_directory][current_modules[idx]].rcode = None
 				try:
 					p = process_dict[npx_directory][-1]

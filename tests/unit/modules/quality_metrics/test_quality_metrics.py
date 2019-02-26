@@ -7,7 +7,7 @@ import ecephys_spike_sorting.common.utils as utils
 
 DATA_DIR = os.environ.get('ECEPHYS_SPIKE_SORTING_DATA', False)
 
-def test_quality_metrics():
+def te_st_quality_metrics():
 
 	sample_rate = 30000.0
 	numChannels = 384
@@ -32,4 +32,5 @@ def test_quality_metrics():
 	print(metrics)
 
 if __name__ == "__main__":
-    test_quality_metrics()
+    #test_quality_metrics()
+    pass
