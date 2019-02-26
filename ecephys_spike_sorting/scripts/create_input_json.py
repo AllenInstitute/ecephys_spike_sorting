@@ -49,13 +49,13 @@ def createInputJson(npx_directory, output_file):
 			"figure_location" : extracted_data_directory,
 			"smoothing_amount" : 5,
 			"power_thresh" : 2.5,
-			"diff_thresh" : -0.07,
+			"diff_thresh" : -0.06,
 			"freq_range" : [0, 10],
 			"max_freq" : 150,
 			"channel_range" : [370, 380],
 			"n_passes" : 1,
 			"air_gap" : 100,
-			"skip_s_per_pass" : 100
+			"skip_s_per_pass" : 1000
 		}, 
 
 		"kilosort2_params" : {
@@ -94,7 +94,7 @@ def createInputJson(npx_directory, output_file):
 			"samples_per_spike" : 82,
 			"pre_samples" : 20,
 			"num_epochs" : 1,
-			"spikes_per_epoch" : 100
+			"spikes_per_epoch" : 500
 		},
 
 		"noise_waveform_params" : {

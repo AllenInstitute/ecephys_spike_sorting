@@ -61,7 +61,7 @@ def find_surface_channel(data, params, reference_channels, nchannels=384, sample
            #print(np.where(values < power_thresh))
            surface_chan = np.max(np.where((np.diff(values) < diff_thresh) * (values[:-1] < power_thresh) )[0])
         except ValueError:
-           surface_chan = ephys_params['num_channels']
+           surface_chan = nchannels
             
         candidates[p] = surface_chan
         
