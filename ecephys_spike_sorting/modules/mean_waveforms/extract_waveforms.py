@@ -8,7 +8,7 @@ import warnings
 
 from .waveform_metrics import calculate_waveform_metrics
 
-def extract_waveforms(raw_data, spike_times, spike_clusters, bit_volts, sample_rate, params, epochs=None):
+def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_map, bit_volts, sample_rate, params, epochs=None):
     
     """Calculate mean waveforms for sorted units.
 
@@ -51,6 +51,7 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, bit_volts, sample_r
     pre_samples = params['pre_samples']
     num_epochs = params['num_epochs']
     spikes_per_epoch = params['spikes_per_epoch']
+    upsampling_factor = params['upsampling_factor']
     
     # #############################################
 
@@ -66,6 +67,9 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, bit_volts, sample_r
 
     mean_waveforms = np.zeros((total_units, total_epochs, 2, raw_data.shape[1], samples_per_spike))
     spike_count = np.zeros((total_units, total_epochs + 1))
+
+    peak_channels = np.argmin(np.min(templates,1),1)
+    peak_channels = channel_map[peak_channels]
 
     for epoch_idx, epoch in enumerate(epochs):
 
@@ -95,7 +99,7 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, bit_volts, sample_r
                     waveforms[wv_idx, :, :] = rawWaveform * bit_volts
 
             # concatenate to existing dataframe
-            metrics = pd.concat([metrics, calculate_waveform_metrics(waveforms[:total_waveforms,:,:], cluster_id, epoch.name)])
+            metrics = pd.concat([metrics, calculate_waveform_metrics(waveforms[:total_waveforms,:,:], cluster_id, peak_channels[cluster_idx], sample_rate, upsampling_factor, epoch.name)])
 
             with warnings.catch_warnings():
                 
@@ -109,7 +113,6 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, bit_volts, sample_r
                     mean_waveforms[cluster_idx, epoch, 0, channel, :] - mean_waveforms[cluster_idx, epoch, 0, channel, 0]
                 
             spike_count[cluster_idx, epoch_idx] = total_waveforms
-
 
     dimCoords, dimLabels = generateDimLabels(cluster_ids, total_epochs, pre_samples, samples_per_spike, raw_data.shape[1], sample_rate)
 

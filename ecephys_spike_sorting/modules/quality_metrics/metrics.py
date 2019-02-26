@@ -67,7 +67,7 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
         amplitude_cutoff = calculate_amplitude_cutoff(spike_clusters[in_epoch], amplitudes[in_epoch])
         
         print("Calculating PC metrics")
-        peak_channel, isolation_distance, l_ratio, d_prime, nn_hit_rate, nn_miss_rate = calculate_pc_metrics(spike_clusters[in_epoch], 
+        isolation_distance, l_ratio, d_prime, nn_hit_rate, nn_miss_rate = calculate_pc_metrics(spike_clusters[in_epoch], 
                                                                                                channel_map,
                                                                                                pc_features[in_epoch,:,:],
                                                                                                pc_feature_ind,
@@ -235,7 +235,7 @@ def calculate_pc_metrics(spike_clusters, channel_map, pc_features, pc_feature_in
         nn_hit_rates[idx], nn_miss_rates[idx] = nearest_neighbors_metrics(all_pcs, all_labels, cluster_id, max_spikes_for_nn, n_neighbors)
 
 
-    return actual_channels, isolation_distances, l_ratios, d_primes, nn_hit_rates, nn_miss_rates 
+    return isolation_distances, l_ratios, d_primes, nn_hit_rates, nn_miss_rates 
 
 # ==========================================================
 

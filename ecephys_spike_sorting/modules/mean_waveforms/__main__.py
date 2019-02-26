@@ -27,8 +27,10 @@ def calculate_mean_waveforms(args):
                 convert_to_seconds = False)
 
     waveforms, spike_counts, coords, labels, metrics = extract_waveforms(data, spike_times, \
-                spike_clusters, clusterIDs, \
-                cluster_quality, args['ephys_params']['bit_volts'], \
+                spike_clusters,
+                templates,
+                channel_map,
+                args['ephys_params']['bit_volts'], \
                 args['ephys_params']['sample_rate'], \
                 args['mean_waveform_params'])
 

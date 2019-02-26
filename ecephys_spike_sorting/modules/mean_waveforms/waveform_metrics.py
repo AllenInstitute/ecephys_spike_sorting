@@ -22,59 +22,74 @@ from scipy.stats import linregress
 from scipy.signal import argrelextrema, resample
 from scipy.cluster.vq import kmeans2
 
-def calculate_waveform_metrics(waveforms, cluster_id, epoch_name):
 
-    
+def calculate_waveform_metrics(waveforms, cluster_id, peak_channel, sample_rate, upsampling_factor, epoch_name):
 
-    return metrics # pandas dataframe
+    """Calculate metrics for an array of waveforms
+
+    Inputs:
+    -------
+    waveforms : numpy.ndarray (num_spikes x num_channels x num_samples)
+        Can include NaN values for missing spikes
+    cluster_id : Int
+        ID for cluster
+    peak_channel : Int
+        Location of waveform peak
+    sample_rate : float
+        Sample rate in Hz
+    upsampling_factor : float
+        Relative rate at which to upsample the spike waveform
+    epoch_name : str
+        Name of epoch for which these waveforms originated
+
+    Outputs:
+    -------
+    metrics : pandas.DataFrame
+        Single-row table containing all metrics
+
+    """
+
+    snr = calculate_snr(waveforms[:,peak_channel,:]) 
+
+    mean_2D_waveform = np.nanmean(waveforms, 0)
+
+    num_samples = mean_2D_waveform.shape[1]
+    new_sample_count = int(num_samples * upsampling_factor)
+
+    mean_1D_waveform = resample(mean_2D_waveform[peak_channel,:], new_sample_count)
+    timestamps = np.linspace(0,len(mean_1D_waveform)/sampling_rate, new_sample_count)
+
+    duration = calculate_waveform_duration(mean_1D_waveform, timestamps)
+    halfwidth = calculate_waveform_halfwidth(mean_1D_waveform, timestamps)
+    PT_ratio = calculate_waveform_PT_ratio(mean_1D_waveform)
+    repolarization_slope = calculate_waveform_repolarization_slope(mean_1D_waveform, timestamps)
+    recovery_slope = calculate_waveform_recovery_slope(mean_1D_waveform, timestamps)
+
+    amplitude, spread, velocity_above, velocity_below = calculate_2D_features(mean_2D_waveform)
+
+    data = [[cluster_id, epoch_name, peak_channel, snr, duration, halfwidth, PT_ratio, repolarization_slope,
+              recovery_slope, amplitude, spread, velocity_above, velocity_below]]
+ 
+    metrics = pd.DataFrame(data, 
+                           columns = ['cluster_id', 'epoch_name', 'peak_channel', 'snr', 'duration', 'halfwidth', 
+                                     'PT_ratio','repolarization_slope', 'recovery_slope', 'amplitude',
+                                     'spread', 'velocity_above', 'velocity_below'])
+
+    return metrics
 
 
-def calculate_snr_and_peak_chan(data, spike_times, spike_clusters, mean_waveforms, mean_waveform_diff_thresh, spike_count, samples_per_spike, pre_samples):
+# ==========================================================
 
-    cluster_ids = np.unique(spike_clusters)
+# EXTRACTING 1D FEATURES
 
-    snrs = np.empty(cluster_ids.shape, dtype='float64')
-    peak_chans = np.empty(cluster_ids.shape, dtype='int32')
-    is_noise = np.empty(cluster_ids.shape, dtype='bool')
-
-    snrs[:] = np.nan
-    peak_chans[:] = np.nan
-    is_noise[:] = np.nan
-
-    avg_std_diff = np.mean(np.std(np.diff(mean_waveforms,1),2),0)
-    channels_to_ignore = (avg_std_diff > mean_waveform_diff_thresh)
-
-    for idx, cluster_id in enumerate(cluster_ids):
-
-        for_this_cluster = (spike_clusters == cluster_id)
-        times = spike_times[for_this_cluster]
-        np.random.shuffle(times)
-        total_waveforms = np.min([spike_count, times.size])
-        times_for_snr = times[:total_waveforms]
-        waveforms = extract_clips(data, times_for_snr, samples_per_spike, pre_samples)
-
-        if waveforms is not None:
-            
-            mean_waveform = np.nanmean(waveforms, 0)
-
-            if len(mean_waveform.shape) == 2:
-
-                # subtract offset
-                for channel in range(0, mean_waveform.shape[1]):
-                    mean_waveform[:, channel] = \
-                    mean_waveform[:,channel] - mean_waveform[0, channel]
-                
-                peak_chans[idx], is_noise[idx] = find_depth_std(mean_waveform, channels_to_ignore)
-
-                snrs[idx] = snr(waveforms[:,:,peak_chans[idx]])
-
-    return snrs, peak_chans, is_noise
+# ==========================================================
 
 
-def snr(W):
+def calculate_snr(W):
+
     """Calculate SNR of spike waveforms.
 
-    based on Xiaoxuan's Matlab code. 
+    Converted from Matlab by Xiaoxuan Jia
 
     ref: (Nordhausen et al., 1996; Suner et al., 2005)
 
@@ -95,172 +110,165 @@ def snr(W):
     return snr   
 
 
-# general functions used by class
-def interpolation_array(a1, a2):
-    """Interpolate between two arrays by taking the mean of the two arrays."""
-    return (a1+a2)/2.
+def calculate_waveform_duration(waveform, timestamps):
 
-def interpolation_matrix(m):
-    """Interpolate between two arrays by taking the mean of the two arrays."""
-    return np.nanmean(m,axis=1)
+    """ Duration (in seconds) between peak and trough
 
-def isnot_outlier(points, thresh=1.5):
-    """
-    Returns a boolean array with True if points are outliers and False 
-    otherwise.
+    Inputs:
+    ------
+    waveform : numpy.ndarray (N samples)
+    timestamps : numpy.ndarray (N samples)
 
-    Parameters:
-    -----------
-        points : An numobservations by numdimensions array of observations
-        thresh : The modified z-score to use as a threshold. Observations with
-            a modified z-score (based on the median absolute deviation) greater
-            than this value will be classified as outliers.
-
-    Returns:
+    Outputs:
     --------
-        mask : A numobservations-length boolean array.
+    duration : waveform duration in seconds
 
-    References:
-    ----------
-        Boris Iglewicz and David Hoaglin (1993), "Volume 16: How to Detect and
-        Handle Outliers", The ASQC Basic References in Quality Control:
-        Statistical Techniques, Edward F. Mykytka, Ph.D., Editor. 
     """
-    if len(points.shape) == 1:
-        points = points[:,None]
-    median = np.median(points, axis=0)
-    diff = np.sum((points - median)**2, axis=-1)
-    diff = np.sqrt(diff)
-    med_abs_deviation = np.median(diff)
+ 
+    trough_idx = np.argmin(waveform)
+    peak_idx = np.argmax(waveform)
 
-    modified_z_score = 0.6745 * diff / med_abs_deviation
+    duration = np.abs(timestamps[peak_idx] - timestamps[trough_idx])
 
-    return modified_z_score <= thresh
+    return duration
 
-#--------------functions to extract 1D waveform features -------------
-def get_waveform_duration(waveform, sampling_rate=30000.):
-    w = resample(waveform,200)#upsample to smooth the data
-    time = np.linspace(0,len(waveform)/sampling_rate,200)
-    trough = np.where(w==np.min(w))[0][0]
-    peak = np.where(w==np.max(w))[0][0]
-    #print(peak, trough)
-    #print(w[peak], w[trough])
-    
-    #dur =   time[trough:][np.where(w[trough:]==np.max(w[trough:]))[0][0]] - time[trough]
-    if w[peak] > np.abs(w[trough]):
-        dur =   time[peak:][np.where(w[peak:]==np.min(w[peak:]))[0][0]] - time[peak] 
-    else:
-        dur =   time[trough:][np.where(w[trough:]==np.max(w[trough:]))[0][0]] - time[trough] 
-    return dur
 
-def get_waveform_halfwidth(waveform, sampling_rate=30000.):
-    """spike width at half amplitude <0.8ms FS; >0.8ms RS"""
-    w = resample(waveform,200)#upsample to smooth the data
-    time = np.linspace(0,len(waveform)/sampling_rate,200)
-    trough = np.where(w==np.min(w))[0][0]
-    peak = np.where(w==np.max(w))[0][0]
-    
-    #dur =   time[trough:][np.where(w[trough:]==np.max(w[trough:]))[0][0]] - time[trough]
-    if w[peak] > np.abs(w[trough]):
-        dur =   time[peak:][np.where(w[peak:]>=0.5*np.min(w[peak:]))[0][0]] - time[peak] 
-    else:
-        dur =  time[trough:][np.where(w[trough:]<=0.5*np.max(w[trough:]))[0][0]] - time[trough] 
-    if peak<trough:
-        dur=-dur
-    return dur
+def calculate_waveform_halfwidth(waveform, timestamps):
 
-def get_waveform_PTratio(waveform, sampling_rate=30000.):
-    w = resample(waveform,200)#upsample to smooth the data
-    time = np.linspace(0,len(waveform)/sampling_rate,200)
-    peak = np.where(w==np.max(w))[0][0]
-    trough = np.where(w==np.min(w))[0][0]
-    ratio = w[peak]/abs(w[trough])
-    if ratio > 1.:
-        return 1.
-    else:
-        return w[peak]/abs(w[trough])
+    """ Spike width (in seconds) at half max amplitude
 
-def get_waveform_repolarizationslope(waveform, sampling_rate=30000.,window=20):
-    # accurate unit for time (second), upsample to avoid NaN
-    w = resample(waveform,200)#upsample to smooth the data
-    time = np.linspace(0,len(waveform)/sampling_rate,200)
-    trough = np.where(w==np.min(w))[0][0]
-    peak = np.where(w==np.max(w))[0][0]
-    
-    if w[peak] > np.abs(w[trough]):
-        w = -w
-        trough = np.where(w==np.min(w))[0][0]
-    return linregress(time[trough:trough+window],w[trough:trough+window])[0]
+    Inputs:
+    ------
+    waveform : numpy.ndarray (N samples)
+    timestamps : numpy.ndarray (N samples)
 
-def get_waveform_recoveryslope(waveform, sampling_rate=30000., window=20):
-    w = resample(waveform,200)#upsample to smooth the data
-    time = np.linspace(0,len(waveform)/sampling_rate,200)
-    trough = np.where(w==np.min(w))[0][0]
-    peak = np.where(w==np.max(w))[0][0]
-    
-    if w[peak] > np.abs(w[trough]):
-        w = -w
-        peak = np.where(w==np.max(w))[0][0]
-    return linregress(time[peak:],w[peak:])[0]
+    Outputs:
+    --------
+    halfwidth : waveform halfwidth in seconds
 
-def cluster_rsfs(durations, PTratio):
-    """Use duration and PTratio to cluster into RS and FS neurons"""
-    iter=1000
-    # cluster for FS and RS neurons according to duration of spike and PTratio
-    waveform_k = kmeans2(np.vstack((durations/np.max(durations),PTratio/np.max(PTratio))).T, 
-        2, iter=iter, thresh=5e-6,minit='random')
-    labels = waveform_k[1]
-    return labels 
-
-def plot_rsfs_waveforms(peak_waveform, durations, labels):
-    """Plot example traces for rs and fs. Plot mean waveform.
-    RS: 0; FS: 1
     """
-    if np.mean(durations[np.where(labels==0)[0]]) < np.mean(durations[np.where(labels==1)[0]]):
-        fs_k = 0;rs_k = 1
-        waveform_class_ids = [1,0]
+    
+    trough_idx = np.argmin(waveform)
+    peak_idx = np.argmax(waveform)
+    
+    if waveform[peak_idx] > np.abs(waveform[trough_idx]):
+        threshold = waveform[peak_idx] * 0.5
+        thresh_crossing_1 = np.min(np.where(waveform[:peak_idx] > threshold)[0])
+        thresh_crossing_2 = np.min(np.where(waveform[peak_idx:] < threshold)[0]) + peak_idx
     else:
-        rs_k = 0;fs_k = 1
-        waveform_class_ids = [0,1]
-    waveform_class = [waveform_class_ids[k] for k in labels]
-    waveform_class = np.array(waveform_class)
+        threshold = waveform[trough_idx] * 0.5
+        thresh_crossing_1 = np.min(np.where(waveform[:trough_idx] < threshold)[0])
+        thresh_crossing_2 = np.min(np.where(waveform[trough_idx:] > threshold)[0]) + trough_idx
+    
+    halfwidth = timestamps[thresh_crossing_2] - timestamps[thresh_crossing_1]
+
+    return halfwidth
 
 
-    plt.figure(figsize=(6,4))
-    for i in range(len(peak_waveform)):
-        waveform = peak_waveform[i]
-        if waveform_class[i]==np.unique(waveform_class)[0]:
-            plt.plot(waveform/np.max(np.abs(waveform)),'#b3b3ff',alpha=0.7)
-        if waveform_class[i]==np.unique(waveform_class)[1]:
-            plt.plot(waveform/np.max(np.abs(waveform)),'#c6ecc6',alpha=0.7)
+def calculate_waveform_PT_ratio(waveform):
+
+     """ Peak-to-trough ratio of 1D waveform
+
+    Inputs:
+    ------
+    waveform : numpy.ndarray (N samples)
+
+    Outputs:
+    --------
+    PT_ratio : waveform peak-to-trough ratio
+
+    """
+
+    trough_idx = np.argmin(waveform)
+    peak_idx = np.argmax(waveform)
+
+    PT_ratio = np.abs(waveform[peak_idx]/waveform[trough_idx])
+
+    return PT_ratio
 
 
-    # plot means, normalized
-    for waveform_class_id in np.unique(waveform_class):
-        plt.plot(np.mean(peak_waveform[waveform_class==waveform_class_id],axis=0)/
-                 (np.max(np.abs(np.mean(peak_waveform[waveform_class==waveform_class_id],axis=0)))),lw=3,label=waveform_class_id)
-    plt.title('Raw: RS:'+str(len(np.where(waveform_class==0)[0]))+', FS: '+str(len(np.where(waveform_class==1)[0])))
-    return waveform_class
+def calculate_waveform_repolarization_slope(waveform, timestamps, window=20):
+    
+    """ Spike repolarization slope (after maximum deflection point)
+
+    Inputs:
+    ------
+    waveform : numpy.ndarray (N samples)
+    timestamps : numpy.ndarray (N samples)
+    window : int
+        Window (in samples) for linear regression
+
+    Outputs:
+    --------
+    repolarization_slope : slope of return to baseline
+
+    """
+
+    max_point = np.argmax(np.abs(waveform))
+
+    waveform = - waveform * (np.sign(waveform[max_point])) # invert if we're using the peak
+
+    repolarization_slope = linregress(timestamps[max_point:max_point+window], waveform[max_point:max_point+window])[0]
+
+    return repolarization_slope
 
 
-#---------------------------------------
 
-def get_1d_features(waveforms):
-    """Calculate duration, PTration, repolarization slope."""
-    durations = []
-    PTratio= []
-    repolarizationslope= []
-    recoveryslope = []
-    for i in range(len(waveforms)): 
-        waveform=waveforms[i,:] 
-        durations.append(get_waveform_duration(waveform))
-        PTratio.append(get_waveform_PTratio(waveform))
-        repolarizationslope.append(get_waveform_repolarizationslope(waveform))
-        recoveryslope.append(get_waveform_recoveryslope(waveform))
-    return np.array(durations), np.array(PTratio), np.array(repolarizationslope), np.array(recoveryslope)
+def calculate_waveform_recovery_slope(waveform, sampling_rate=30000., window=20):
+
+    """ Spike recovery slope (after repolarization)
+
+    Inputs:
+    ------
+    waveform : numpy.ndarray (N samples)
+    timestamps : numpy.ndarray (N samples)
+    window : int
+        Window (in samples) for linear regression
+
+    Outputs:
+    --------
+    recovery_slope : slope of recovery period
+
+    """
+
+    max_point = np.argmax(np.abs(waveform))
+
+    waveform = - waveform * (np.sign(waveform[max_point])) # invert if we're using the peak
+
+    peak_idx = np.argmax(waveform[max_point:]) + max_point
+
+    recovery_slope = linregress(time[peak_idx:peak_idx+window],w[peak_idx:peak_idx+window])[0]
+
+    return recovery_slope
 
 
-def get_2d_features(waveform_all_40, site_range=15, plot=False):
+# ==========================================================
+
+# EXTRACTING 2D FEATURES
+
+# ==========================================================
+
+
+def calculate_2d_features(waveform, timestamps, peak_channel, spread_threshold = 0.12, site_range=16):
+    
+    """ Compute features of 2D waveform (channels x samples)
+
+    Inputs:
+    ------
+    waveform : numpy.ndarray (N samples)
+    timestamps : numpy.ndarray (N samples)
+    peak_channel : int
+    site_range: int
+
+    Outputs:
+    --------
+    amplitude : 
+    spread : 
+    velocity_above : 
+    velocity_below : 
+
+    """
+
     """
     waveform_all_40: neuron*time*space
     Calculate features from 2D waveform plot:
@@ -270,14 +278,33 @@ def get_2d_features(waveform_all_40, site_range=15, plot=False):
             x: distance (micon) 
             y: time (microseconds)
     """
-    sampling_rate=30. 
-    threshold=0.12
-    Amplitude=[]
-    Spread=[]
-    Velo= []
-    for i in range(np.shape(waveform_all_40)[0]):
+
+    assert site_range % 2 == 0 # must be even
+
+    sites_to_sample = np.arange(np.arange(-site_range, site_range+1, 2)) + peak_channel
+
+    wv = waveform[sites_to_sample, :]
+
+    trough_idx = np.argmin(wv,1)
+    trough_amplitude = np.min(wv,1)
+
+    peak_idx = np.argmax(wv,1)
+    peak_ampliutde = np.max(wv,1)
+
+    duration = np.abs(timestamps[peak_idx] - timestamps[trough_idx])
+        
+    # find local minima, interpolate waveform for noisy cases
+    idx_minima_tmp = np.array(argrelextrema(trough_amplitude, np.less)[0])
+    idx_minima=idx_minima_tmp[np.where(trough_amplitude[idx_minima_tmp]<-200)[0]]
+
+    if len(idx_minima)>1:
+        # more than 1 local minima, noisy 2D plots, smooth by averaging two columns
+        #print(i, idx_minima)
+        del ttemp, time_to_peak, time_to_trough, amplitude_peak, amplitude_trough, dur, peak_idx, trough_idx
         temp = waveform_all_40[i,:,:]
-        ttemp = temp[:,np.arange(0,site_range*2,2)]# same side as peak unit, largest waveform at unit_idx=10
+        for i in range(site_range-2):
+            temp[:,i+1]=interpolation_matrix(temp[:,i:i+2])
+        ttemp = temp# same side as peak unit, largest waveform at unit_idx=10
         time_to_peak=np.zeros(site_range)
         time_to_trough=np.zeros(site_range)
         amplitude_peak=np.zeros(site_range)
@@ -299,106 +326,26 @@ def get_2d_features(waveform_all_40, site_range=15, plot=False):
             peak_idx[j]=peak
             trough_idx[j]=trough
             dur[j]=time[trough:][np.where(w[trough:]==np.max(w[trough:]))[0][0]] - time[trough]
-            
-        # find local minima, interpolate waveform for noisy cases
-        idx_minima_tmp = np.array(argrelextrema(amplitude_trough, np.less)[0])
-        idx_minima=idx_minima_tmp[np.where(amplitude_trough[idx_minima_tmp]<-200)[0]]
 
-        if len(idx_minima)>1:
-            # more than 1 local minima, noisy 2D plots, smooth by averaging two columns
-            #print(i, idx_minima)
-            del ttemp, time_to_peak, time_to_trough, amplitude_peak, amplitude_trough, dur, peak_idx, trough_idx
-            temp = waveform_all_40[i,:,:]
-            for i in range(site_range-2):
-                temp[:,i+1]=interpolation_matrix(temp[:,i:i+2])
-            ttemp = temp# same side as peak unit, largest waveform at unit_idx=10
-            time_to_peak=np.zeros(site_range)
-            time_to_trough=np.zeros(site_range)
-            amplitude_peak=np.zeros(site_range)
-            amplitude_trough=np.zeros(site_range)
-            dur=np.zeros(site_range)
-            peak_idx=np.zeros(site_range)
-            trough_idx=np.zeros(site_range)
-            for j in range(site_range):
-                w = ttemp[:,j]
-                time = range(temp.shape[0])
-                trough = np.where(w==np.min(w))[0][0]
-                peak = np.where(w==np.max(w))[0][0]
-
-                #normal
-                time_to_peak[j]=time[peak]
-                time_to_trough[j]=time[trough]
-                amplitude_peak[j]=w[peak]
-                amplitude_trough[j]=w[trough]
-                peak_idx[j]=peak
-                trough_idx[j]=trough
-                dur[j]=time[trough:][np.where(w[trough:]==np.max(w[trough:]))[0][0]] - time[trough]
-
-        
-        amplitude = amplitude_peak-amplitude_trough
-        spread_tmp = np.where(amplitude>(max(amplitude)*threshold))[0]
-        if len(spread_tmp)>1:
-            # remove outlier for noisy maps
-            spread_idx = spread_tmp[isnot_outlier(spread_tmp)]
-        else:
-            spread_idx = spread_tmp
-        Spread.append(len(spread_idx))
-        Amplitude.append(amplitude)
-        peak_ch = int(site_range/2)
-        waveform=ttemp[:,peak_ch]
-        Velo.append([((np.arange(site_range)-peak_ch)*site_range)[spread_idx], ((time_to_trough-time_to_trough[peak_ch])*1/30.*1000.)[spread_idx]])
-        
-        if plot==True:
-            plt.figure(figsize=(16,8))
-            plt.subplot(231)
-            plt.imshow(ttemp.T, aspect=4)
-            plt.scatter(peak_idx, range(site_range))
-            plt.scatter(trough_idx, range(site_range))
-            plt.grid(False)
-            plt.plot([0,81],[spread_idx[0],spread_idx[0]],':r')
-            plt.plot([0,81],[spread_idx[-1],spread_idx[-1]],':r')
-            plt.title('0 is deep into cortex', fontsize=16)
-
-            plt.subplot(232)
-            tttemp=ttemp[:, spread_idx]
-            for i in range(len(spread_idx)):
-                plt.plot(tttemp[:,i]+400*i)
-            plt.yticks([])
-
-            plt.subplot(233)
-            peak_ch = int(site_range/2)
-            waveform=ttemp[:,peak_ch]
-            plt.plot(waveform)
-            plt.scatter(peak_idx[peak_ch], amplitude_peak[peak_ch])
-            plt.scatter(trough_idx[peak_ch], amplitude_trough[peak_ch])
-            plt.grid(False)
-            plt.title('Peak waveform', fontsize=16)
-
-            plt.subplot(234)
-            plt.plot(((np.arange(site_range)-peak_ch)*site_range),amplitude_peak)
-            plt.plot(((np.arange(site_range)-peak_ch)*site_range),amplitude_trough)
-            #plt.scatter(((np.arange(20)-10)*20)[idx_minima], amplitude_trough[idx_minima], c = 'b') #before smoothing
-            plt.grid(False)
-
-            plt.subplot(235)
-            plt.plot((np.arange(site_range)-peak_ch)*site_range, amplitude/max(amplitude))
-            plt.plot((np.arange(site_range)-peak_ch)*site_range,np.ones(site_range)*threshold,'k:')
-            plt.title('Amplitude', fontsize=16)
-            plt.xlabel('Distance from soma',fontsize=14)
-            plt.grid(False)
-
-            plt.subplot(236)
-            plt.plot(((np.arange(site_range)-peak_ch)*site_range)[spread_idx], ((time_to_trough-time_to_trough[peak_ch])*1/30.*1000.)[spread_idx])
-            plt.title('Velocity', fontsize=16)
-            plt.xlabel('Distance',fontsize=14)
-            plt.ylabel('Time',fontsize=12)
-            plt.grid(False)
-
-
-    Spread = np.array(Spread)
-    Amplitude = np.array(Amplitude)
-    Velo = Velo
-    return Spread, Amplitude, Velo
+    
+    amplitude = amplitude_peak-amplitude_trough
+    spread_tmp = np.where(amplitude>(max(amplitude)*threshold))[0]
+    
+    if len(spread_tmp)>1:
+        # remove outlier for noisy maps
+        spread_idx = spread_tmp[isnot_outlier(spread_tmp)]
+    else:
+        spread_idx = spread_tmp
+    
+    Spread.append(len(spread_idx))
+    Amplitude.append(amplitude)
+    peak_ch = int(site_range/2)
+    waveform=ttemp[:,peak_ch]
+    
+    Velo.append([((np.arange(site_range)-peak_ch)*site_range)[spread_idx], ((time_to_trough-time_to_trough[peak_ch])*1/30.*1000.)[spread_idx]])
+    
+ 
+    return amplitude, spread, velocity_above, velocity_below
 
 
 def get_velocity(Velo, plot=False):
@@ -426,31 +373,57 @@ def get_velocity(Velo, plot=False):
             slope[idx, 0]=np.NaN
     return slope
 
+# ==========================================================
 
-#def get_waveform_class(durations, PTratio, peak_waveform):
-#    """Label FS and RS for kmeans classification according to duration. """
-#    if len(durations)>1:
-#        labels = cluster_rsfs(durations, PTratio)
-        #labels = plot_rsfs_waveforms(peak_waveform, durations, labels_tmp)
-#    else:
-#        labels = 0
+# HELPER FUNCTIONS:
 
-#    return labels
+# ==========================================================
 
+def interpolation_array(a1, a2):
 
-"""
-def save_to_file(filename):
-    f = file(filename, 'wb')
-    pkl.dump([waveform_all_40, self.ch_id_all_40, self.Spread, self.Velo, self.slope, self.labels, self.durations[self.index_40], 
-        self.PTratio[self.index_40], self.repolarizationslope[self.index_40], self.recoveryslope[self.index_40]], f)
-    f.close()
+    """Interpolate between two arrays by taking the mean of the two arrays."""
 
-def save_to_file_unit(self, filename):
-    
-    f = file(filename, 'wb')
-    pkl.dump([self.waveform_all_40, self.ch_id_all_40, self.Spread, self.Velo, self.slope, self.labels, self.durations[self.index_40], 
-        self.PTratio[self.index_40], self.repolarizationslope[self.index_40], self.recoveryslope[self.index_40], self.unit_list_40], f)
-    f.close()
-"""
+`    return (a1+a2)/2.
 
 
+def interpolation_matrix(m):
+
+    """Interpolate between two arrays by taking the mean of the two arrays."""
+
+    return np.nanmean(m,axis=1)
+
+
+def isnot_outlier(points, thresh=1.5):
+
+    """
+    Returns a boolean array with True if points are outliers and False 
+    otherwise.
+
+    Parameters:
+    -----------
+        points : An numobservations by numdimensions array of observations
+        thresh : The modified z-score to use as a threshold. Observations with
+            a modified z-score (based on the median absolute deviation) greater
+            than this value will be classified as outliers.
+
+    Returns:
+    --------
+        mask : A numobservations-length boolean array.
+
+    References:
+    ----------
+        Boris Iglewicz and David Hoaglin (1993), "Volume 16: How to Detect and
+        Handle Outliers", The ASQC Basic References in Quality Control:
+        Statistical Techniques, Edward F. Mykytka, Ph.D., Editor. 
+    """
+
+    if len(points.shape) == 1:
+        points = points[:,None]
+    median = np.median(points, axis=0)
+    diff = np.sum((points - median)**2, axis=-1)
+    diff = np.sqrt(diff)
+    med_abs_deviation = np.median(diff)
+
+    modified_z_score = 0.6745 * diff / med_abs_deviation
+
+    return modified_z_score <= thresh
