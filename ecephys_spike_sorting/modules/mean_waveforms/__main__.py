@@ -4,6 +4,7 @@ import logging
 import time
 
 import numpy as np
+import pandas as pd
 
 from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file
 from ecephys_spike_sorting.common.utils import load_kilosort_data
@@ -25,14 +26,15 @@ def calculate_mean_waveforms(args):
                 args['ephys_params']['sample_rate'], \
                 convert_to_seconds = False)
 
-    waveforms, spike_counts, coords, labels = extract_waveforms(data, spike_times, \
+    waveforms, spike_counts, coords, labels, metrics = extract_waveforms(data, spike_times, \
                 spike_clusters, clusterIDs, \
                 cluster_quality, args['ephys_params']['bit_volts'], \
                 args['ephys_params']['sample_rate'], \
                 args['mean_waveform_params'])
 
-    #writeDataAsXarray(waveforms, spike_counts, coords, labels, output_file)
     writeDataAsNpy(waveforms, args['mean_waveforms_file'])
+
+    metrics.to_csv(args['waveform_metrics_file'])
 
     execution_time = time.time() - start
     

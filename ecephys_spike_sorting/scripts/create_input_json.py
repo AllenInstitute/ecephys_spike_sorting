@@ -8,7 +8,7 @@ def createInputJson(npx_directory, output_file):
 
 	extracted_data_directory = npx_directory + '_sorted'
 	probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
-	kilosort_output_directory = os.path.join(extracted_data_directory, r'continuous\Neuropix-3a-100.0')
+	kilosort_output_directory = os.path.join(extracted_data_directory, 'continuous', 'Neuropix-3a-100.0')
 
 	dictionary = \
 	{
@@ -28,6 +28,7 @@ def createInputJson(npx_directory, output_file):
 	    "surface_channel_buffer" : 15,
 
 	    "mean_waveforms_file" : os.path.join(kilosort_output_directory, 'mean_waveforms.npy'),
+        "waveforms_metrics_file" : os.path.join(kilosort_output_directory, 'waveform_metrics.csv'),
 
 		"directories": {
 			"extracted_data_directory": extracted_data_directory,
@@ -103,12 +104,13 @@ def createInputJson(npx_directory, output_file):
 		},
 
 		"quality_metrics_params" : {
-
-			"isi_threshold" : 0.015,
-			"snr_spike_count" : 100,
-			"samples_per_spike" : 82,
-			"pre_samples" : 20,
-			"mean_waveform_diff_thresh" : 4.5
+            "isi_threshold" : 0.0015,
+            "min_isi" : 0.0007,
+            "num_channels_to_compare" : 13,
+            "max_spikes_for_unit" : 500,
+            "max_spikes_for_nn" : 10000,
+            "n_neighbors" : 4,
+            "quality_metrics_output_file" : os.path.join(kilosort_output_directory, "new_metrics.csv")
 		}
 
 	}

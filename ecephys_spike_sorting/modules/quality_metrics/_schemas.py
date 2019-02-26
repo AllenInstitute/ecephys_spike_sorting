@@ -5,11 +5,14 @@ from ecephys_spike_sorting.common.schemas import EphysParams, Directories
 
 
 class QualityMetricsParams(DefaultSchema):
-    isi_threshold = Float(required=True, default=0.015, help='Maximum time (in seconds) for ISI violation')
-    snr_spike_count = Int(required=True, default=100, help='Number of waveforms used to compute SNR')
-    samples_per_spike = Int(required=True, default=82, help='Number of samples to extract for each spike')
-    pre_samples = Int(required=True, default=20, help='Number of samples between start of spike and the peak')
-    mean_waveform_diff_thresh = Float(required=True, help='Parameter for determining noisy channels to ignore')
+    isi_threshold = Float(required=False, default=0.0015, help='Maximum time (in seconds) for ISI violation')
+    min_isi = Float(required=False, default=0.00, help='Minimum time (in seconds) for ISI violation')
+    num_channels_to_compare = Int(required=False, default=13, help='Number of channels to use for computing PC metrics; must be odd')
+    max_spikes_for_unit = Int(required=False, default=500, help='Number of spikes to subsample for computing PC metrics')
+    max_spikes_for_nn = Int(required=False, default=10000, help='Further subsampling for NearestNeighbor calculation')
+    n_neighbors = Int(required=False, default=4, help='Number of neighbors to use for NearestNeighbor calculation')
+
+    quality_metrics_output_file = String(required=True, help='CSV file where metrics will be saved')
 
 class InputParameters(ArgSchema):
     

@@ -17,20 +17,20 @@ def calculate_quality_metrics(args):
 
     start = time.time()
 
-    rawDataFile = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
-    rawData = np.memmap(rawDataFile, dtype='int16', mode='r')
-    data = np.reshape(rawData, (int(rawData.size/args['ephys_params']['num_channels']), args['ephys_params']['num_channels']))
+    print("Loading data...")
 
-    spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
+    spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality, pc_features, pc_feature_ind = \
             load_kilosort_data(args['directories']['kilosort_output_directory'], \
                 args['ephys_params']['sample_rate'], \
-                convert_to_seconds = False)
+                use_master_clock = True,
+                include_pcs = True)
 
-    mean_waveforms = np.load(args['mean_waveforms_file'])
-
-    metrics = calculate_metrics(data, spike_times, spike_clusters, amplitudes, cluster_quality, mean_waveforms, args['ephys_params']['sample_rate'], args['quality_metrics_params'])
+    metrics = calculate_metrics(spike_times, spike_clusters, amplitudes, pc_features, pc_feature_ind, args['quality_metrics_params'])
     
-    output_file = os.path.join(args['directories']['kilosort_output_directory'], 'metrics.csv')
+    output_file = args['quality_metrics_params']['quality_metrics_output_file']
+
+    #waveform_metrics = np.load(args['waveforms_metrics_file'])
+    # join waveform metrics and quality metrics dataframes
 
     print("Saving data")
     metrics.to_csv(output_file)

@@ -97,9 +97,13 @@ def load(folder, filename):
 
     return np.load(os.path.join(folder, filename))
 
-def load_kilosort_data(folder, sample_rate, convert_to_seconds = True, include_pcs = False, template_zero_padding= 21):
+def load_kilosort_data(folder, sample_rate, convert_to_seconds = True, use_master_clock = False, include_pcs = False, template_zero_padding= 21):
 
-    spike_times = load(folder,'spike_times.npy')
+    if use_master_clock:
+        spike_times = load(folder,'spike_times_master_clock.npy')
+    else:
+        spike_times = load(folder,'spike_times.npy')
+        
     spike_clusters = load(folder,'spike_clusters.npy')
     amplitudes = load(folder,'amplitudes.npy')
     templates = load(folder,'templates.npy')
