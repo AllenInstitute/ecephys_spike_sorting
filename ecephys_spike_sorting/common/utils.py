@@ -97,7 +97,7 @@ def load(folder, filename):
 
     return np.load(os.path.join(folder, filename))
 
-def load_kilosort_data(folder, sample_rate, convert_to_seconds = True, template_zero_padding= 21):
+def load_kilosort_data(folder, sample_rate, convert_to_seconds = True, include_pcs = False, template_zero_padding= 21):
 
     spike_times = load(folder,'spike_times.npy')
     spike_clusters = load(folder,'spike_clusters.npy')
@@ -105,6 +105,10 @@ def load_kilosort_data(folder, sample_rate, convert_to_seconds = True, template_
     templates = load(folder,'templates.npy')
     unwhitening_mat = load(folder,'whitening_mat_inv.npy')
     channel_map = load(folder, 'channel_map.npy')
+
+    if include_pcs:
+        pc_features = load(folder, 'pc_features.npy')
+        pc_feature_ind = load(folder, 'pc_feature_ind.npy')
                 
     templates = templates[:,template_zero_padding:,:] # remove zeros
     spike_clusters = np.squeeze(spike_clusters) # fix dimensions
@@ -124,4 +128,7 @@ def load_kilosort_data(folder, sample_rate, convert_to_seconds = True, template_
         cluster_ids = np.unique(spike_clusters)
         cluster_quality = ['unsorted'] * cluster_ids.size
 
-    return spike_times, spike_clusters, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality
+    if not include_pcs:
+        return spike_times, spike_clusters, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality
+    else:
+        return spike_times, spike_clusters, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality, pc_features, pc_feature_ind

@@ -172,14 +172,14 @@ while sum(finished_list) > 0:
 			if p.poll() is None:
 				busy = True	
 		if not busy and current_modules[idx]:
-			if info_dict[npx_directory][current_modules[idx]].rcode = None
+			if info_dict[npx_directory][current_modules[idx]].rcode == None:
 				try:
 					p = process_dict[npx_directory][-1]
 					output,error  = p.communicate()
 					now = datetime.datetime.now()
 					info_dict[npx_directory][current_modules[idx]]._replace(rcode = p.returncode, output = p.output, error = p.error, end_time = now)
-					if p.returncode is not 0
-						failed_dict[npx_directory] == 1
+					if p.returncode is not 0:
+						failed_dict[npx_directory] = 1
 				except IndexError as E:
 					pass	
 		try:
