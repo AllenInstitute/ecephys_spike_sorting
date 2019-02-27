@@ -21,6 +21,7 @@ class InputParameters(ArgSchema):
     directories = Nested(Directories)
     
     mean_waveforms_file = String(required=True, help='Path to mean waveforms file (.npy)')
+    nwb_file = String(required=False, help='Path to NWB file with stimulus info')
 
 class OutputSchema(DefaultSchema): 
     input_parameters = Nested(InputParameters, 

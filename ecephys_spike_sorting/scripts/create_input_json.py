@@ -1,6 +1,6 @@
 import os, io, json
 
-def createInputJson(npx_directory, output_file):
+def createInputJson(npx_directory, output_file, nwb_file = None):
 
 	settings_xml = os.path.join(npx_directory, 'settings.xml')
 
@@ -29,6 +29,8 @@ def createInputJson(npx_directory, output_file):
 
 	    "mean_waveforms_file" : os.path.join(kilosort_output_directory, 'mean_waveforms.npy'),
         "waveforms_metrics_file" : os.path.join(kilosort_output_directory, 'waveform_metrics.csv'),
+
+        "nwb_file" : nwb_file,
 
 		"directories": {
 			"extracted_data_directory": extracted_data_directory,

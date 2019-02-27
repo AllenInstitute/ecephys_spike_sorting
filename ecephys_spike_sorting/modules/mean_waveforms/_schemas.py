@@ -14,6 +14,7 @@ class InputParameters(ArgSchema):
     
     mean_waveforms_file = String(required=True, help='Path to mean waveforms file (.npy)')
     waveforms_metrics_file = String(required=True, help='Path to mean waveforms metrics file (.csv)')
+    nwb_file = String(required=False, help='Path to NWB file for extracting epochs')
 
     mean_waveform_params = Nested(MeanWaveformParams)
     ephys_params = Nested(EphysParams)
