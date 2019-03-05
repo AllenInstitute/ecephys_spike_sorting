@@ -36,6 +36,7 @@ argschema = "*"
 xmljson= "*"
 xarray= "*"
 scikit-learn = "*"
+h5py = "*"
 
 
 [requires]
