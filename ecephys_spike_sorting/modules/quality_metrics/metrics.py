@@ -275,9 +275,8 @@ def isi_violations(spike_train, isi_threshold, min_isi=0):
 	violation_rate = num_violations/violation_time
 	fpRate = violation_rate/total_rate
 
-	#assert(fpRate < 1.0) # it is nonsense to have a rate > 1; a rate > 1 means the assumputions of this analysis are failing
-
 	return fpRate, num_violations
+    
 
 def snr(W):
 	"""Calculate SNR of spike waveforms.
