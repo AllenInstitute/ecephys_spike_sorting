@@ -50,24 +50,25 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
     if epochs is None:
         epochs = [Epoch('complete_session', 0, np.inf)]
 
-    total_units = len(np.unique(spike_clusters))
+    total_units = np.max(spike_clusters) + 1
     total_epochs = len(epochs)
 
-    for epoch in epochs:
+    for epoch in epochs[:1]:
 
         in_epoch = (spike_times > epoch.start_time) * (spike_times < epoch.end_time)
 
         print("Calculating isi violations")
-        isi_viol = calculate_isi_violations(spike_times[in_epoch], spike_clusters[in_epoch], params['isi_threshold'], params['min_isi'])
-    	
+        isi_viol = calculate_isi_violations(spike_times[in_epoch], spike_clusters[in_epoch], total_units, params['isi_threshold'], params['min_isi'])
+        
         print("Calculating firing rate")
-        firing_rate = calculate_firing_rate(spike_times[in_epoch], spike_clusters[in_epoch])
+        firing_rate = calculate_firing_rate(spike_times[in_epoch], spike_clusters[in_epoch], total_units)
         
         print("Calculating amplitude cutoff")
-        amplitude_cutoff = calculate_amplitude_cutoff(spike_clusters[in_epoch], amplitudes[in_epoch])
+        amplitude_cutoff = calculate_amplitude_cutoff(spike_clusters[in_epoch], amplitudes[in_epoch], total_units)
         
         print("Calculating PC metrics")
         isolation_distance, l_ratio, d_prime, nn_hit_rate, nn_miss_rate = calculate_pc_metrics(spike_clusters[in_epoch], 
+                                                                                               total_units,
                                                                                                channel_map,
                                                                                                pc_features[in_epoch,:,:],
                                                                                                pc_feature_ind,
@@ -80,8 +81,17 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
 
         epoch_name = [epoch.name] * total_units
 
-        metrics = pd.concat[metrics, pd.DataFrame(data= OrderedDict((('cluster_id', cluster_ids),
-                                ('peak_channel', peak_channel), 
+        print(len(firing_rate))
+        print(len(isi_viol))
+        print(len(amplitude_cutoff))
+        print(len(isolation_distance))
+        print(len(l_ratio))
+        print(len(d_prime))
+        print(len(nn_hit_rate))
+        print(len(nn_miss_rate))
+        print(len(epoch_name))
+
+        metrics = pd.concat((metrics, pd.DataFrame(data= OrderedDict((('cluster_id', cluster_ids),
                                 ('firing_rate' , firing_rate),
                                 ('isi_viol' , isi_viol),
                                 ('amplitude_cutoff' , amplitude_cutoff),
@@ -91,7 +101,7 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
                                 ('nn_hit_rate' , nn_hit_rate),
                                 ('nn_miss_rate' , nn_miss_rate),
                                 ('epoch_name' , epoch_name),
-                                )))]
+                                )))))
 
     return metrics 
 
@@ -101,64 +111,78 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
 
 # ===============================================================
 
-def calculate_isi_violations(spike_times, spike_clusters, isi_threshold, min_isi):
+def calculate_isi_violations(spike_times, spike_clusters, total_units, isi_threshold, min_isi):
 
-	cluster_ids = np.unique(spike_clusters)
+    cluster_ids = np.unique(spike_clusters)
 
-	viol_rates = np.zeros(cluster_ids.shape)
+    viol_rates = np.zeros((total_units,))
 
-	for idx, cluster_id in enumerate(cluster_ids):
-		for_this_cluster = (spike_clusters == cluster_id)
-		viol_rates[idx], num_violations = isi_violations(spike_times[for_this_cluster], 
+    for idx, cluster_id in enumerate(cluster_ids):
+        for_this_cluster = (spike_clusters == cluster_id)
+        viol_rates[cluster_id], num_violations = isi_violations(spike_times[for_this_cluster], 
                                                        min_time = np.min(spike_times), 
                                                        max_time = np.max(spike_times), 
                                                        isi_threshold=isi_threshold, 
                                                        min_isi = min_isi)
 
-	return viol_rates
+    return viol_rates
 
 
-def calculate_firing_rate(spike_times, spike_clusters):
-
-	cluster_ids = np.unique(spike_clusters)
-
-	firing_rates = np.zeros(cluster_ids.shape)
-
-	for idx, cluster_id in enumerate(cluster_ids):
-		for_this_cluster = (spike_clusters == cluster_id)
-		firing_rates[idx] = firing_rate(spike_times[for_this_cluster], 
-                                        min_time = np.min(spike_times),
-                                        max_time = np.max(spike_times))
-
-	return firing_rates
-
-
-def calculate_amplitude_cutoff(spike_clusters, amplitudes):
+def calculate_firing_rate(spike_times, spike_clusters, total_units):
 
     cluster_ids = np.unique(spike_clusters)
 
-    amplitude_cutoffs = np.zeros(cluster_ids.shape)
+    firing_rates = np.zeros((total_units,))
+
+    min_time = np.min(spike_times)
+    max_time = np.max(spike_times)
+
+    print("Total duration: " + str(max_time - min_time))
 
     for idx, cluster_id in enumerate(cluster_ids):
         for_this_cluster = (spike_clusters == cluster_id)
-        amplitude_cutoffs[idx] = amplitude_cutoff(amplitudes[for_this_cluster])
+        firing_rates[cluster_id] = firing_rate(spike_times[for_this_cluster], 
+                                        min_time = np.min(spike_times),
+                                        max_time = np.max(spike_times))
+
+    return firing_rates
+
+
+def calculate_amplitude_cutoff(spike_clusters, amplitudes, total_units):
+
+    cluster_ids = np.unique(spike_clusters)
+
+    amplitude_cutoffs = np.zeros((total_units,))
+
+    for idx, cluster_id in enumerate(cluster_ids):
+        for_this_cluster = (spike_clusters == cluster_id)
+        amplitude_cutoffs[cluster_id] = amplitude_cutoff(amplitudes[for_this_cluster])
 
     return amplitude_cutoffs
 
-def calculate_pc_metrics(spike_clusters, channel_map, pc_features, pc_feature_ind, num_channels_to_compare, max_spikes_for_cluster, max_spikes_for_nn, n_neighbors):
+
+def calculate_pc_metrics(spike_clusters, 
+                         total_units,
+                         channel_map, 
+                         pc_features, 
+                         pc_feature_ind, 
+                         num_channels_to_compare, 
+                         max_spikes_for_cluster, 
+                         max_spikes_for_nn, 
+                         n_neighbors):
 
 
     assert(num_channels_to_compare % 2 == 1)
     half_spread = int((num_channels_to_compare - 1) / 2)
 
     cluster_ids = np.unique(spike_clusters)
-    peak_channels = np.zeros(cluster_ids.shape)
-    actual_channels = np.zeros(cluster_ids.shape)
-    isolation_distances = np.zeros(cluster_ids.shape)
-    l_ratios = np.zeros(cluster_ids.shape)
-    d_primes = np.zeros(cluster_ids.shape)
-    nn_hit_rates = np.zeros(cluster_ids.shape)
-    nn_miss_rates = np.zeros(cluster_ids.shape)
+    peak_channels = np.zeros((total_units,))
+    actual_channels = np.zeros((total_units,))
+    isolation_distances = np.zeros((total_units,))
+    l_ratios = np.zeros((total_units,))
+    d_primes = np.zeros((total_units,))
+    nn_hit_rates = np.zeros((total_units,))
+    nn_miss_rates = np.zeros((total_units,))
 
     for idx, cluster_id in enumerate(cluster_ids):
 
@@ -167,11 +191,11 @@ def calculate_pc_metrics(spike_clusters, channel_map, pc_features, pc_feature_in
         
         pc_max = np.argmax(np.mean(pc_features[for_unit, 0, :],0))
         
-        peak_channels[idx] = feature_inds[pc_max]
-        actual_channels[idx] = channel_map[peak_channels[idx]]
+        peak_channels[cluster_id] = feature_inds[pc_max]
+        actual_channels[cluster_id] = channel_map[int(peak_channels[idx])]
 
 
-    for idx, cluster_id in enumerate(cluster_ids):
+    for idx, cluster_id in enumerate(cluster_ids[:2]):
 
         print(cluster_id)
 
@@ -228,11 +252,11 @@ def calculate_pc_metrics(spike_clusters, channel_map, pc_features, pc_feature_in
             
         all_pcs = np.reshape(all_pcs, (all_pcs.shape[0], pc_features.shape[1]*total_channels))
 
-        isolation_distances[idx], l_ratios[idx] = mahalanobis_metrics(all_pcs, all_labels, cluster_id)
+        isolation_distances[cluster_id], l_ratios[cluster_id] = mahalanobis_metrics(all_pcs, all_labels, cluster_id)
 
-        d_primes[idx] = lda_metrics(all_pcs, all_labels, cluster_id)
+        d_primes[cluster_id] = lda_metrics(all_pcs, all_labels, cluster_id)
 
-        nn_hit_rates[idx], nn_miss_rates[idx] = nearest_neighbors_metrics(all_pcs, all_labels, cluster_id, max_spikes_for_nn, n_neighbors)
+        nn_hit_rates[cluster_id], nn_miss_rates[cluster_id] = nearest_neighbors_metrics(all_pcs, all_labels, cluster_id, max_spikes_for_nn, n_neighbors)
 
 
     return isolation_distances, l_ratios, d_primes, nn_hit_rates, nn_miss_rates 
@@ -245,7 +269,7 @@ def calculate_pc_metrics(spike_clusters, channel_map, pc_features, pc_feature_in
 
 
 def isi_violations(spike_train, min_time, max_time, isi_threshold, min_isi=0):
-	"""Calculate ISI violations for a spike train.
+    """Calculate ISI violations for a spike train.
 
     Based on metric described in Hill et al. (2011) J Neurosci 31: 8699-8705
 
@@ -253,31 +277,31 @@ def isi_violations(spike_train, min_time, max_time, isi_threshold, min_isi=0):
 
     Inputs:
     -------
-	spike_train : array of spike times
+    spike_train : array of spike times
     min_time : minimum time for potential spikes
     max_time : maximum time for potential spikes
-	isi_threshold : threshold for isi violation
-	min_isi :
+    isi_threshold : threshold for isi violation
+    min_isi :
 
-	Outputs:
-	--------
-	fpRate : rate of contaminating spikes as a fraction of overall rate
+    Outputs:
+    --------
+    fpRate : rate of contaminating spikes as a fraction of overall rate
         A perfect unit has a fpRate = 0
         A unit with some contamination has a fpRate < 0.05
         A unit with lots of contamination has a fpRate > 0.1
-	num_violations : total number of violations
+    num_violations : total number of violations
 
-	"""
+    """
 
-	isis = np.diff(spike_train)
-	num_spikes = len(spike_train)
-	num_violations = sum(isis < isi_threshold) 
-	violation_time = 2*num_spikes*(isi_threshold - min_isi)
-	total_rate = firing_rate(spike_train, min_time, max_time)
-	violation_rate = num_violations/violation_time
-	fpRate = violation_rate/total_rate
+    isis = np.diff(spike_train)
+    num_spikes = len(spike_train)
+    num_violations = sum(isis < isi_threshold) 
+    violation_time = 2*num_spikes*(isi_threshold - min_isi)
+    total_rate = firing_rate(spike_train, min_time, max_time)
+    violation_rate = num_violations/violation_time
+    fpRate = violation_rate/total_rate
 
-	return fpRate, num_violations
+    return fpRate, num_violations
 
 
 def firing_rate(spike_train, min_time = None, max_time = None):

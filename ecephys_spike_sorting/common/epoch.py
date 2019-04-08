@@ -14,9 +14,9 @@ def get_epochs_from_nwb_file(filename):
 
         if stimulus != 'optotagging' and stimulus != 'spontaneous':
             
-            trial_times = np.squeeze(nwb['stimulus']['presentation'][stimulus]['timestamps'].value)[:,0]
-            trial_data = nwb['stimulus']['presentation'][stimulus]['data'].value
-            stimulus_features = [i.decode('utf-8') for i in nwb['stimulus']['presentation'][stimulus]['features'].value]
+            trial_times = np.squeeze(nwb['stimulus']['presentation'][stimulus]['timestamps'][:,0])
+            trial_data = nwb['stimulus']['presentation'][stimulus]['data']
+            stimulus_features = [i.decode('utf-8') for i in nwb['stimulus']['presentation'][stimulus]['features']]
             
             if stimulus.find('natural_movie') > -1:
                 movie_start_inds = np.where(trial_data == 0)[0]
@@ -24,10 +24,10 @@ def get_epochs_from_nwb_file(filename):
 
             if stimulus.find('flash_250') > -1:
                 epoch1_end = np.max(trial_times)
-            elif stimlus.find('drifting_gratings_more_repeats') > -1:
+            elif stimulus.find('drifting_gratings_more_repeats') > -1:
                 gap = np.where(np.diff(trial_times) > 5)[0][0]
                 epoch3_start = np.mean(trial_times[gap:gap+2])
-            elif stimlus.find('static_gratings') > -1:
+            elif stimulus.find('static_gratings') > -1:
                 epoch3_start = np.min(trial_times)
 
     epochs = [Epoch('RF_mapping_and_flashes', 0, epoch1_end),
