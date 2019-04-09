@@ -1,4 +1,15 @@
-import os, io, json, glob
+import os, io, json, glob, pwd, sys
+
+def create_samba_directory(samba_server, samba_share):
+
+    if sys.platform == 'linux':
+        proc_owner_uid = str(pwd.getpwnam(os.environ['USER']).pw_uid)
+        share_string = 'smb-share:server={},share={}'.format(samba_server, samba_share)
+        data_dir = os.path.join('/', 'var', 'run', 'user', proc_owner_uid, 'gvfs', share_string)
+    else:
+        data_dir = r'\\'[:1] + os.path.join(samba_serve, samba_share)
+
+    return data_dir
 
 def createInputJson(npx_directory, output_file, nwb_file = None):
 
@@ -8,8 +19,8 @@ def createInputJson(npx_directory, output_file, nwb_file = None):
 
     extracted_data_directory = npx_directory + '_sorted'
     probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
-    kilosort_output_directory = os.path.join(extracted_data_directory, 'continuous', 'Neuropix-3a-100.0')
-    nwb_file = glob.glob(os.path.join(os.path.dirname(extracted_data_directory), 'mouse*.spikes.nwb'))[0]
+    kilosort_output_directory = glob.glob(os.path.join(extracted_data_directory, 'continuous', 'Neuropix-*-100.0'))[0]
+    #nwb_file = glob.glob(os.path.join(os.path.dirname(extracted_data_directory), 'mouse*.spikes.nwb'))[0]
 
     dictionary = \
     {
@@ -31,7 +42,7 @@ def createInputJson(npx_directory, output_file, nwb_file = None):
         "mean_waveforms_file" : os.path.join(kilosort_output_directory, 'mean_waveforms.npy'),
         "waveforms_metrics_file" : os.path.join(kilosort_output_directory, 'waveform_metrics.csv'),
 
-        "nwb_file" : nwb_file,
+        #"nwb_file" : nwb_file,
 
         "directories": {
             "extracted_data_directory": extracted_data_directory,

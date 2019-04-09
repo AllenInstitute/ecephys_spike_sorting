@@ -39,9 +39,8 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
     Outputs:
     --------
     metrics : pandas.DataFrame
-        columns for each metric
+        one column for each metric
         one row per unit per epoch
-
 
     """
 
@@ -53,13 +52,16 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
     total_units = np.max(spike_clusters) + 1
     total_epochs = len(epochs)
 
-    for epoch in epochs[:1]:
+    for epoch in epochs:
 
         in_epoch = (spike_times > epoch.start_time) * (spike_times < epoch.end_time)
 
         print("Calculating isi violations")
         isi_viol = calculate_isi_violations(spike_times[in_epoch], spike_clusters[in_epoch], total_units, params['isi_threshold'], params['min_isi'])
         
+        print("Calculating presence ratio")
+        presence_ratio = calculate_presence_ratio(spike_times[in_epoch], spike_clusters[in_epoch], total_units)
+
         print("Calculating firing rate")
         firing_rate = calculate_firing_rate(spike_times[in_epoch], spike_clusters[in_epoch], total_units)
         
@@ -81,18 +83,20 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
 
         epoch_name = [epoch.name] * total_units
 
-        print(len(firing_rate))
-        print(len(isi_viol))
-        print(len(amplitude_cutoff))
-        print(len(isolation_distance))
-        print(len(l_ratio))
-        print(len(d_prime))
-        print(len(nn_hit_rate))
-        print(len(nn_miss_rate))
-        print(len(epoch_name))
+        #print(len(firing_rate))
+        #print(len(presence_ratio))
+        #print(len(isi_viol))
+        #print(len(amplitude_cutoff))
+        #print(len(isolation_distance))
+        #print(len(l_ratio))
+        #print(len(d_prime))
+        #print(len(nn_hit_rate))
+        #print(len(nn_miss_rate))
+        #print(len(epoch_name))
 
         metrics = pd.concat((metrics, pd.DataFrame(data= OrderedDict((('cluster_id', cluster_ids),
                                 ('firing_rate' , firing_rate),
+                                ('presence_ratio' , presence_ratio),
                                 ('isi_viol' , isi_viol),
                                 ('amplitude_cutoff' , amplitude_cutoff),
                                 ('isolation_distance' , isolation_distance),
@@ -126,6 +130,21 @@ def calculate_isi_violations(spike_times, spike_clusters, total_units, isi_thres
                                                        min_isi = min_isi)
 
     return viol_rates
+
+def calculate_presence_ratio(spike_times, spike_clusters, total_units):
+
+    cluster_ids = np.unique(spike_clusters)
+
+    ratios = np.zeros((total_units,))
+
+    for idx, cluster_id in enumerate(cluster_ids):
+        for_this_cluster = (spike_clusters == cluster_id)
+        ratios[cluster_id] = presence_ratio(spike_times[for_this_cluster], 
+                                                       min_time = np.min(spike_times), 
+                                                       max_time = np.max(spike_times))
+
+    return ratios
+
 
 
 def calculate_firing_rate(spike_times, spike_clusters, total_units):
@@ -195,7 +214,7 @@ def calculate_pc_metrics(spike_clusters,
         actual_channels[cluster_id] = channel_map[int(peak_channels[idx])]
 
 
-    for idx, cluster_id in enumerate(cluster_ids[:2]):
+    for idx, cluster_id in enumerate(cluster_ids):
 
         print(cluster_id)
 
@@ -281,19 +300,23 @@ def isi_violations(spike_train, min_time, max_time, isi_threshold, min_isi=0):
     min_time : minimum time for potential spikes
     max_time : maximum time for potential spikes
     isi_threshold : threshold for isi violation
-    min_isi :
+    min_isi : threshold for duplicate spikes
 
     Outputs:
     --------
     fpRate : rate of contaminating spikes as a fraction of overall rate
         A perfect unit has a fpRate = 0
-        A unit with some contamination has a fpRate < 0.05
-        A unit with lots of contamination has a fpRate > 0.1
+        A unit with some contamination has a fpRate < 0.5
+        A unit with lots of contamination has a fpRate > 1.0
     num_violations : total number of violations
 
     """
 
+    duplicate_spikes = np.where(np.diff(spike_train) <= min_isi)[0]
+
+    spike_train = np.delete(spike_train, duplicate_spikes + 1)
     isis = np.diff(spike_train)
+
     num_spikes = len(spike_train)
     num_violations = sum(isis < isi_threshold) 
     violation_time = 2*num_spikes*(isi_threshold - min_isi)
@@ -302,6 +325,27 @@ def isi_violations(spike_train, min_time, max_time, isi_threshold, min_isi=0):
     fpRate = violation_rate/total_rate
 
     return fpRate, num_violations
+
+
+
+def presence_ratio(spike_train, min_time, max_time, num_bins=100):
+    """Calculate fraction of time the unit is present within an epoch.
+
+    Inputs:
+    -------
+    spike_train : array of spike times
+    min_time : minimum time for potential spikes
+    max_time : maximum time for potential spikes
+
+    Outputs:
+    --------
+    presence_ratio : fraction of time bins in which this unit is spiking
+
+    """
+
+    h, b = np.histogram(spike_train, np.linspace(min_time, max_time, num_bins))
+
+    return np.sum(h > 0) / num_bins
 
 
 def firing_rate(spike_train, min_time = None, max_time = None):
