@@ -76,3 +76,6 @@ target/
 
 # matlab
 *.mat
+
+# virtual environment
+.venv/
