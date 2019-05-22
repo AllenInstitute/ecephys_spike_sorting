@@ -1,4 +1,7 @@
-import os, io, json, glob, pwd, sys
+import os, io, json, glob, sys
+
+if sys.platform == 'linux':
+    import pwd
 
 def create_samba_directory(samba_server, samba_share):
 
@@ -7,7 +10,7 @@ def create_samba_directory(samba_server, samba_share):
         share_string = 'smb-share:server={},share={}'.format(samba_server, samba_share)
         data_dir = os.path.join('/', 'var', 'run', 'user', proc_owner_uid, 'gvfs', share_string)
     else:
-        data_dir = r'\\'[:1] + os.path.join(samba_serve, samba_share)
+        data_dir = r'\\' + os.path.join(samba_server, samba_share)
 
     return data_dir
 

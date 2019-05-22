@@ -271,11 +271,20 @@ def calculate_pc_metrics(spike_clusters,
             
         all_pcs = np.reshape(all_pcs, (all_pcs.shape[0], pc_features.shape[1]*total_channels))
 
-        isolation_distances[cluster_id], l_ratios[cluster_id] = mahalanobis_metrics(all_pcs, all_labels, cluster_id)
+        if all_pcs.shape[0] > 10:
 
-        d_primes[cluster_id] = lda_metrics(all_pcs, all_labels, cluster_id)
+            isolation_distances[cluster_id], l_ratios[cluster_id] = mahalanobis_metrics(all_pcs, all_labels, cluster_id)
 
-        nn_hit_rates[cluster_id], nn_miss_rates[cluster_id] = nearest_neighbors_metrics(all_pcs, all_labels, cluster_id, max_spikes_for_nn, n_neighbors)
+            d_primes[cluster_id] = lda_metrics(all_pcs, all_labels, cluster_id)
+
+            nn_hit_rates[cluster_id], nn_miss_rates[cluster_id] = nearest_neighbors_metrics(all_pcs, all_labels, cluster_id, max_spikes_for_nn, n_neighbors)
+
+        else:
+
+            isolation_distances[cluster_id] = np.nan
+            d_primes[cluster_id] = np.nan
+            nn_hit_rates[cluster_id] = np.nan
+            nn_miss_rates[cluster_id] = np.nan
 
 
     return isolation_distances, l_ratios, d_primes, nn_hit_rates, nn_miss_rates 
@@ -457,10 +466,15 @@ def mahalanobis_metrics(all_pcs, all_labels, this_unit_id):
                              'mahalanobis', VI = VI)[0])
     
     n = np.min([pcs_for_this_unit.shape[0], pcs_for_other_units.shape[0]]) # number of spikes
-    dof = pcs_for_this_unit.shape[1] # number of features
-    
-    l_ratio = np.sum(1 - chi2.cdf(pow(mahalanobis_other,2), dof)) / mahalanobis_other.shape[0]
-    isolation_distance = pow(mahalanobis_other[n-1],2)
+
+    if n >= 2:
+        dof = pcs_for_this_unit.shape[1] # number of features
+        
+        l_ratio = np.sum(1 - chi2.cdf(pow(mahalanobis_other,2), dof)) / mahalanobis_other.shape[0]
+        isolation_distance = pow(mahalanobis_other[n-1],2)
+    else:
+        l_ratio = np.nan 
+        isolation_distance = np.nan 
     
     return isolation_distance, l_ratio
 
