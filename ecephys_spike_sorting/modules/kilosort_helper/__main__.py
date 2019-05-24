@@ -9,8 +9,8 @@ import numpy as np
 
 import matlab.engine
 
-import ecephys_spike_sorting.modules.kilosort_helper.matlab_file_generator as matlab_file_generator
-from ecephys_spike_sorting.common.utils import read_probe_json, get_ap_band_continuous_file
+from . import matlab_file_generator
+from ...common.utils import read_probe_json, get_ap_band_continuous_file
 
 def run_kilosort(args):
 

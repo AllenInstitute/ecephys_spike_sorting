@@ -3,9 +3,9 @@ import os
 import logging
 import time
 
-from ecephys_spike_sorting.modules.automerging.automerging import automerging
+from .automerging import automerging
 
-from ecephys_spike_sorting.common.utils import write_cluster_group_tsv, load_kilosort_data
+from ...common.utils import write_cluster_group_tsv, load_kilosort_data
 
 
 def run_automerging(args):
@@ -31,7 +31,7 @@ def run_automerging(args):
 
 def main():
 
-    from _schemas import InputParameters, OutputParameters
+    from ._schemas import InputParameters, OutputParameters
 
     mod = ArgSchemaParser(schema_type=InputParameters,
                           output_schema_type=OutputParameters)

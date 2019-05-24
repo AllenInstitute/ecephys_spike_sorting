@@ -5,7 +5,7 @@ from sklearn.ensemble import RandomForestClassifier
 
 import pickle
 
-from ecephys_spike_sorting.common.spike_template_helpers import find_depth
+from ...common.spike_template_helpers import find_depth
 
 
 def id_noise_templates_rf(spike_times, spike_clusters, cluster_ids, templates, params):

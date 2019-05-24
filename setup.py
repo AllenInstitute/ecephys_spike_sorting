@@ -10,9 +10,28 @@ setup(
     packages = find_packages(),
     include_package_data=True,
     entry_points={
-          'console_scripts': [
-              'ecephys_spike_sorting = ecephys_spike_sorting.__main__:main'
-        ]
+        'console_scripts': [
+              'automerging = ecephys_spike_sorting.modules.automerging.__main__:main',
+              'depth-estimation = ecephys_spike_sorting.modules.depth_estimation.__main__:main',
+              'extract-from-npx = ecephys_spike_sorting.modules.extract_from_npx.__main__:main',
+              'kilosort-helper = ecephys_spike_sorting.modules.kilosort_helper.__main__:main',
+              'mean-waveforms = ecephys_spike_sorting.modules.mean_waveforms.__main__:main',
+              'median-subtraction = ecephys_spike_sorting.modules.median_subtraction.__main__:main',
+              'noise-templates = ecephys_spike_sorting.modules.noise_templates.__main__:main',
+              'quality-metrics = ecephys_spike_sorting.modules.quality_metrics.__main__:main',
+        ],
     },
     setup_requires=['pytest-runner'],
+    install_requires=[
+        'matplotlib',
+        'scipy',
+        'numpy',
+        'pandas',
+        'GitPython',
+        'pillow',
+        'argschema',
+        'xmljson',
+        'xarray',
+        'scikit-learn',
+    ],
 )

@@ -3,9 +3,9 @@ import os
 import logging
 import time
 
-from ecephys_spike_sorting.modules.noise_templates.id_noise_templates import id_noise_templates_rf
+from .id_noise_templates import id_noise_templates_rf
 
-from ecephys_spike_sorting.common.utils import write_cluster_group_tsv, load_kilosort_data
+from ...common.utils import write_cluster_group_tsv, load_kilosort_data
 
 
 def classify_noise_templates(args):
