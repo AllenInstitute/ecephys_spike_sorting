@@ -31,10 +31,7 @@ mice = { \
   '405755' :  'sd4',
   '404573' :  'sd4',
   '404570' :  'sd4',
-  '404554' :  'sd4'
-  }
-
-  mice = { \
+  '404554' :  'sd4',
   '405751' :  'sd4',
   '406807' :  'sd4',
   '412794' :  'sd4',
@@ -53,9 +50,6 @@ mice = { \
   '408155' :  'sd4', 
   '408153' :  'sd4',
   '412804' :  'sd4',
-} 
-
-mice = { \
   '412796' :  'sd4.2',
   '415149' :  'sd4.2',
   '412809' :  'sd4.2',
@@ -75,11 +69,7 @@ mice = { \
   '416357' :  'sd4.2',
   '417678' :  'sd4.2',
   '420079' :  'sd4.2',
-  '424445' :  'sd4.2'
-  }
-
-  mice = { \
-  
+  '424445' :  'sd4.2',
   '418195' :  'sd4.2',
   '418196' :  'sd4.2',
   '421527' :  'sd4.2',
@@ -159,14 +149,21 @@ for mouse in mice.keys():
 
         info = createInputJson(probe_directory, input_json)
 
-        commands = ['quality_metrics']
+        new_metrics_file = info['quality_metrics_params']['quality_metrics_output_file']
 
-        for command in commands:
+        if not os.path.exists(new_metrics_file):
+            
+            print('Processing ' + npx_file)
+            #not_found += 1
 
-            command = "python -m ecephys_spike_sorting.modules." + command + " --input_json " + input_json \
-                  + " --output_json " + output_json
+            commands = ['quality_metrics']
 
-            os.system(command)
+            for command in commands:
+
+                command = "python -m ecephys_spike_sorting.modules." + command + " --input_json " + input_json \
+                      + " --output_json " + output_json
+
+                subprocess.check_call(command.split(' '))
 
 
             #process_dict.append(subprocess.Popen(command.split(' ')))

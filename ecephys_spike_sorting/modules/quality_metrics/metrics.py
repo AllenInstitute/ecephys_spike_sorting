@@ -79,20 +79,20 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
                                                                                                params['max_spikes_for_nn'],
                                                                                                params['n_neighbors'])
 
-        cluster_ids = np.unique(spike_clusters)
+        cluster_ids = np.arange(total_units)
 
-        epoch_name = [epoch.name] * total_units
+        epoch_name = [epoch.name] * len(cluster_ids)
 
-        #print(len(firing_rate))
-        #print(len(presence_ratio))
-        #print(len(isi_viol))
-        #print(len(amplitude_cutoff))
-        #print(len(isolation_distance))
-        #print(len(l_ratio))
-        #print(len(d_prime))
-        #print(len(nn_hit_rate))
-        #print(len(nn_miss_rate))
-        #print(len(epoch_name))
+        print(len(firing_rate))
+        print(len(presence_ratio))
+        print(len(isi_viol))
+        print(len(amplitude_cutoff))
+        print(len(isolation_distance))
+        print(len(l_ratio))
+        print(len(d_prime))
+        print(len(nn_hit_rate))
+        print(len(nn_miss_rate))
+        print(len(epoch_name))
 
         metrics = pd.concat((metrics, pd.DataFrame(data= OrderedDict((('cluster_id', cluster_ids),
                                 ('firing_rate' , firing_rate),
@@ -455,7 +455,10 @@ def mahalanobis_metrics(all_pcs, all_labels, this_unit_id):
     
     mean_value = np.expand_dims(np.mean(pcs_for_this_unit,0),0)
     
-    VI = np.linalg.inv(np.cov(pcs_for_this_unit.T))
+    try:
+        VI = np.linalg.inv(np.cov(pcs_for_this_unit.T))
+    except np.linalg.linalg.LinAlgError: # case of singular matrix
+        return np.nan, np.nan
 
     mahalanobis_other = np.sort(cdist(mean_value,
                        pcs_for_other_units,
