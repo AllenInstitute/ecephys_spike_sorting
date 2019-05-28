@@ -11,7 +11,7 @@ import numpy as np
 
 import io, json, os
 
-from ecephys_spike_sorting.modules.extract_from_npx.create_settings_json import create_settings_json
+from .create_settings_json import create_settings_json
 
 def run_npx_extractor(args):
 

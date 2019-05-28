@@ -5,8 +5,8 @@ import time
 
 import numpy as np
 
-from ecephys_spike_sorting.modules.depth_estimation.depth_estimation import compute_offset_and_surface_channel
-from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file, get_lfp_band_continuous_file, write_probe_json
+from .depth_estimation import compute_offset_and_surface_channel
+from ...common.utils import get_ap_band_continuous_file, get_lfp_band_continuous_file, write_probe_json
 
 
 def run_depth_estimation(args):

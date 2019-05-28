@@ -6,11 +6,12 @@ import time
 import numpy as np
 import pandas as pd
 
-from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file
-from ecephys_spike_sorting.common.utils import load_kilosort_data
-from ecephys_spike_sorting.common.epoch import get_epochs_from_nwb_file
+from ...common.utils import get_ap_band_continuous_file
+from ...common.utils import load_kilosort_data
+from ...common.epoch import get_epochs_from_nwb_file
 
-from ecephys_spike_sorting.modules.quality_metrics.metrics import calculate_metrics
+
+from .metrics import calculate_metrics
 
 
 def calculate_quality_metrics(args):

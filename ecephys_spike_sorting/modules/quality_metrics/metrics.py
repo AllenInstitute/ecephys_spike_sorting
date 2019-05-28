@@ -623,6 +623,7 @@ def make_index_mask(spike_clusters, unit_id, min_num, max_num):
     return index_mask
 
 
+<<<<<<< HEAD
 def make_channel_mask(unit_id, units_for_channel, channel_index, total_pc_channels, half_spread_down, half_spread_up):
 
     """ Create a mask for the channel dimension of the pc_features array  
@@ -646,6 +647,10 @@ def make_channel_mask(unit_id, units_for_channel, channel_index, total_pc_channe
     -------
     channel_mask : numpy.ndarray (boolean)
         Mask of channel indices for pc_features array
+=======
+	return fpRate, num_violations
+    
+>>>>>>> master
 
     """
     
@@ -678,6 +683,31 @@ def get_unit_pcs(these_pc_features, index_mask, channel_mask):
 
     unit_PCs = these_pc_features[index_mask,:,:]
 
+<<<<<<< HEAD
     unit_PCs = unit_PCs[:,:,channel_mask]
     
     return unit_PCs
+=======
+	return snr   
+
+#---------------new code to compute ISI and ISI violation from Xiaoxuan--------
+def inter_spike_interval(spike_times):
+    return np.diff(spike_times)
+
+def ISI_histogram(ISI, bins=np.arange(0,0.061,0.002)):
+    # binned for 60ms binsize=2ms
+    hist, bin_edges = np.histogram(ISI,bins=bins)
+    #normalized to 1 for probability distribution
+    return hist/float(sum(hist))
+
+def ISI_violation_rate(spike_times, bins=np.arange(0,0.061,0.002)):
+	"""
+		ISI violation based on ISI distribution, normalized by total firing rate
+		the output is violation rate in the first bin, which is 0.002ms by default.
+	""" 
+	ISI = inter_spike_interval(times)
+	tmp = ISI_histogram(ISI, bins=bins)
+	# the distribution of percent of violation spikes is below 0.2
+	return tmp[0]
+
+>>>>>>> master

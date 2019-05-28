@@ -38,6 +38,3 @@ xarray= "*"
 scikit-learn = "*"
 h5py = "*"
 
-
-[requires]
-python_version = "3.6"

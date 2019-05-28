@@ -1,7 +1,7 @@
 from argschema import ArgSchema, ArgSchemaParser 
 from argschema.schemas import DefaultSchema
 from argschema.fields import Nested, InputDir, String, Float, Dict, Int, NumpyArray
-from ecephys_spike_sorting.common.schemas import EphysParams, Directories
+from ...common.schemas import EphysParams, Directories
 
 class NoiseWaveformParams(DefaultSchema):
 	classifier_path = String(required=True, default='classifier.pkl', help='Path to waveform classifier')

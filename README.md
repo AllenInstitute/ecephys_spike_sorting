@@ -1,12 +1,11 @@
-ecephys spike sorting
-===============================
+# ecephys spike sorting
 
 https://github.com/AllenInstitute/ecephys_spike_sorting
 
 Modules for spike-sorting Allen Institute Neuropixels data
 
-
 ## Modules
+
 [extract from npx](ecephys_spike_sorting/modules/extract_from_npx/README.md): Calls a binary executable that converts data from compressed NPX format into .dat files (continuous data) and .npy files (event data)
 
 [depth estimation](ecephys_spike_sorting/modules/depth_estimation/README.md): Uses the LFP data to identify the surface channel, which is required by the median subtraction and kilosort modules.
@@ -23,5 +22,19 @@ Modules for spike-sorting Allen Institute Neuropixels data
 
 [quality metrics](ecephys_spike_sorting/modules/quality_metrics/README.md): Calculate quality metrics for each unit to assess isolation and sorting quality.
 
+## Install
 
+    $ pip install .
 
+## Entry Points
+
+Installing as a module should automagically expose the aforementioned modules using `setuptools` entry_points
+
+-   extract from npx: `extract-from-npx`
+-   depth estimation: `depth-estimation`
+-   median subtraction: `median-subtraction`
+-   kilosort helper: `kilosort-helper`
+-   noise templates: `noise_templates`
+-   automerging: `automerging`
+-   mean waveforms: `mean-waveforms`
+-   quality metrics: `quality-metrics`

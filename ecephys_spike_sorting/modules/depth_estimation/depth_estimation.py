@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from scipy.signal import welch
 from scipy.ndimage.filters import gaussian_filter1d
 
-from ecephys_spike_sorting.common.utils import find_range, rms
+from ...common.utils import find_range, rms
 
 def find_surface_channel(data, params, reference_channels, nchannels=384, sample_frequency=2500):
     
