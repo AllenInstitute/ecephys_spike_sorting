@@ -29,13 +29,13 @@ def calculate_quality_metrics(args):
                     use_master_clock = False,
                     include_pcs = True)
 
-        #epochs = get_epochs_from_nwb_file(args['nwb_file'])
-
         metrics = calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_features, pc_feature_ind, args['quality_metrics_params'])
     
     except FileNotFoundError:
         
         execution_time = time.time() - start
+
+        print(" Files not available.")
 
         return {"execution_time" : execution_time,
             "quality_metrics_output_file" : None} 
