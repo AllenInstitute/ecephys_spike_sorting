@@ -410,7 +410,7 @@ def amplitude_cutoff(amplitudes, num_histogram_bins = 500, histogram_smoothing_v
     """
 
 
-    h,b = np.histogram(amplitudes, num_histogram_bins, normed=True)
+    h,b = np.histogram(amplitudes, num_histogram_bins, density=True)
     
     pdf = gaussian_filter1d(h,histogram_smoothing_value)
     support = b[:-1]
