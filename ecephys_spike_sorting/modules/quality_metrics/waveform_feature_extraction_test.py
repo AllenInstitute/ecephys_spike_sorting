@@ -9,7 +9,7 @@ Created on Tue Feb 5 15:05:21 2019
 
 import numpy as np
 import pandas as pd
-import ecephys_spike_sorting.modules.quality_metrics.waveform_feature_extraction as wf
+import .waveform_feature_extraction as wf
 
 def get_waveforms(input_waveforms, peak_ch):
     waveforms=[]

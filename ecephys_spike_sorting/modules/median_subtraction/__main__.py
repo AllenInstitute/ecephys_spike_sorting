@@ -9,8 +9,8 @@ from git import Repo
 
 import numpy as np
 
-from ecephys_spike_sorting.common.utils import read_probe_json
-from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file
+from ...common.utils import read_probe_json
+from ...common.utils import get_ap_band_continuous_file
 
 def run_median_subtraction(args):
 

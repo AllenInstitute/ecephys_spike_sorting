@@ -2,9 +2,9 @@ import os
 import pandas as pd
 import numpy as np
 
-from ecephys_spike_sorting.modules.automerging.metrics import compare_templates, make_interp_temp, compute_isi_score, compute_isi_score
-from ecephys_spike_sorting.modules.automerging.merges import compute_overall_score, ID_merge_groups, make_merges
-from ecephys_spike_sorting.common.spike_template_helpers import find_depth
+from .metrics import compare_templates, make_interp_temp, compute_isi_score, compute_isi_score
+from .merges import compute_overall_score, ID_merge_groups, make_merges
+from ...common.spike_template_helpers import find_depth
 
 def automerging(spike_times, spike_clusters, clusterIDs, cluster_quality, templates, params):
 
