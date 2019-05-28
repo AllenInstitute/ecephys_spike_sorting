@@ -4,19 +4,18 @@ Created on Thu Sep 20 16:50:21 2018
 
 @author: Xiaoxuan Jia
 """
-### Corresponds to notebook probe_analysis_waveform_2D
+# Corresponds to notebook probe_analysis_waveform_2D
 
 
 # extract waveform features
 import numpy as np
 import random
-import cPickle as pkl
 import pandas as pd
 import h5py
-import os, sys, glob, copy
-import os.path
-import matplotlib.pyplot as plt
-import seaborn as sns
+import os
+import sys
+import glob
+import copy
 
 from scipy.stats import linregress
 from scipy.signal import argrelextrema, resample
@@ -24,7 +23,6 @@ from scipy.cluster.vq import kmeans2
 
 
 def calculate_waveform_metrics(waveforms, cluster_id, peak_channel, sample_rate, upsampling_factor, epoch_name):
-
     """Calculate metrics for an array of waveforms
 
     Inputs:
@@ -49,30 +47,35 @@ def calculate_waveform_metrics(waveforms, cluster_id, peak_channel, sample_rate,
 
     """
 
-    snr = calculate_snr(waveforms[:,peak_channel,:]) 
+    snr = calculate_snr(waveforms[:, peak_channel, :])
 
     mean_2D_waveform = np.nanmean(waveforms, 0)
 
     num_samples = mean_2D_waveform.shape[1]
     new_sample_count = int(num_samples * upsampling_factor)
 
-    mean_1D_waveform = resample(mean_2D_waveform[peak_channel,:], new_sample_count)
-    timestamps = np.linspace(0,len(mean_1D_waveform)/sampling_rate, new_sample_count)
+    mean_1D_waveform = resample(
+        mean_2D_waveform[peak_channel, :], new_sample_count)
+    timestamps = np.linspace(0, len(mean_1D_waveform) /
+                             sampling_rate, new_sample_count)
 
     duration = calculate_waveform_duration(mean_1D_waveform, timestamps)
     halfwidth = calculate_waveform_halfwidth(mean_1D_waveform, timestamps)
     PT_ratio = calculate_waveform_PT_ratio(mean_1D_waveform)
-    repolarization_slope = calculate_waveform_repolarization_slope(mean_1D_waveform, timestamps)
-    recovery_slope = calculate_waveform_recovery_slope(mean_1D_waveform, timestamps)
+    repolarization_slope = calculate_waveform_repolarization_slope(
+        mean_1D_waveform, timestamps)
+    recovery_slope = calculate_waveform_recovery_slope(
+        mean_1D_waveform, timestamps)
 
-    amplitude, spread, velocity_above, velocity_below = calculate_2D_features(mean_2D_waveform)
+    amplitude, spread, velocity_above, velocity_below = calculate_2D_features(
+        mean_2D_waveform)
 
     data = [[cluster_id, epoch_name, peak_channel, snr, duration, halfwidth, PT_ratio, repolarization_slope,
               recovery_slope, amplitude, spread, velocity_above, velocity_below]]
- 
-    metrics = pd.DataFrame(data, 
-                           columns = ['cluster_id', 'epoch_name', 'peak_channel', 'snr', 'duration', 'halfwidth', 
-                                     'PT_ratio','repolarization_slope', 'recovery_slope', 'amplitude',
+
+    metrics = pd.DataFrame(data,
+                           columns=['cluster_id', 'epoch_name', 'peak_channel', 'snr', 'duration', 'halfwidth',
+                                     'PT_ratio', 'repolarization_slope', 'recovery_slope', 'amplitude',
                                      'spread', 'velocity_above', 'velocity_below'])
 
     return metrics
@@ -86,7 +89,6 @@ def calculate_waveform_metrics(waveforms, cluster_id, peak_channel, sample_rate,
 
 
 def calculate_snr(W):
-
     """Calculate SNR of spike waveforms.
 
     Converted from Matlab by Xiaoxuan Jia
@@ -102,16 +104,15 @@ def calculate_snr(W):
 
     """
 
-    W_bar = np.nanmean(W,axis=0)
+    W_bar = np.nanmean(W, axis=0)
     A = np.max(W_bar) - np.min(W_bar)
-    e = W - np.tile(W_bar,(np.shape(W)[0],1))
+    e = W - np.tile(W_bar, (np.shape(W)[0], 1))
     snr = A/(2*np.nanstd(e.flatten()))
 
-    return snr   
+    return snr
 
 
 def calculate_waveform_duration(waveform, timestamps):
-
     """ Duration (in seconds) between peak and trough
 
     Inputs:
@@ -124,7 +125,7 @@ def calculate_waveform_duration(waveform, timestamps):
     duration : waveform duration in seconds
 
     """
- 
+
     trough_idx = np.argmin(waveform)
     peak_idx = np.argmax(waveform)
 
@@ -134,7 +135,6 @@ def calculate_waveform_duration(waveform, timestamps):
 
 
 def calculate_waveform_halfwidth(waveform, timestamps):
-
     """ Spike width (in seconds) at half max amplitude
 
     Inputs:
@@ -147,19 +147,23 @@ def calculate_waveform_halfwidth(waveform, timestamps):
     halfwidth : waveform halfwidth in seconds
 
     """
-    
+
     trough_idx = np.argmin(waveform)
     peak_idx = np.argmax(waveform)
-    
+
     if waveform[peak_idx] > np.abs(waveform[trough_idx]):
         threshold = waveform[peak_idx] * 0.5
-        thresh_crossing_1 = np.min(np.where(waveform[:peak_idx] > threshold)[0])
-        thresh_crossing_2 = np.min(np.where(waveform[peak_idx:] < threshold)[0]) + peak_idx
+        thresh_crossing_1 = np.min(
+            np.where(waveform[:peak_idx] > threshold)[0])
+        thresh_crossing_2 = np.min(
+            np.where(waveform[peak_idx:] < threshold)[0]) + peak_idx
     else:
         threshold = waveform[trough_idx] * 0.5
-        thresh_crossing_1 = np.min(np.where(waveform[:trough_idx] < threshold)[0])
-        thresh_crossing_2 = np.min(np.where(waveform[trough_idx:] > threshold)[0]) + trough_idx
-    
+        thresh_crossing_1 = np.min(
+            np.where(waveform[:trough_idx] < threshold)[0])
+        thresh_crossing_2 = np.min(
+            np.where(waveform[trough_idx:] > threshold)[0]) + trough_idx
+
     halfwidth = timestamps[thresh_crossing_2] - timestamps[thresh_crossing_1]
 
     return halfwidth
@@ -167,7 +171,7 @@ def calculate_waveform_halfwidth(waveform, timestamps):
 
 def calculate_waveform_PT_ratio(waveform):
 
-     """ Peak-to-trough ratio of 1D waveform
+    """ Peak-to-trough ratio of 1D waveform
 
     Inputs:
     ------
@@ -180,9 +184,10 @@ def calculate_waveform_PT_ratio(waveform):
     """
 
     trough_idx = np.argmin(waveform)
+
     peak_idx = np.argmax(waveform)
 
-    PT_ratio = np.abs(waveform[peak_idx]/waveform[trough_idx])
+    PT_ratio = np.abs(waveform[peak_idx] / waveform[trough_idx])
 
     return PT_ratio
 
@@ -299,7 +304,7 @@ def calculate_2d_features(waveform, timestamps, peak_channel, spread_threshold =
 
     if len(idx_minima)>1:
         # more than 1 local minima, noisy 2D plots, smooth by averaging two columns
-        #print(i, idx_minima)
+        # print(i, idx_minima)
         del ttemp, time_to_peak, time_to_trough, amplitude_peak, amplitude_trough, dur, peak_idx, trough_idx
         temp = waveform_all_40[i,:,:]
         for i in range(site_range-2):
@@ -318,7 +323,7 @@ def calculate_2d_features(waveform, timestamps, peak_channel, spread_threshold =
             trough = np.where(w==np.min(w))[0][0]
             peak = np.where(w==np.max(w))[0][0]
 
-            #normal
+            # normal
             time_to_peak[j]=time[peak]
             time_to_trough[j]=time[trough]
             amplitude_peak[j]=w[peak]
@@ -355,17 +360,10 @@ def get_velocity(Velo, plot=False):
         if len(v)>0: # when v is not empty
             regress = linregress(v[0][v[0]>=0], v[1][v[0]>=0])
             slope[idx, 1]=regress[0]
-            if plot==True:
-                plt.figure()
-                plt.plot(v[0][v[0]>=0], v[1][v[0]>=0])
-                plt.plot([0,v[0][-1]],[0,v[0][-1]*regress[0]])
 
             if len(v[0][v[0]<=0])>1:
                 regress = linregress(v[0][v[0]<=0], v[1][v[0]<=0])
                 slope[idx, 0]=regress[0]
-                if plot==True:
-                    plt.plot(v[0][v[0]<=0], v[1][v[0]<=0])
-                    plt.plot([0,v[0][0]],[0,v[0][0]*regress[0]])
             else:
                 slope[idx, 0]=np.NaN
         else:
@@ -383,7 +381,7 @@ def interpolation_array(a1, a2):
 
     """Interpolate between two arrays by taking the mean of the two arrays."""
 
-`    return (a1+a2)/2.
+    return (a1+a2)/2.
 
 
 def interpolation_matrix(m):
