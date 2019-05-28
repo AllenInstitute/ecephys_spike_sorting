@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn import decomposition, neighbors
 from collections import OrderedDict
 
-from ecephys_spike_sorting.common.spike_template_helpers import find_depth
+from ...common.spike_template_helpers import find_depth
 
 def calculate_metrics(data, spike_times, spike_clusters, amplitudes, sample_rate, params):
 

@@ -5,10 +5,10 @@ import time
 
 import numpy as np
 
-from ecephys_spike_sorting.common.utils import get_ap_band_continuous_file
-from ecephys_spike_sorting.common.utils import load_kilosort_data
+from ...common.utils import get_ap_band_continuous_file
+from ...common.utils import load_kilosort_data
 
-from ecephys_spike_sorting.modules.mean_waveforms.extract_waveforms import extract_waveforms, writeDataAsNpy
+from .extract_waveforms import extract_waveforms, writeDataAsNpy
 
 def calculate_mean_waveforms(args):
     
