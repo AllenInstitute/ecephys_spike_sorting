@@ -35,7 +35,7 @@ mice = { \
   '405751' :  'sd4',
   '406807' :  'sd4',
   '412794' :  'sd4',
-  '412793' :  'sd4',
+ # '412793' :  'sd4',
   '406805' :  'sd4',
   '412795' :  'sd4',
   '412799' :  'sd4',
@@ -116,13 +116,37 @@ mice = { \
   '437660' : 'sd5',
   '437661' : 'sd5',
   '434836' : 'sd5',
-  '448505' : 'sd5'
+  '448505' : 'sd5',
+  
+  '448506' : 'sd5',
+  '438844' : 'sd5',
+  '437929' : 'sd5',
+  '438843' : 'sd5',
+  '448503' : 'sd5',
+  '448504' : 'sd5',
+  '439183' : 'sd5',
+  '441121' : 'sd5',
+  '448502' : 'sd5',
+  '438841' : 'sd5',
+  '441118' : 'sd5',
+  '441119' : 'sd5',
+  '443087' : 'sd5',
+  '443086' : 'sd5',
+  '443085' : 'sd5',
+  '443956' : 'sd5',
+  '443954' : 'sd5',
+  '442905' : 'sd5',
+  '443290' : 'sd5',
+  '443953' : 'sd5',
+  '444384' : 'sd5',
+  '447720' : 'sd5',
+  '447716' : 'sd5'
 }
   
 
 for mouse in mice.keys():
 
-    remote_directory = create_samba_directory(mice[mouse][:3], mice[mouse])
+    remote_directory = '/mnt/' + mice[mouse] #create_samba_directory(mice[mouse][:3] + '.local', mice[mouse])
 
     mouse_directory = glob.glob(os.path.join(remote_directory, '*' + mouse + '*'))[0]
 

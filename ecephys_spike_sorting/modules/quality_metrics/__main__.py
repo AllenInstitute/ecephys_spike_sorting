@@ -21,16 +21,24 @@ def calculate_quality_metrics(args):
 
     print("Loading data...")
 
-    spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality, pc_features, pc_feature_ind = \
-            load_kilosort_data(args['directories']['kilosort_output_directory'], \
-                args['ephys_params']['sample_rate'], \
-                use_master_clock = False,
-                include_pcs = True)
+    try:
+        spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality, pc_features, pc_feature_ind = \
+                load_kilosort_data(args['directories']['kilosort_output_directory'], \
+                    args['ephys_params']['sample_rate'], \
+                    use_master_clock = False,
+                    include_pcs = True)
 
-    #epochs = get_epochs_from_nwb_file(args['nwb_file'])
+        #epochs = get_epochs_from_nwb_file(args['nwb_file'])
 
-    metrics = calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_features, pc_feature_ind, args['quality_metrics_params'])
+        metrics = calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_features, pc_feature_ind, args['quality_metrics_params'])
     
+    except FileNotFoundError:
+        
+        execution_time = time.time() - start
+
+        return {"execution_time" : execution_time,
+            "quality_metrics_output_file" : None} 
+
     output_file = args['quality_metrics_params']['quality_metrics_output_file']
 
     #waveform_metrics = np.load(args['waveforms_metrics_file'])
