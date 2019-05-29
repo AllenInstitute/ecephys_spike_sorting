@@ -23,7 +23,9 @@ from scipy.cluster.vq import kmeans2
 
 
 def calculate_waveform_metrics(waveforms, cluster_id, peak_channel, sample_rate, upsampling_factor, epoch_name):
-    """Calculate metrics for an array of waveforms
+    
+    """
+    Calculate metrics for an array of waveforms
 
     Inputs:
     -------
@@ -70,7 +72,7 @@ def calculate_waveform_metrics(waveforms, cluster_id, peak_channel, sample_rate,
     amplitude, spread, velocity_above, velocity_below = calculate_2D_features(
         mean_2D_waveform)
 
-    data = [[cluster_id, epoch_name, peak_channel, snr, duration, halfwidth, PT_ratio, repolarization_slope,
+    data = [[cluster_id, [epoch_name]*len(cluster_id), peak_channel, snr, duration, halfwidth, PT_ratio, repolarization_slope,
               recovery_slope, amplitude, spread, velocity_above, velocity_below]]
 
     metrics = pd.DataFrame(data,
@@ -89,7 +91,9 @@ def calculate_waveform_metrics(waveforms, cluster_id, peak_channel, sample_rate,
 
 
 def calculate_snr(W):
-    """Calculate SNR of spike waveforms.
+    
+    """
+    Calculate SNR of spike waveforms.
 
     Converted from Matlab by Xiaoxuan Jia
 
@@ -113,7 +117,9 @@ def calculate_snr(W):
 
 
 def calculate_waveform_duration(waveform, timestamps):
-    """ Duration (in seconds) between peak and trough
+    
+    """ 
+    Duration (in seconds) between peak and trough
 
     Inputs:
     ------
@@ -135,7 +141,9 @@ def calculate_waveform_duration(waveform, timestamps):
 
 
 def calculate_waveform_halfwidth(waveform, timestamps):
-    """ Spike width (in seconds) at half max amplitude
+    
+    """ 
+    Spike width (in seconds) at half max amplitude
 
     Inputs:
     ------
@@ -171,7 +179,8 @@ def calculate_waveform_halfwidth(waveform, timestamps):
 
 def calculate_waveform_PT_ratio(waveform):
 
-    """ Peak-to-trough ratio of 1D waveform
+    """ 
+    Peak-to-trough ratio of 1D waveform
 
     Inputs:
     ------
@@ -194,7 +203,8 @@ def calculate_waveform_PT_ratio(waveform):
 
 def calculate_waveform_repolarization_slope(waveform, timestamps, window=20):
     
-    """ Spike repolarization slope (after maximum deflection point)
+    """ 
+    Spike repolarization slope (after maximum deflection point)
 
     Inputs:
     ------
@@ -221,7 +231,8 @@ def calculate_waveform_repolarization_slope(waveform, timestamps, window=20):
 
 def calculate_waveform_recovery_slope(waveform, sampling_rate=30000., window=20):
 
-    """ Spike recovery slope (after repolarization)
+    """ 
+    Spike recovery slope (after repolarization)
 
     Inputs:
     ------
@@ -256,7 +267,8 @@ def calculate_waveform_recovery_slope(waveform, sampling_rate=30000., window=20)
 
 def calculate_2d_features(waveform, timestamps, peak_channel, spread_threshold = 0.12, site_range=16):
     
-    """ Compute features of 2D waveform (channels x samples)
+    """ 
+    Compute features of 2D waveform (channels x samples)
 
     Inputs:
     ------
