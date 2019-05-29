@@ -16,7 +16,7 @@ Modules for spike-sorting Allen Institute Neuropixels data
 
 [noise templates](ecephys_spike_sorting/modules/noise_templates/README.md): Identifies noise units based on their waveform shape and ISI histogram.
 
-[automerging](ecephys_spike_sorting/modules/automerging/README.md): Automatically merges templates that belong to the same unit.
+[automerging](ecephys_spike_sorting/modules/automerging/README.md): Automatically merges templates that belong to the same unit (not currently used).
 
 [mean waveforms](ecephys_spike_sorting/modules/mean_waveforms/README.md): Extracts mean waveforms from the raw data, given spike times and unit IDs.
 

@@ -21,4 +21,5 @@ Input data
 
 Output data
 -----------
-- **mean_waveforms.nc** : NetCDF file containing mean waveforms for good clusters across all epochs
+- **mean_waveforms.npy** : numpy file containing mean waveforms for clusters across all epochs
+- **waveform_metrics.csv** : CSV file containing metrics for each waveform
