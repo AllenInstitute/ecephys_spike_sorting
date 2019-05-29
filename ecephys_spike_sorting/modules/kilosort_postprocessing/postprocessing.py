@@ -56,9 +56,8 @@ def remove_double_counted_spikes(spike_times, spike_clusters, amplitudes, channe
     
     overlap_matrix = np.zeros((peak_channels.size, peak_channels.size))
 
-    within_unit_overlap_samples = int(params['within_unit_overlap_window'] / sample_rate)
-    between_unit_overlap_samples = int(params['between_unit_overlap_window'] / sample_rate)
-
+    within_unit_overlap_samples = int(params['within_unit_overlap_window'] * sample_rate)
+    between_unit_overlap_samples = int(params['between_unit_overlap_window'] * sample_rate)
 
     for idx1, unit_id1 in enumerate(unit_list[order]):
 
@@ -94,7 +93,7 @@ def remove_double_counted_spikes(spike_times, spike_clusters, amplitudes, channe
     return spike_times, spike_clusters, amplitudes, pc_features, overlap_matrix
 
                 
-def find_within_unit_overlap(spike_train, overlap_window = 9):
+def find_within_unit_overlap(spike_train, overlap_window = 5):
 
     """
     Finds overlapping spikes within a single spike train.
@@ -114,10 +113,12 @@ def find_within_unit_overlap(spike_train, overlap_window = 9):
 
     """
 
-    return        
+    spikes_to_remove = np.where(np.diff(spike_train) < overlap_window)[0]
+
+    return spikes_to_remove
 
 
-def find_between_unit_overlap(spike_train1, spike_train2, overlap_window = 9):
+def find_between_unit_overlap(spike_train1, spike_train2, overlap_window = 5):
 
     """
     Finds overlapping spikes between two spike trains
@@ -141,7 +142,21 @@ def find_between_unit_overlap(spike_train1, spike_train2, overlap_window = 9):
 
     """
 
-    return      
+    spike_train = np.concatenate( (spike_train1, spike_train2) )
+    original_inds = np.concatenate( (np.arange(len(spike_train1), np.arange(len(spike_train2)))) )
+    cluster_ids = np.concatenate( (np.zeros((len(spike_train1),)), np.ones((len(spike_train1),))) )
+
+    order = np.argsort(spike_train)
+    sorted_train = spike_train[order]
+    sorted_inds = original_inds[order][1:]
+    sorted_cluster_ids = cluster_ids[order][1:]
+
+    spikes_to_remove = np.diff(sorted_train) < overlap_window
+
+    spikes_to_remove1 = sorted_inds[spikes_to_remove * (sorted_cluster_ids == 0)]
+    spikes_to_remove2 = sorted_inds[spikes_to_remove * (sorted_cluster_ids == 1)]
+
+    return spikes_to_remove1, spikes_to_remove2
 
 
 def remove_spikes(spike_times, spike_clusters, amplitudes, pc_features, spikes_to_remove):
