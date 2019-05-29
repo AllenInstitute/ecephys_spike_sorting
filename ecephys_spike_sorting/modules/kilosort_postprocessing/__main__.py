@@ -6,9 +6,15 @@ import time
 
 import numpy as np
 
+from ...common.utils import load_kilosort_data
+
 from .postprocessing import remove_double_counted_spikes
 
 def run_postprocessing(args):
+
+    print("Loading data...")
+
+    start = time.time()
 
     spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality, pc_features, pc_feature_ind = \
                 load_kilosort_data(args['directories']['kilosort_output_directory'], \
@@ -16,6 +22,8 @@ def run_postprocessing(args):
                     convert_to_seconds = False,
                     use_master_clock = False,
                     include_pcs = True)
+
+    print("Removing spikes...")
 
     spike_times, spike_clusters, amplitudes, pc_features, overlap_matrix = \
         remove_double_counted_spikes(spike_times, 
@@ -28,11 +36,13 @@ def run_postprocessing(args):
                                      args['ephys_params']['sample_rate'],
                                      args['ks_postprocessing_params'])
 
+    print("Saving data...")
+
     # save data -- it's fine to overwrite existing files, because the original outputs are stored in rez.mat
-    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'spike_times.npy'), spike_times)
-    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'amplitudes.npy'), amplitudes)
-    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'spike_clusters.npy'), spike_clusters)
-    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'pc_features.npy'), pc_features)
+    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'spike_times_r.npy'), spike_times)
+    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'amplitudes_r.npy'), amplitudes)
+    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'spike_clusters_r.npy'), spike_clusters)
+    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'pc_features_r.npy'), pc_features)
     np.save(os.path.join(args['directories']['kilosort_output_directory'], 'overlap_matrix.npy'), overlap_matrix)
 
     execution_time = time.time() - start

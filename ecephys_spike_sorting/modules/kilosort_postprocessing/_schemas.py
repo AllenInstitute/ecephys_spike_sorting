@@ -8,8 +8,6 @@ class PostprocessingParams(DefaultSchema):
     within_unit_overlap_window = Float(required=False, default=0.000166, help='Time window for removing overlapping spikes for one unit.')
     between_unit_overlap_window = Float(required=False, default=0.000166, help='Time window for removing overlapping spikes between two units.')
     between_unit_channel_distance = Int(required=False, default=5, help='Number of channels (above and below peak channel) to search for overlapping spikes')
-        'between_unit_overlap_window' : time window for removing overlapping spikes
-        'between_unit_channel_distance' : number of channels over which to search for overlapping spikes
 
 class InputParameters(ArgSchema):
     

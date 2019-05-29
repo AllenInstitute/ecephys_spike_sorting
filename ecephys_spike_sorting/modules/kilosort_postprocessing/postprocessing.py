@@ -50,45 +50,65 @@ def remove_double_counted_spikes(spike_times, spike_clusters, amplitudes, channe
 
     unit_list = np.arange(np.max(spike_clusters)+1)
 
-    peak_channels = channel_map[np.argmax(np.max(templates,1) - np.min(templates,1),1)]
+    print(unit_list[:10])
+
+    peak_channels = np.squeeze(channel_map[np.argmax(np.max(templates,1) - np.min(templates,1),1)])
     
+    print(peak_channels[:10])
     order = np.argsort(peak_channels)
+
+    print(unit_list[order][:10])
     
     overlap_matrix = np.zeros((peak_channels.size, peak_channels.size))
 
     within_unit_overlap_samples = int(params['within_unit_overlap_window'] * sample_rate)
     between_unit_overlap_samples = int(params['between_unit_overlap_window'] * sample_rate)
 
+    print('  Within unit...')
+
+    spikes_to_remove = np.zeros((0,))
+
     for idx1, unit_id1 in enumerate(unit_list[order]):
+
+        print(unit_id1)
 
         for_unit1 = np.where(spike_clusters == unit_id1)[0]
 
-        spikes_to_remove = find_within_unit_overlap(spike_times[for_unit1], within_unit_overlap_samples)
+        to_remove = find_within_unit_overlap(spike_times[for_unit1], within_unit_overlap_samples)
 
-        spike_times, spike_clusters, amplitudes, pc_features = remove_spikes(spike_times, spike_clusters, amplitudes, pc_features, for_unit1[spikes_to_remove])
+        overlap_matrix[idx1, idx1] = len(to_remove)
 
-        overlap_matrix[idx1, idx1] = len(spikes_to_remove)
+        spikes_to_remove = np.concatenate((spikes_to_remove, for_unit1[to_remove]))
 
+    spike_times, spike_clusters, amplitudes, pc_features = remove_spikes(spike_times, spike_clusters, amplitudes, pc_features, spikes_to_remove)
+
+    print('  Between units...')
+
+    spikes_to_remove = np.zeros((0,))
 
     for idx1, unit_id1 in enumerate(unit_list[order]):
-        
+
+        print(unit_id1)
         for_unit1 = np.where(spike_clusters == unit_id1)[0]
         
         for idx2, unit_id2 in enumerate(unit_list[order]):
             
             if idx2 > idx1 and np.abs(peak_channels[unit_id1] - peak_channels[unit_id2]) < params['between_unit_channel_distance']:
                 
-                for_unit2 = np.where(spike_clusters == unit_id1)[0]
+                for_unit2 = np.where(spike_clusters == unit_id2)[0]
 
-                spikes_to_remove1, spikes_to_remove2 = find_between_unit_overlap(spike_times[for_unit1], spike_times[for_unit2], between_unit_overlap_samples)
+                to_remove1, to_remove2 = find_between_unit_overlap(spike_times[for_unit1], spike_times[for_unit2], between_unit_overlap_samples)
 
-                spike_times, spike_clusters, amplitudes, pc_features = remove_spikes(spike_times, 
-                                                                                     spike_clusters, 
-                                                                                     amplitudes, 
-                                                                                     pc_features, 
-                                                                                     np.concatenate((for_unit1[spikes_to_remove1], for_unit2[spikes_to_remove2])))
+                overlap_matrix[idx1, idx2] = len(to_remove1) + len(to_remove2)
 
-                overlap_matrix[idx1, idx2] = len(spikes_to_remove1) + len(spikes_to_remove2)
+                spikes_to_remove = np.concatenate((spikes_to_remove, for_unit1[to_remove1], for_unit2[to_remove2]))
+
+
+    spike_times, spike_clusters, amplitudes, pc_features = remove_spikes(spike_times, 
+                                                                         spike_clusters, 
+                                                                         amplitudes, 
+                                                                         pc_features, 
+                                                                         np.unique(spikes_to_remove))
 
     return spike_times, spike_clusters, amplitudes, pc_features, overlap_matrix
 
@@ -143,8 +163,8 @@ def find_between_unit_overlap(spike_train1, spike_train2, overlap_window = 5):
     """
 
     spike_train = np.concatenate( (spike_train1, spike_train2) )
-    original_inds = np.concatenate( (np.arange(len(spike_train1), np.arange(len(spike_train2)))) )
-    cluster_ids = np.concatenate( (np.zeros((len(spike_train1),)), np.ones((len(spike_train1),))) )
+    original_inds = np.concatenate( (np.arange(len(spike_train1)), np.arange(len(spike_train2)) ) )
+    cluster_ids = np.concatenate( (np.zeros((len(spike_train1),)), np.ones((len(spike_train2),))) )
 
     order = np.argsort(spike_train)
     sorted_train = spike_train[order]

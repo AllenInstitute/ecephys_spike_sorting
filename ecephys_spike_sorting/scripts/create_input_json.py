@@ -108,6 +108,12 @@ def createInputJson(npx_directory, output_file, nwb_file = None):
             "whiteningRange" : 32
         },
 
+        "ks_postprocessing_params" : {
+            "within_unit_overlap_window" : 0.000166,
+            "between_unit_overlap_window" : 0.000166,
+            "between_unit_overlap_distance" : 5
+        },
+
         "mean_waveform_params" : {
             "samples_per_spike" : 82,
             "pre_samples" : 20,
