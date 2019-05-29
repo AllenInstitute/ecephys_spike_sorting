@@ -36,6 +36,7 @@ Installing as a module should automagically expose the aforementioned modules us
 -   depth estimation: `depth-estimation`
 -   median subtraction: `median-subtraction`
 -   kilosort helper: `kilosort-helper`
+-   kilosort postprocessing: `kilosort-postprocessing`
 -   noise templates: `noise_templates`
 -   automerging: `automerging`
 -   mean waveforms: `mean-waveforms`
