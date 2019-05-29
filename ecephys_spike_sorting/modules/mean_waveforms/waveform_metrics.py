@@ -128,7 +128,7 @@ def calculate_waveform_duration(waveform, timestamps):
 
     Outputs:
     --------
-    duration : waveform duration in seconds
+    duration : waveform duration in milliseconds
 
     """
 
@@ -137,7 +137,7 @@ def calculate_waveform_duration(waveform, timestamps):
 
     duration = np.abs(timestamps[peak_idx] - timestamps[trough_idx])
 
-    return duration
+    return duration * 1e3
 
 
 def calculate_waveform_halfwidth(waveform, timestamps):
@@ -152,7 +152,7 @@ def calculate_waveform_halfwidth(waveform, timestamps):
 
     Outputs:
     --------
-    halfwidth : waveform halfwidth in seconds
+    halfwidth : waveform halfwidth in milliseconds
 
     """
 
@@ -174,7 +174,7 @@ def calculate_waveform_halfwidth(waveform, timestamps):
 
     halfwidth = timestamps[thresh_crossing_2] - timestamps[thresh_crossing_1]
 
-    return halfwidth
+    return halfwidth * 1e3
 
 
 def calculate_waveform_PT_ratio(waveform):
@@ -215,7 +215,7 @@ def calculate_waveform_repolarization_slope(waveform, timestamps, window=20):
 
     Outputs:
     --------
-    repolarization_slope : slope of return to baseline
+    repolarization_slope : slope of return to baseline (V / s)
 
     """
 
@@ -225,11 +225,11 @@ def calculate_waveform_repolarization_slope(waveform, timestamps, window=20):
 
     repolarization_slope = linregress(timestamps[max_point:max_point+window], waveform[max_point:max_point+window])[0]
 
-    return repolarization_slope
+    return repolarization_slope * 1e-6
 
 
 
-def calculate_waveform_recovery_slope(waveform, sampling_rate=30000., window=20):
+def calculate_waveform_recovery_slope(waveform, timestamps, window=20):
 
     """ 
     Spike recovery slope (after repolarization)
@@ -243,7 +243,7 @@ def calculate_waveform_recovery_slope(waveform, sampling_rate=30000., window=20)
 
     Outputs:
     --------
-    recovery_slope : slope of recovery period
+    recovery_slope : slope of recovery period (V / s)
 
     """
 
@@ -253,9 +253,9 @@ def calculate_waveform_recovery_slope(waveform, sampling_rate=30000., window=20)
 
     peak_idx = np.argmax(waveform[max_point:]) + max_point
 
-    recovery_slope = linregress(time[peak_idx:peak_idx+window],w[peak_idx:peak_idx+window])[0]
+    recovery_slope = linregress(timestamps[peak_idx:peak_idx+window], waveform[peak_idx:peak_idx+window])[0]
 
-    return recovery_slope
+    return recovery_slope * 1e-6
 
 
 # ==========================================================

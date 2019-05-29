@@ -178,7 +178,6 @@ for mouse in mice.keys():
         if not os.path.exists(new_metrics_file):
             
             print('Processing ' + npx_file)
-            #not_found += 1
 
             commands = ['quality_metrics']
 
@@ -188,29 +187,5 @@ for mouse in mice.keys():
                       + " --output_json " + output_json
 
                 subprocess.check_call(command.split(' '))
-
-
-            #process_dict.append(subprocess.Popen(command.split(' ')))
-
-            #time.sleep(30) 
-            
-    #all_finished = False
-
-    #while not all_finished:
-
-    #    for p in process_dict:
-
-     #       if not p.poll():
-     #           all_finished = False
-    #            print("waiting...")
-    #            break
-    #        else:
-    #            all_finished = True
-
-
-     #   time.sleep(5) 
-
-
-
 
 
