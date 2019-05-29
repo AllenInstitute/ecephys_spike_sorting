@@ -50,15 +50,10 @@ def remove_double_counted_spikes(spike_times, spike_clusters, amplitudes, channe
 
     unit_list = np.arange(np.max(spike_clusters)+1)
 
-    print(unit_list[:10])
-
     peak_channels = np.squeeze(channel_map[np.argmax(np.max(templates,1) - np.min(templates,1),1)])
     
-    print(peak_channels[:10])
     order = np.argsort(peak_channels)
 
-    print(unit_list[order][:10])
-    
     overlap_matrix = np.zeros((peak_channels.size, peak_channels.size))
 
     within_unit_overlap_samples = int(params['within_unit_overlap_window'] * sample_rate)
@@ -69,8 +64,6 @@ def remove_double_counted_spikes(spike_times, spike_clusters, amplitudes, channe
     spikes_to_remove = np.zeros((0,))
 
     for idx1, unit_id1 in enumerate(unit_list[order]):
-
-        print(unit_id1)
 
         for_unit1 = np.where(spike_clusters == unit_id1)[0]
 
@@ -88,7 +81,6 @@ def remove_double_counted_spikes(spike_times, spike_clusters, amplitudes, channe
 
     for idx1, unit_id1 in enumerate(unit_list[order]):
 
-        print(unit_id1)
         for_unit1 = np.where(spike_clusters == unit_id1)[0]
         
         for idx2, unit_id2 in enumerate(unit_list[order]):
