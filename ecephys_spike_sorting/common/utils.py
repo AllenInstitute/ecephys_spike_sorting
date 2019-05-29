@@ -30,7 +30,7 @@ def find_range(x,a,b,option='within'):
 def rms(data):
     return np.power(np.mean(np.power(data.astype('float32'),2)),0.5)
 
-def write_probe_json(output_file, channels, offset, scaling, mask, surface_chan, air_chan):
+def write_probe_json(output_file, channels, offset, scaling, mask, surface_chan, air_chan, vertical_pos, horizontal_pos):
 
     with open(output_file, 'w') as outfile:
         json.dump( 
@@ -40,7 +40,9 @@ def write_probe_json(output_file, channels, offset, scaling, mask, surface_chan,
                         'scaling' : scaling.tolist(), 
                         'mask' : mask.tolist(), 
                         'surface_channel' : surface_chan, 
-                        'air_channel' : air_chan
+                        'air_channel' : air_chan,
+                        'vertical_pos' : vertical_pos.tolist(),
+                        'horizontal_pos' : horizontal_pos.tolist()
                    },
                  
                   outfile, 
@@ -95,14 +97,22 @@ def load(folder, filename):
 
     return np.load(os.path.join(folder, filename))
 
-def load_kilosort_data(folder, sample_rate, convert_to_seconds = True, template_zero_padding= 21):
+def load_kilosort_data(folder, sample_rate, convert_to_seconds = True, use_master_clock = False, include_pcs = False, template_zero_padding= 21):
 
-    spike_times = load(folder,'spike_times.npy')
+    if use_master_clock:
+        spike_times = load(folder,'spike_times_master_clock.npy')
+    else:
+        spike_times = load(folder,'spike_times.npy')
+        
     spike_clusters = load(folder,'spike_clusters.npy')
     amplitudes = load(folder,'amplitudes.npy')
     templates = load(folder,'templates.npy')
     unwhitening_mat = load(folder,'whitening_mat_inv.npy')
     channel_map = load(folder, 'channel_map.npy')
+
+    if include_pcs:
+        pc_features = load(folder, 'pc_features.npy')
+        pc_feature_ind = load(folder, 'pc_feature_ind.npy')
                 
     templates = templates[:,template_zero_padding:,:] # remove zeros
     spike_clusters = np.squeeze(spike_clusters) # fix dimensions
@@ -122,4 +132,7 @@ def load_kilosort_data(folder, sample_rate, convert_to_seconds = True, template_
         cluster_ids = np.unique(spike_clusters)
         cluster_quality = ['unsorted'] * cluster_ids.size
 
-    return spike_times, spike_clusters, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality
+    if not include_pcs:
+        return spike_times, spike_clusters, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality
+    else:
+        return spike_times, spike_clusters, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality, pc_features, pc_feature_ind

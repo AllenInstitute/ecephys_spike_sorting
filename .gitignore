@@ -51,6 +51,7 @@ test_data/
 cached_data/
 .pytest_cache/
 test-reports/
+.venv/
 
 # Translations
 *.mo
@@ -72,3 +73,9 @@ target/
 .idea/
 .history/
 .vscode/
+
+# matlab
+*.mat
+
+# virtual environment
+.venv/

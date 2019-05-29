@@ -61,7 +61,7 @@ def find_surface_channel(data, params, reference_channels, nchannels=384, sample
            #print(np.where(values < power_thresh))
            surface_chan = np.max(np.where((np.diff(values) < diff_thresh) * (values[:-1] < power_thresh) )[0])
         except ValueError:
-           surface_chan = ephys_params['num_channels']
+           surface_chan = nchannels
             
         candidates[p] = surface_chan
         
@@ -139,6 +139,8 @@ def compute_offset_and_surface_channel(ap_data, lfp_data, ephys_params, params):
     mask = np.ones((channels.shape), dtype=bool)
     mask[mask_chans2] = False
     scaling = np.ones((numChannels,))
+    vertical_pos = 20*(np.floor(np.arange(0,384)/2)+1).astype('int')
+    horizontal_pos = np.array([43,11,59,27]*96)
 
     output_dict = {}
     output_dict['channels'] = channels
@@ -147,5 +149,7 @@ def compute_offset_and_surface_channel(ap_data, lfp_data, ephys_params, params):
     output_dict['offsets'] = offsets
     output_dict['surface_channel'] = surface
     output_dict['air_channel'] = air
+    output_dict['vertical_pos'] = vertical_pos
+    output_dict['horizontal_pos'] = horizontal_pos
 
     return output_dict
