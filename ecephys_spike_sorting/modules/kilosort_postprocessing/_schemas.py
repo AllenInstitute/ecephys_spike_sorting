@@ -5,14 +5,11 @@ from ...common.schemas import EphysParams, Directories
 
 
 class PostprocessingParams(DefaultSchema):
-    #isi_threshold = Float(required=False, default=0.0015, help='Maximum time (in seconds) for ISI violation')
-    #min_isi = Float(required=False, default=0.00, help='Minimum time (in seconds) for ISI violation')
-    #num_channels_to_compare = Int(required=False, default=13, help='Number of channels to use for computing PC metrics; must be odd')
-    #max_spikes_for_unit = Int(required=False, default=500, help='Number of spikes to subsample for computing PC metrics')
-    #max_spikes_for_nn = Int(required=False, default=10000, help='Further subsampling for NearestNeighbor calculation')
-    #n_neighbors = Int(required=False, default=4, help='Number of neighbors to use for NearestNeighbor calculation')
-
-    #quality_metrics_output_file = String(required=True, help='CSV file where metrics will be saved')
+    within_unit_overlap_window = Float(required=False, default=0.0003, help='Time window for removing overlapping spikes for one unit.')
+    between_unit_overlap_window = Float(required=False, default=0.0003, help='Time window for removing overlapping spikes between two units.')
+    between_unit_channel_distance = Int(required=False, default=5, help='Number of channels (above and below peak channel) to search for overlapping spikes')
+        'between_unit_overlap_window' : time window for removing overlapping spikes
+        'between_unit_channel_distance' : number of channels over which to search for overlapping spikes
 
 class InputParameters(ArgSchema):
     
