@@ -52,6 +52,8 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_
     num_epochs = params['num_epochs']
     spikes_per_epoch = params['spikes_per_epoch']
     upsampling_factor = params['upsampling_factor']
+    spread_threshold = params['2d_spread_threshold']
+    site_range = params['2d_site_range']
 
     # #############################################
 
@@ -84,7 +86,7 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_
             in_cluster = (spike_clusters[in_epoch] == cluster_id)
 
             if np.sum(in_cluster) > 0:
-                
+
                 times_for_cluster = spike_times_in_epoch[in_cluster]
 
                 waveforms = np.empty(
@@ -107,7 +109,15 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_
 
                 # concatenate to existing dataframe
                 metrics = pd.concat([metrics, calculate_waveform_metrics(waveforms[:total_waveforms, :, :],
-                                                                         cluster_id, peak_channels[cluster_idx], sample_rate, upsampling_factor, epoch.name)])
+                                                                         cluster_id, 
+                                                                         peak_channels[cluster_idx], 
+                                                                         channel_map,
+                                                                         sample_rate, 
+                                                                         upsampling_factor,
+                                                                         spread_threshold,
+                                                                         site_range,
+                                                                         epoch.name
+                                                                         )])
 
                 with warnings.catch_warnings():
 

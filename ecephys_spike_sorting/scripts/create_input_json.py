@@ -118,7 +118,9 @@ def createInputJson(npx_directory, output_file, nwb_file = None):
             "samples_per_spike" : 82,
             "pre_samples" : 20,
             "num_epochs" : 1,
-            "spikes_per_epoch" : 500
+            "spikes_per_epoch" : 500,
+            "2d_spread_threshold" : 0.12,
+            "2d_site_range" : 16
         },
 
         "noise_waveform_params" : {

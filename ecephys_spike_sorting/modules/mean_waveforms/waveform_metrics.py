@@ -1,28 +1,19 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Sep 20 16:50:21 2018
-
-@author: Xiaoxuan Jia
-"""
-# Corresponds to notebook probe_analysis_waveform_2D
-
-
-# extract waveform features
 import numpy as np
 import random
 import pandas as pd
-import h5py
-import os
-import sys
-import glob
-import copy
 
 from scipy.stats import linregress
-from scipy.signal import argrelextrema, resample
-from scipy.cluster.vq import kmeans2
+from scipy.signal import resample
 
-
-def calculate_waveform_metrics(waveforms, cluster_id, peak_channel, sample_rate, upsampling_factor, epoch_name):
+def calculate_waveform_metrics(waveforms, 
+                               cluster_id, 
+                               peak_channel, 
+                               channel_map, 
+                               sample_rate, 
+                               upsampling_factor, 
+                               spread_threshold,
+                               site_range,
+                               epoch_name):
     
     """
     Calculate metrics for an array of waveforms
@@ -31,14 +22,20 @@ def calculate_waveform_metrics(waveforms, cluster_id, peak_channel, sample_rate,
     -------
     waveforms : numpy.ndarray (num_spikes x num_channels x num_samples)
         Can include NaN values for missing spikes
-    cluster_id : Int
+    cluster_id : int
         ID for cluster
-    peak_channel : Int
+    peak_channel : int
         Location of waveform peak
+    channel_map : numpy.ndarray
+        Channels used for spike sorting
     sample_rate : float
         Sample rate in Hz
     upsampling_factor : float
         Relative rate at which to upsample the spike waveform
+    spread_threshold : float
+        Threshold for computing spread of 2D waveform
+    site_range : float
+        Number of sites to use for 2D waveform metrics
     epoch_name : str
         Name of epoch for which these waveforms originated
 
@@ -51,7 +48,8 @@ def calculate_waveform_metrics(waveforms, cluster_id, peak_channel, sample_rate,
 
     snr = calculate_snr(waveforms[:, peak_channel, :])
 
-    mean_2D_waveform = np.nanmean(waveforms, 0)
+    mean_2D_waveform = np.nanmean(waveforms[:, channel_map, :], 0)
+    local_peak = np.argmin(np.abs(channel_map - peak_channel))
 
     num_samples = mean_2D_waveform.shape[1]
     new_sample_count = int(num_samples * upsampling_factor)
@@ -70,7 +68,7 @@ def calculate_waveform_metrics(waveforms, cluster_id, peak_channel, sample_rate,
         mean_1D_waveform, timestamps)
 
     amplitude, spread, velocity_above, velocity_below = calculate_2D_features(
-        mean_2D_waveform)
+        mean_2D_waveform, timestamps, local_peak, spread_threshold, site_range)
 
     data = [[cluster_id, [epoch_name]*len(cluster_id), peak_channel, snr, duration, halfwidth, PT_ratio, repolarization_slope,
               recovery_slope, amplitude, spread, velocity_above, velocity_below]]
@@ -272,9 +270,10 @@ def calculate_2d_features(waveform, timestamps, peak_channel, spread_threshold =
 
     Inputs:
     ------
-    waveform : numpy.ndarray (N samples)
+    waveform : numpy.ndarray (N samples x M channels)
     timestamps : numpy.ndarray (N samples)
     peak_channel : int
+    spread_threshold : float
     site_range: int
 
     Outputs:
@@ -298,90 +297,43 @@ def calculate_2d_features(waveform, timestamps, peak_channel, spread_threshold =
 
     assert site_range % 2 == 0 # must be even
 
-    sites_to_sample = np.arange(np.arange(-site_range, site_range+1, 2)) + peak_channel
+    sites_to_sample = np.arange(-site_range, site_range+1, 2) + peak_channel
 
     wv = waveform[sites_to_sample, :]
 
-    trough_idx = np.argmin(wv,1)
-    trough_amplitude = np.min(wv,1)
+    smoothed_waveform = np.zeros((wv.shape[0]-1,wv.shape[1]))
 
-    peak_idx = np.argmax(wv,1)
-    peak_ampliutde = np.max(wv,1)
+    for i in range(site_range-1):
+        smoothed_waveform[i,:] = np.mean(wv[i:i+2,:],0)
+
+    trough_idx = np.argmin(smoothed_waveform,1)
+    trough_amplitude = np.min(smoothed_waveform,1)
+
+    peak_idx = np.argmax(smoothed_waveform,1)
+    peak_amplitude = np.max(smoothed_waveform,1)
 
     duration = np.abs(timestamps[peak_idx] - timestamps[trough_idx])
-        
-    # find local minima, interpolate waveform for noisy cases
-    idx_minima_tmp = np.array(argrelextrema(trough_amplitude, np.less)[0])
-    idx_minima=idx_minima_tmp[np.where(trough_amplitude[idx_minima_tmp]<-200)[0]]
 
-    if len(idx_minima)>1:
-        # more than 1 local minima, noisy 2D plots, smooth by averaging two columns
-        # print(i, idx_minima)
-        del ttemp, time_to_peak, time_to_trough, amplitude_peak, amplitude_trough, dur, peak_idx, trough_idx
-        temp = waveform_all_40[i,:,:]
-        for i in range(site_range-2):
-            temp[:,i+1]=interpolation_matrix(temp[:,i:i+2])
-        ttemp = temp# same side as peak unit, largest waveform at unit_idx=10
-        time_to_peak=np.zeros(site_range)
-        time_to_trough=np.zeros(site_range)
-        amplitude_peak=np.zeros(site_range)
-        amplitude_trough=np.zeros(site_range)
-        dur=np.zeros(site_range)
-        peak_idx=np.zeros(site_range)
-        trough_idx=np.zeros(site_range)
-        for j in range(site_range):
-            w = ttemp[:,j]
-            time = range(temp.shape[0])
-            trough = np.where(w==np.min(w))[0][0]
-            peak = np.where(w==np.max(w))[0][0]
+    overall_amplitude = peak_amplitude - trough_amplitude
+    amplitude = np.max(overall_amplitude)
 
-            # normal
-            time_to_peak[j]=time[peak]
-            time_to_trough[j]=time[trough]
-            amplitude_peak[j]=w[peak]
-            amplitude_trough[j]=w[trough]
-            peak_idx[j]=peak
-            trough_idx[j]=trough
-            dur[j]=time[trough:][np.where(w[trough:]==np.max(w[trough:]))[0][0]] - time[trough]
+    points_above_thresh = np.where(overall_amplitude > (amplitude * spread_threshold))[0]
+    
+    if len(points_above_thresh) > 1:
+        points_above_thresh = points_above_thresh[isnot_outlier(points_above_thresh)]
 
-    
-    amplitude = amplitude_peak-amplitude_trough
-    spread_tmp = np.where(amplitude>(max(amplitude)*threshold))[0]
-    
-    if len(spread_tmp)>1:
-        # remove outlier for noisy maps
-        spread_idx = spread_tmp[isnot_outlier(spread_tmp)]
-    else:
-        spread_idx = spread_tmp
-    
-    Spread.append(len(spread_idx))
-    Amplitude.append(amplitude)
-    peak_ch = int(site_range/2)
-    waveform=ttemp[:,peak_ch]
-    
-    Velo.append([((np.arange(site_range)-peak_ch)*site_range)[spread_idx], ((time_to_trough-time_to_trough[peak_ch])*1/30.*1000.)[spread_idx]])
-    
+    spread = len(points_above_thresh)
+
+    channels = sites_to_sample[:-1] - peak_channel
+    channels = channels[points_above_thresh]
+
+    trough_times = timestamps[trough_idx] - timestamps[trough_idx[int(site_range/2)]]
+    trough_times = trough_times[points_above_thresh]
+
+    velocity_above, velocity_below = get_velocity(channels, trough_times)
  
     return amplitude, spread, velocity_above, velocity_below
 
-
-def get_velocity(Velo, plot=False):
-    """Calculate slope above and below soma."""
-    slope = np.zeros(np.shape(Velo))
-    for idx, v in enumerate(Velo):
-        if len(v)>0: # when v is not empty
-            regress = linregress(v[0][v[0]>=0], v[1][v[0]>=0])
-            slope[idx, 1]=regress[0]
-
-            if len(v[0][v[0]<=0])>1:
-                regress = linregress(v[0][v[0]<=0], v[1][v[0]<=0])
-                slope[idx, 0]=regress[0]
-            else:
-                slope[idx, 0]=np.NaN
-        else:
-            slope[idx, 1]=np.NaN
-            slope[idx, 0]=np.NaN
-    return slope
 
 # ==========================================================
 
@@ -389,18 +341,46 @@ def get_velocity(Velo, plot=False):
 
 # ==========================================================
 
-def interpolation_array(a1, a2):
 
-    """Interpolate between two arrays by taking the mean of the two arrays."""
+def get_velocity(channels, times, distance_between_channels = 20e-6):
+    
+    """
+    Calculate slope of trough time above and below soma.
 
-    return (a1+a2)/2.
+    Inputs:
+    -------
+    channels : np.ndarray
+        Channel index relative to soma
+    times : np.ndarray
+        Trough time relative to peak channel
+    distance_between_channels : float
+        Distance between channels (m)
 
+    Outputs:
+    --------
+    velocity_above : float
+        Velocity of spike propagation above the soma (channels / s)
+    velocity_below : float
+        Velocity of spike propagation below the soma (channels / s)
 
-def interpolation_matrix(m):
+    """
 
-    """Interpolate between two arrays by taking the mean of the two arrays."""
+    above_soma = channels >= 0
+    below_soma = channels <= 0
 
-    return np.nanmean(m,axis=1)
+    if np.sum(above_soma) > 1:
+        slope_above, intercept, r_value, p_value, std_err = linregress(channels[above_soma], times[above_soma])
+        velocity_above = slope_above / distance_between_channels
+    else:
+        velocity_above = np.nan
+
+    if np.sum(below_soma) > 1:
+        slope_below, intercept, r_value, p_value, std_err = linregress(channels[below_soma], times[below_soma])
+        velocity_below = slope_below / distance_between_channels
+    else:
+        velocity_below = np.nan
+
+    return velocity_above, velocity_below
 
 
 def isnot_outlier(points, thresh=1.5):
@@ -429,9 +409,12 @@ def isnot_outlier(points, thresh=1.5):
 
     if len(points.shape) == 1:
         points = points[:,None]
+
     median = np.median(points, axis=0)
+    
     diff = np.sum((points - median)**2, axis=-1)
     diff = np.sqrt(diff)
+    
     med_abs_deviation = np.median(diff)
 
     modified_z_score = 0.6745 * diff / med_abs_deviation
