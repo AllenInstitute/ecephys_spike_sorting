@@ -41,3 +41,8 @@ Installing as a module should automagically expose the aforementioned modules us
 -   automerging: `automerging`
 -   mean waveforms: `mean-waveforms`
 -   quality metrics: `quality-metrics`
+
+## Level of Support
+
+This code is an important part of the internal Allen Institute code base and we are actively using and maintaining it. Issues are encouraged, but because this tool is so central to our mission, pull requests might not be accepted if they conflict with our existing plans.
+
