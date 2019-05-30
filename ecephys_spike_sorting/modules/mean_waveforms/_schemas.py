@@ -9,11 +9,13 @@ class MeanWaveformParams(DefaultSchema):
     num_epochs = Int(required=True, default=1, help='Number of epochs to compute mean waveforms')
     spikes_per_epoch = Int(require=True, default=100, help='Max number of spikes per epoch')
     upsampling_factor = Float(require=False, default=2.439, help='Upsampling factor for calculating waveform metrics')
+    spread_threshold = Float(require=False, default=0.12, help='Threshold for computing channel spread of 2D waveform')
+    site_range = Int(require=False, default=16, help='Number of sites to use for 2D waveform metrics')
 
 class InputParameters(ArgSchema):
     
     mean_waveforms_file = String(required=True, help='Path to mean waveforms file (.npy)')
-    waveforms_metrics_file = String(required=True, help='Path to mean waveforms metrics file (.csv)')
+    waveform_metrics_file = String(required=True, help='Path to mean waveforms metrics file (.csv)')
     nwb_file = String(required=False, help='Path to NWB file for extracting epochs')
 
     mean_waveform_params = Nested(MeanWaveformParams)

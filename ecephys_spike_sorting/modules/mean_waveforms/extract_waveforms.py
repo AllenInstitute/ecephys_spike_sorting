@@ -3,14 +3,17 @@ import os
 import glob
 
 import xarray as xr
+import pandas as pd
 
 import warnings
 
 from .waveform_metrics import calculate_waveform_metrics
+from ...common.epoch import Epoch
 
-
-def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_map, bit_volts, sample_rate, params, epochs=None):
-    """Calculate mean waveforms for sorted units.
+def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_map, bit_volts, sample_rate, site_spacing, params, epochs=None):
+    
+    """
+    Calculate mean waveforms for sorted units.
 
     Inputs:
     -------
@@ -20,6 +23,7 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_
     clusterIDs : all unique cluster ids
     cluster_quality : 'noise' or 'good'
     sample_rate : Hz
+    site_spacing : m
 
     Outputs:
     -------
@@ -52,6 +56,8 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_
     num_epochs = params['num_epochs']
     spikes_per_epoch = params['spikes_per_epoch']
     upsampling_factor = params['upsampling_factor']
+    spread_threshold = params['spread_threshold']
+    site_range = params['site_range']
 
     # #############################################
 
@@ -59,9 +65,8 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_
 
     if epochs is None:
         epochs = [Epoch('complete_session', 0, np.inf)]
-        epochs[0].convert_to_index(np.zeros((raw_data.shape[0],)))
 
-    cluster_ids = np.unique(spike_clusters)
+    cluster_ids = np.arange(np.max(spike_clusters) + 1)
     total_units = len(cluster_ids)
     total_epochs = len(epochs)
 
@@ -69,13 +74,12 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_
         (total_units, total_epochs, 2, raw_data.shape[1], samples_per_spike))
     spike_count = np.zeros((total_units, total_epochs + 1))
 
-    peak_channels = np.argmin(np.min(templates, 1), 1)
-    peak_channels = channel_map[peak_channels]
+    peak_channels = np.squeeze(channel_map[np.argmax(np.max(templates,1) - np.min(templates,1),1)])
 
     for epoch_idx, epoch in enumerate(epochs):
 
-        in_epoch = (spike_times > epoch.start_index) * \
-            (spike_times < epoch.start_index)
+        in_epoch = ((spike_times / sample_rate) > epoch.start_time) * ((spike_times / sample_rate) < epoch.end_time)
+
         spike_times_in_epoch = spike_times[in_epoch]
 
         for cluster_idx, cluster_id in enumerate(cluster_ids):
@@ -83,45 +87,57 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_
             print(cluster_id)
 
             in_cluster = (spike_clusters[in_epoch] == cluster_id)
-            times_for_cluster = spike_times_in_epoch[in_cluster]
 
-            waveforms = np.empty(
-                (spikes_per_epoch, raw_data.shape[1], samples_per_spike))
-            waveforms[:] = np.nan
+            if np.sum(in_cluster) > 0:
 
-            np.random.shuffle(times_for_cluster)
+                times_for_cluster = spike_times_in_epoch[in_cluster]
 
-            total_waveforms = np.min(
-                [times_for_cluster.size, spikes_per_epoch])
+                waveforms = np.empty(
+                    (spikes_per_epoch, raw_data.shape[1], samples_per_spike))
+                waveforms[:] = np.nan
 
-            for wv_idx, peak_time in enumerate(times_for_cluster[:total_waveforms]):
-                start = int(peak_time-pre_samples)
-                end = start + samples_per_spike
-                rawWaveform = raw_data[start:end, :].T
+                np.random.shuffle(times_for_cluster)
 
-                # in case spike was at start or end of dataset
-                if rawWaveform.shape[1] == samples_per_spike:
-                    waveforms[wv_idx, :, :] = rawWaveform * bit_volts
+                total_waveforms = np.min(
+                    [times_for_cluster.size, spikes_per_epoch])
 
-            # concatenate to existing dataframe
-            metrics = pd.concat([metrics, calculate_waveform_metrics(waveforms[:total_waveforms, :, :],
-                                                                     cluster_id, peak_channels[cluster_idx], sample_rate, upsampling_factor, epoch.name)])
+                for wv_idx, peak_time in enumerate(times_for_cluster[:total_waveforms]):
+                    start = int(peak_time-pre_samples)
+                    end = start + samples_per_spike
+                    rawWaveform = raw_data[start:end, :].T
 
-            with warnings.catch_warnings():
+                    # in case spike was at start or end of dataset
+                    if rawWaveform.shape[1] == samples_per_spike:
+                        waveforms[wv_idx, :, :] = rawWaveform * bit_volts
 
-                warnings.simplefilter("ignore", category=RuntimeWarning)
-                mean_waveforms[cluster_idx, epoch_idx,
-                               0, :, :] = np.nanmean(waveforms, 0)
-                mean_waveforms[cluster_idx, epoch_idx,
-                               1, :, :] = np.nanstd(waveforms, 0)
+                # concatenate to existing dataframe
+                metrics = pd.concat([metrics, calculate_waveform_metrics(waveforms[:total_waveforms, :, :],
+                                                                         cluster_id, 
+                                                                         peak_channels[cluster_idx], 
+                                                                         channel_map,
+                                                                         sample_rate, 
+                                                                         upsampling_factor,
+                                                                         spread_threshold,
+                                                                         site_range,
+                                                                         site_spacing,
+                                                                         epoch.name
+                                                                         )])
 
-                # remove offset
-                for channel in range(0, mean_waveforms.shape[3]):
-                    mean_waveforms[cluster_idx, epoch, 0, channel, :] = \
-                        mean_waveforms[cluster_idx, epoch, 0, channel, :] - \
-                        mean_waveforms[cluster_idx, epoch, 0, channel, 0]
+                with warnings.catch_warnings():
 
-            spike_count[cluster_idx, epoch_idx] = total_waveforms
+                    warnings.simplefilter("ignore", category=RuntimeWarning)
+                    mean_waveforms[cluster_idx, epoch_idx,
+                                   0, :, :] = np.nanmean(waveforms, 0)
+                    mean_waveforms[cluster_idx, epoch_idx,
+                                   1, :, :] = np.nanstd(waveforms, 0)
+
+                    # remove offset
+                    for channel in range(0, mean_waveforms.shape[3]):
+                        mean_waveforms[cluster_idx, epoch_idx, 0, channel, :] = \
+                            mean_waveforms[cluster_idx, epoch_idx, 0, channel, :] - \
+                            mean_waveforms[cluster_idx, epoch_idx, 0, channel, 0]
+
+                spike_count[cluster_idx, epoch_idx] = total_waveforms
 
     dimCoords, dimLabels = generateDimLabels(
         cluster_ids, total_epochs, pre_samples, samples_per_spike, raw_data.shape[1], sample_rate)

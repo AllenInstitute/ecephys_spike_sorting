@@ -8,9 +8,9 @@ import pandas as pd
 
 from ...common.utils import get_ap_band_continuous_file
 from ...common.utils import load_kilosort_data
-from ...common.utils import get_epochs_from_nwb_file
 
 from .extract_waveforms import extract_waveforms, writeDataAsNpy
+from .waveform_metrics import calculate_waveform_metrics
 
 def calculate_mean_waveforms(args):
     
@@ -27,19 +27,16 @@ def calculate_mean_waveforms(args):
                 args['ephys_params']['sample_rate'], \
                 convert_to_seconds = False)
 
-    epochs = get_epochs_from_nwb_file(args['nwb_file'])
-
     waveforms, spike_counts, coords, labels, metrics = extract_waveforms(data, spike_times, \
                 spike_clusters,
                 templates,
                 channel_map,
                 args['ephys_params']['bit_volts'], \
                 args['ephys_params']['sample_rate'], \
-                args['mean_waveform_params'], \
-                epochs)
+                args['ephys_params']['vertical_site_spacing'], \
+                args['mean_waveform_params'])
 
     writeDataAsNpy(waveforms, args['mean_waveforms_file'])
-
     metrics.to_csv(args['waveform_metrics_file'])
 
     execution_time = time.time() - start

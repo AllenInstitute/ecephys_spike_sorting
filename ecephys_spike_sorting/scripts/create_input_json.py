@@ -43,7 +43,7 @@ def createInputJson(npx_directory, output_file, nwb_file = None):
         "surface_channel_buffer" : 15,
 
         "mean_waveforms_file" : os.path.join(kilosort_output_directory, 'mean_waveforms.npy'),
-        "waveforms_metrics_file" : os.path.join(kilosort_output_directory, 'waveform_metrics.csv'),
+        "waveform_metrics_file" : os.path.join(kilosort_output_directory, 'waveform_metrics.csv'),
 
         #"nwb_file" : nwb_file,
 
@@ -57,7 +57,8 @@ def createInputJson(npx_directory, output_file, nwb_file = None):
             "lfp_sample_rate" : 2500,
             "bit_volts" : 0.195,
             "num_channels" : 384,
-            "reference_channels" : [36, 75, 112, 151, 188, 227, 264, 303, 340, 379]
+            "reference_channels" : [36, 75, 112, 151, 188, 227, 264, 303, 340, 379],
+            "vertical_site_spacing" : 20e-6
         }, 
 
         "depth_estimation_params" : {
@@ -118,7 +119,9 @@ def createInputJson(npx_directory, output_file, nwb_file = None):
             "samples_per_spike" : 82,
             "pre_samples" : 20,
             "num_epochs" : 1,
-            "spikes_per_epoch" : 500
+            "spikes_per_epoch" : 500,
+            "spread_threshold" : 0.12,
+            "site_range" : 16
         },
 
         "noise_waveform_params" : {
