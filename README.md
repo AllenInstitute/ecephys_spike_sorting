@@ -41,18 +41,18 @@ We recommend using [pipenv](https://github.com/pypa/pipenv) to run these modules
     $ export PIPENV_VENV_IN_PROJECT=1
     $ pipenv install
     $ pipenv shell
-    $ pip install .
+    (ecephys_spike_sorting) $ pip install .
 ```
 At this point, you can edit one of the processing scripts found in `ecephys_spike_sorting/scripts` and run via:
 
 ```shell
-    $ python ecephys_spike_sorting/scripts/batch_processing.py
+    (ecephys_spike_sorting) $ python ecephys_spike_sorting/scripts/batch_processing.py
 ```
 
 To leave the pipenv virtual environment, simply type:
 
 ```shell
-    $ exit
+    (ecephys_spike_sorting) $ exit
 ```
 
 ## Entry Points
