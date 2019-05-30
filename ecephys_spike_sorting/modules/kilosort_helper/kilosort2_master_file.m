@@ -7,40 +7,46 @@ run(fullfile(pathToYourConfigFile, 'kilosort2_config_file.m'))
 
 %%
 
+% find the binary file
+rootZ       = ops.rootZ
+fs          = [dir(fullfile(rootZ, '*.bin')) dir(fullfile(rootZ, '*.dat'))];
+ops.fbinary = fullfile(rootZ, fs(1).name);
+
 % preprocess data to create temp_wh.dat
 rez = preprocessDataSub(ops);
 
-% pre-clustering to re-order batches by depth
-fname = fullfile(ops.rootZ, 'rez.mat');    
-if exist(fname, 'file')
-    % just load the file if we already did this
-    dr = load(fname);
-    rez.iorig = dr.rez.iorig;
-    rez.ccb = dr.rez.ccb;
-    rez.ccbsort = dr.rez.ccbsort;
-else
-    rez = clusterSingleBatches(rez);
-    save(fname, 'rez', '-v7.3');
-end
+% time-reordering as a function of drift
+rez = clusterSingleBatches(rez);
+save(fullfile(rootZ, 'rez.mat'), 'rez', '-v7.3');
 
-%%
-% main optimization
+% main tracking and template matching algorithm
 rez = learnAndSolve8b(rez);
 
-% final splits
-rez = splitAllClusters(rez);
+% final merges
+rez = find_merges(rez, 1);
 
-%%
-% this saves to Phy
-rezToPhy(rez, ops.rootZ);
+% final splits by SVD
+rez = splitAllClusters(rez, 1);
+
+% final splits by amplitudes
+rez = splitAllClusters(rez, 0);
+
+% decide on cutoff
+rez = set_cutoff(rez);
+
+fprintf('found %d good units \n', sum(rez.good>0))
+
+% write to Phy
+fprintf('Saving results to Phy  \n')
+rezToPhy(rez, rootZ);
+
+%% if you want to save the results to a Matlab file... 
 
 % discard features in final rez file (too slow to save)
 rez.cProj = [];
 rez.cProjPC = [];
 
-% save final results as rez2 
-fname = fullfile(ops.rootZ, 'rez2.mat');
+% save final results as rez2
+fprintf('Saving final results in rez2  \n')
+fname = fullfile(rootZ, 'rez2.mat');
 save(fname, 'rez', '-v7.3');
-
-% delete the whitened file
-delete ops.fproc

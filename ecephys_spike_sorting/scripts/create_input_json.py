@@ -75,35 +75,17 @@ def createInputJson(npx_directory, output_file, nwb_file = None):
         }, 
 
         "kilosort2_params" : {
+        
             "chanMap" : "'chanMap.mat'",
-            "trange" : '[0 Inf]',
-            "fproc" : "fullfile('C:/data/kilosort', 'temp_wh.dat')",
-            "fbinary" : "fullfile(ops.rootZ, 'continuous.dat')",
-            "datatype" : "'.dat'",
             "fshigh" : 150,
-            "Th" : '[12 12]',
-            "lam" : 100,
-            "mergeThreshold" : 0.25,
-            "ccsplit" : 0.97,
+            "minfr_goodchannels" : 0.1,
+            "Th" : '[10 4]',
+            "lam" : 10,
+            "AUCsplit" : 0.9,
             "minFR" : 1/50.,
-            "ThS" : '[8 8]',
             "momentum" : '[20 400]',
             "sigmaMask" : 30,
-            "Nfilt" : 1024,
-            "nPCs" : 3,
-            "useRAM" : 0,
-            "ThPre" : 8,
-            "GPU" : 1,
-            "nSkipCov" : 5,
-            "ntbuff" : 64,
-            "scaleproc" : 200,
-            "NT" : '64*1024 + ops.ntbuff',
-            "spkTh" : -6,
-            "loc_range" : '[5 4]',
-            "long_range" : '[30 6]',
-            "maskMaxChannels" : 5,
-            "criterionNoiseChannels" : 0.2,
-            "whiteningRange" : 32
+            "ThPre" : 8
         },
 
         "ks_postprocessing_params" : {

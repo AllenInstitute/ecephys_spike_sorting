@@ -9,6 +9,7 @@ class EphysParams(DefaultSchema):
     reference_channels = NumpyArray(required=False, default=[36, 75, 112, 151, 188, 227, 264, 303, 340, 379], help='Reference channels on Neuropixels probe (numbering starts at 0)')
     template_zero_padding = Int(required=True, default=21, help='Zero-padding on templates output by Kilosort')
     vertical_site_spacing = Float(required=False, default=20e-6) 
+    probe_type = String(required=False, default='3A')
 
 class Directories(DefaultSchema):
     kilosort_output_directory = String()

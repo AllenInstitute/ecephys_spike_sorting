@@ -27,6 +27,7 @@ def run_kilosort(args):
 
     matlab_file_generator.create_chanmap(args['kilosort_location'], \
                                         EndChan = top_channel, \
+                                        probe_type = args['ephys_params']['probe_type'],
                                         MaskChannels = np.where(mask == False)[0])
     if args['kilosort_version'] == 1:
         matlab_file_generator.create_config(args['kilosort_location'], spike_dir_forward_slash, 'continuous.dat', args['kilosort_params'])
