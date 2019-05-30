@@ -16,7 +16,11 @@ import os
 matplotlib.use('QT5Agg')
 
 
-def get_channel_location(channel):
+categories = ['good', 'noise1', 'noise2', 'noise3', 'noise4','noise5']
+colors = ['black', 'gray', 'red', 'purple', 'orange', 'teal']
+
+
+def get_channel_location(channel, is3b = False):
 
     """
     Returns physical location (in microns) of a Neuropixels channel, 
@@ -39,7 +43,10 @@ def get_channel_location(channel):
     xlocations = [16, 48, 0, 32]
     
     try:
-        [36, 75, 112, 151, 188, 227, 264, 303, 340, 379].index(channel)
+        if is3b:
+            [36, 75, 112, 151, 188, 227, 264, 303, 340, 379].index(channel)
+        else:
+            [191].index(channel)
         isReference = True
     except ValueError:
         isReference = False
@@ -124,8 +131,18 @@ class App(QWidget):
             self.move_back()
         elif e.key() == Qt.Key_Period:
             self.move_forward()
-        elif e.key() == Qt.Key_A:
-            self.change_label()
+        elif e.key() == Qt.Key_A: # noise1
+            self.change_label(1)
+        elif e.key() == Qt.Key_S: # noise2
+            self.change_label(2)
+        elif e.key() == Qt.Key_D: # noise3
+            self.change_label(3)
+        elif e.key() == Qt.Key_F: # noise4
+            self.change_label(4)
+        elif e.key() == Qt.Key_M: # noise5
+            self.change_label(5)
+        elif e.key() == Qt.Key_G: # good
+            self.change_label(0)
         elif e.key() == Qt.Key_S:
             self.save_data()
         elif e.key() == Qt.Key_O:
@@ -138,20 +155,32 @@ class App(QWidget):
             if self.unit_idx == len(self.unit_list) - 1:
                 self.save_data()
 
+            self.category_index = categories.index(self.ratings[self.unit_idx])
+
             self.plot_data()
 
     def move_back(self):
         if self.data_loaded:
+            
             self.unit_idx = np.max([self.unit_idx - 1, 0])
+            
+            self.category_index = categories.index(self.ratings[self.unit_idx])
+            
             self.plot_data()
      
-    def change_label(self):
+    def change_label(self, category=None):
+        
         if self.data_loaded:
-            if self.ratings[self.unit_idx] == 'good':
-                self.ratings[self.unit_idx] = 'noise'
+            
+            if category is None:
+                self.category_index = categories.index(self.ratings[self.unit_idx])
+                self.category_index += 1
+                self.category_index %= len(categories)
             else:
-                self.ratings[self.unit_idx] = 'good'
-
+                self.category_index = category
+            
+            self.ratings[self.unit_idx] = categories[self.category_index]
+            
             self.plot_data()
 
     def save_data(self):
@@ -180,7 +209,7 @@ class App(QWidget):
                     template = templates[unit,:,:]
                     self.templates[unit,:,:] = np.dot(np.ascontiguousarray(template),np.ascontiguousarray(whitening_mat_inv))
 
-                self.output_file = os.path.join(fname, 'template_ratings.csv')
+                self.output_file = os.path.join(fname, 'template_ratings_new.csv')
 
                 self.ratings = ['good'] * len(self.unit_list)
 
@@ -191,6 +220,11 @@ class App(QWidget):
 
                 self.setWindowTitle(fname)
                 self.current_directory = fname
+                
+                self.category_index = 0
+                
+                if self.current_directory.find('PXI') > -1:
+                    self.phase3b = True
 
                 self.plot_data()
 
@@ -222,11 +256,8 @@ class App(QWidget):
 
             x_values = np.linspace(0,10,len(data)) + loc[0]
             y_values = data * 2.5 + loc[1]
-
-            if self.ratings[self.unit_idx] == 'good':
-                color = 'k'
-            else:
-                color = 'gray'
+            
+            color = colors[categories.index(self.ratings[self.unit_idx])]
 
             self.canvas.ax2.plot(x_values, y_values, color=color)
 
