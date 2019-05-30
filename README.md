@@ -2,11 +2,13 @@
 
 https://github.com/AllenInstitute/ecephys_spike_sorting
 
-Modules for spike-sorting Allen Institute Neuropixels data. These modules take data saved by the [Open Ephys GUI](https://github.com/open-ephys/plugin-gui) and prepare it for spike sorting by [Kilosort2](https://github.com/MouseLand/Kilosort2). Following the spike-sorting step (using the [kilosort helper](ecephys_spike_sorting/modules/kilosort_helper/README.md) module), we clean up the outputs and calculate mean waveforms and quality metrics for each unit.
+Modules for processing [E]xtra[C]ellular [E]lectro[PHYS]iology data from Neuropixels probes.
+
+These modules take data saved by the [Open Ephys GUI](https://github.com/open-ephys/plugin-gui) and prepare it for spike sorting by [Kilosort2](https://github.com/MouseLand/Kilosort2). Following the spike-sorting step (using the [kilosort helper](ecephys_spike_sorting/modules/kilosort_helper/README.md) module), we clean up the outputs and calculate mean waveforms and quality metrics for each unit.
 
 This code is still under development, and we welcome feedback about any step in the pipeline.
 
-Further documentation can be found in each module's README file.
+Further documentation can be found in each module's README file. For more information on Kilosort2, please read through the [GitHub wiki](https://github.com/MouseLand/Kilosort2/wiki).
 
 
 ## Modules
@@ -28,6 +30,7 @@ Further documentation can be found in each module's README file.
 [mean waveforms](ecephys_spike_sorting/modules/mean_waveforms/README.md): Extracts mean waveforms from the raw data, given spike times and unit IDs.
 
 [quality metrics](ecephys_spike_sorting/modules/quality_metrics/README.md): Calculate quality metrics for each unit to assess isolation and sorting quality.
+
 
 ## Installation and Usage
 
@@ -66,9 +69,11 @@ Installing as a module should automagically expose the aforementioned modules us
 -   mean waveforms: `mean-waveforms`
 -   quality metrics: `quality-metrics`
 
+
 ## Level of Support
 
 This code is an important part of the internal Allen Institute code base and we are actively using and maintaining it. Issues are encouraged, but because this tool is so central to our mission, pull requests might not be accepted if they conflict with our existing plans.
+
 
 ## Terms of Use
 
