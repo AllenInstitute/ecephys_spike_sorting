@@ -3,14 +3,17 @@ import os
 import glob
 
 import xarray as xr
+import pandas as pd
 
 import warnings
 
 from .waveform_metrics import calculate_waveform_metrics
+from ...common.epoch import Epoch
 
-
-def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_map, bit_volts, sample_rate, params, epochs=None):
-    """Calculate mean waveforms for sorted units.
+def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_map, bit_volts, sample_rate, site_spacing, params, epochs=None):
+    
+    """
+    Calculate mean waveforms for sorted units.
 
     Inputs:
     -------
@@ -20,6 +23,7 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_
     clusterIDs : all unique cluster ids
     cluster_quality : 'noise' or 'good'
     sample_rate : Hz
+    site_spacing : m
 
     Outputs:
     -------
@@ -52,8 +56,8 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_
     num_epochs = params['num_epochs']
     spikes_per_epoch = params['spikes_per_epoch']
     upsampling_factor = params['upsampling_factor']
-    spread_threshold = params['2d_spread_threshold']
-    site_range = params['2d_site_range']
+    spread_threshold = params['spread_threshold']
+    site_range = params['site_range']
 
     # #############################################
 
@@ -61,7 +65,6 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_
 
     if epochs is None:
         epochs = [Epoch('complete_session', 0, np.inf)]
-        epochs[0].convert_to_index(np.zeros((raw_data.shape[0],)))
 
     cluster_ids = np.arange(np.max(spike_clusters) + 1)
     total_units = len(cluster_ids)
@@ -75,8 +78,8 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_
 
     for epoch_idx, epoch in enumerate(epochs):
 
-        in_epoch = (spike_times > epoch.start_index) * \
-            (spike_times < epoch.start_index)
+        in_epoch = ((spike_times / sample_rate) > epoch.start_time) * ((spike_times / sample_rate) < epoch.end_time)
+
         spike_times_in_epoch = spike_times[in_epoch]
 
         for cluster_idx, cluster_id in enumerate(cluster_ids):
@@ -116,6 +119,7 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_
                                                                          upsampling_factor,
                                                                          spread_threshold,
                                                                          site_range,
+                                                                         site_spacing,
                                                                          epoch.name
                                                                          )])
 
@@ -129,9 +133,9 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_
 
                     # remove offset
                     for channel in range(0, mean_waveforms.shape[3]):
-                        mean_waveforms[cluster_idx, epoch, 0, channel, :] = \
-                            mean_waveforms[cluster_idx, epoch, 0, channel, :] - \
-                            mean_waveforms[cluster_idx, epoch, 0, channel, 0]
+                        mean_waveforms[cluster_idx, epoch_idx, 0, channel, :] = \
+                            mean_waveforms[cluster_idx, epoch_idx, 0, channel, :] - \
+                            mean_waveforms[cluster_idx, epoch_idx, 0, channel, 0]
 
                 spike_count[cluster_idx, epoch_idx] = total_waveforms
 

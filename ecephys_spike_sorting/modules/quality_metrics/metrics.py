@@ -8,8 +8,8 @@ from scipy.spatial.distance import cdist
 from scipy.stats import chi2
 from scipy.ndimage.filters import gaussian_filter1d
 
-from ecephys_spike_sorting.common.spike_template_helpers import find_depth_std
-from ecephys_spike_sorting.common.epoch import Epoch
+from ...common.spike_template_helpers import find_depth_std
+from ...common.epoch import Epoch
 
 
 def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_features, pc_feature_ind, params, epochs = None):

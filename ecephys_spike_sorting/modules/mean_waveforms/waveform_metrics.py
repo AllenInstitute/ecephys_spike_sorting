@@ -13,6 +13,7 @@ def calculate_waveform_metrics(waveforms,
                                upsampling_factor, 
                                spread_threshold,
                                site_range,
+                               site_spacing,
                                epoch_name):
     
     """
@@ -36,6 +37,8 @@ def calculate_waveform_metrics(waveforms,
         Threshold for computing spread of 2D waveform
     site_range : float
         Number of sites to use for 2D waveform metrics
+    site_spacing : float
+        Vertical distance between sites (m)
     epoch_name : str
         Name of epoch for which these waveforms originated
 
@@ -48,7 +51,7 @@ def calculate_waveform_metrics(waveforms,
 
     snr = calculate_snr(waveforms[:, peak_channel, :])
 
-    mean_2D_waveform = np.nanmean(waveforms[:, channel_map, :], 0)
+    mean_2D_waveform = np.squeeze(np.nanmean(waveforms[:, channel_map, :], 0))
     local_peak = np.argmin(np.abs(channel_map - peak_channel))
 
     num_samples = mean_2D_waveform.shape[1]
@@ -56,8 +59,8 @@ def calculate_waveform_metrics(waveforms,
 
     mean_1D_waveform = resample(
         mean_2D_waveform[peak_channel, :], new_sample_count)
-    timestamps = np.linspace(0, len(mean_1D_waveform) /
-                             sampling_rate, new_sample_count)
+
+    timestamps = np.linspace(0, len(mean_1D_waveform) / sample_rate, new_sample_count)
 
     duration = calculate_waveform_duration(mean_1D_waveform, timestamps)
     halfwidth = calculate_waveform_halfwidth(mean_1D_waveform, timestamps)
@@ -68,9 +71,9 @@ def calculate_waveform_metrics(waveforms,
         mean_1D_waveform, timestamps)
 
     amplitude, spread, velocity_above, velocity_below = calculate_2D_features(
-        mean_2D_waveform, timestamps, local_peak, spread_threshold, site_range)
+        mean_2D_waveform, timestamps, local_peak, spread_threshold, site_range, site_spacing)
 
-    data = [[cluster_id, [epoch_name]*len(cluster_id), peak_channel, snr, duration, halfwidth, PT_ratio, repolarization_slope,
+    data = [[cluster_id, epoch_name, peak_channel, snr, duration, halfwidth, PT_ratio, repolarization_slope,
               recovery_slope, amplitude, spread, velocity_above, velocity_below]]
 
     metrics = pd.DataFrame(data,
@@ -157,22 +160,27 @@ def calculate_waveform_halfwidth(waveform, timestamps):
     trough_idx = np.argmin(waveform)
     peak_idx = np.argmax(waveform)
 
-    if waveform[peak_idx] > np.abs(waveform[trough_idx]):
-        threshold = waveform[peak_idx] * 0.5
-        thresh_crossing_1 = np.min(
-            np.where(waveform[:peak_idx] > threshold)[0])
-        thresh_crossing_2 = np.min(
-            np.where(waveform[peak_idx:] < threshold)[0]) + peak_idx
-    else:
-        threshold = waveform[trough_idx] * 0.5
-        thresh_crossing_1 = np.min(
-            np.where(waveform[:trough_idx] < threshold)[0])
-        thresh_crossing_2 = np.min(
-            np.where(waveform[trough_idx:] > threshold)[0]) + trough_idx
+    try:
+        if waveform[peak_idx] > np.abs(waveform[trough_idx]):
+            threshold = waveform[peak_idx] * 0.5
+            thresh_crossing_1 = np.min(
+                np.where(waveform[:peak_idx] > threshold)[0])
+            thresh_crossing_2 = np.min(
+                np.where(waveform[peak_idx:] < threshold)[0]) + peak_idx
+        else:
+            threshold = waveform[trough_idx] * 0.5
+            thresh_crossing_1 = np.min(
+                np.where(waveform[:trough_idx] < threshold)[0])
+            thresh_crossing_2 = np.min(
+                np.where(waveform[trough_idx:] > threshold)[0]) + trough_idx
 
-    halfwidth = timestamps[thresh_crossing_2] - timestamps[thresh_crossing_1]
+        halfwidth = (timestamps[thresh_crossing_2] - timestamps[thresh_crossing_1]) * 1e3
 
-    return halfwidth * 1e3
+    except ValueError:
+
+        halfwidth = np.nan
+
+    return halfwidth 
 
 
 def calculate_waveform_PT_ratio(waveform):
@@ -263,7 +271,7 @@ def calculate_waveform_recovery_slope(waveform, timestamps, window=20):
 # ==========================================================
 
 
-def calculate_2d_features(waveform, timestamps, peak_channel, spread_threshold = 0.12, site_range=16):
+def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold = 0.12, site_range=16, site_spacing=20e-6):
     
     """ 
     Compute features of 2D waveform (channels x samples)
@@ -275,24 +283,15 @@ def calculate_2d_features(waveform, timestamps, peak_channel, spread_threshold =
     peak_channel : int
     spread_threshold : float
     site_range: int
+    site_spacing : float
 
     Outputs:
     --------
-    amplitude : 
-    spread : 
-    velocity_above : 
-    velocity_below : 
+    amplitude : uV
+    spread : um
+    velocity_above : s / m 
+    velocity_below : s / m
 
-    """
-
-    """
-    waveform_all_40: neuron*time*space
-    Calculate features from 2D waveform plot:
-    Amplitude: Amplitude of waveform
-    Spread: Number of channels has more than 10% amplitude of maximum amplitude.
-    Velo: list of two dimentional arrays:
-            x: distance (micon) 
-            y: time (microseconds)
     """
 
     assert site_range % 2 == 0 # must be even
@@ -322,7 +321,7 @@ def calculate_2d_features(waveform, timestamps, peak_channel, spread_threshold =
     if len(points_above_thresh) > 1:
         points_above_thresh = points_above_thresh[isnot_outlier(points_above_thresh)]
 
-    spread = len(points_above_thresh)
+    spread = len(points_above_thresh) * site_spacing * 1e6
 
     channels = sites_to_sample[:-1] - peak_channel
     channels = channels[points_above_thresh]
@@ -330,7 +329,7 @@ def calculate_2d_features(waveform, timestamps, peak_channel, spread_threshold =
     trough_times = timestamps[trough_idx] - timestamps[trough_idx[int(site_range/2)]]
     trough_times = trough_times[points_above_thresh]
 
-    velocity_above, velocity_below = get_velocity(channels, trough_times)
+    velocity_above, velocity_below = get_velocity(channels, trough_times, site_spacing)
  
     return amplitude, spread, velocity_above, velocity_below
 
