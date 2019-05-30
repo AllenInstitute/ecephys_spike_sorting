@@ -26,7 +26,7 @@ for npx_file in npx_files:
 
 	info = createInputJson(npx_file, input_json)
 
-	commands = ('extract_from_npx', 'depth_estimation', 'median_subtraction', 'kilosort_helper')
+	commands = ('mean_waveforms', 'quality_metrics')
 
 	for command in commands:
 
@@ -35,7 +35,7 @@ for npx_file in npx_files:
 
 		os.system(command)
 
-	copy_data_to_backup_drive(info)
+	#copy_data_to_backup_drive(info)
 
 
 
