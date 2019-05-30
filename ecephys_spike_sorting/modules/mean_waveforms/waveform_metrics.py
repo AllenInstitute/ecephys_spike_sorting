@@ -17,7 +17,13 @@ def calculate_waveform_metrics(waveforms,
                                epoch_name):
     
     """
-    Calculate metrics for an array of waveforms
+    Calculate metrics for an array of waveforms.
+
+    Metrics come from Jia et al. (2019) High-density extracellular probes reveal 
+    dendritic backpropagation and facilitate neuron classification. J Neurophys
+
+    https://doi.org/10.1152/jn.00680.2018
+
 
     Inputs:
     -------
