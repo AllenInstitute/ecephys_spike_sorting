@@ -23,7 +23,6 @@ def createInputJson(npx_directory, output_file, nwb_file = None):
     extracted_data_directory = npx_directory + '_sorted'
     probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
     kilosort_output_directory = glob.glob(os.path.join(extracted_data_directory, 'continuous', 'Neuropix-*-100.0'))[0]
-    #nwb_file = glob.glob(os.path.join(os.path.dirname(extracted_data_directory), 'mouse*.spikes.nwb'))[0]
 
     dictionary = \
     {
@@ -44,8 +43,6 @@ def createInputJson(npx_directory, output_file, nwb_file = None):
 
         "mean_waveforms_file" : os.path.join(kilosort_output_directory, 'mean_waveforms.npy'),
         "waveform_metrics_file" : os.path.join(kilosort_output_directory, 'waveform_metrics.csv'),
-
-        #"nwb_file" : nwb_file,
 
         "directories": {
             "extracted_data_directory": extracted_data_directory,
@@ -125,13 +122,13 @@ def createInputJson(npx_directory, output_file, nwb_file = None):
         },
 
         "noise_waveform_params" : {
-            "classifier_path" : "C:\\Users\\svc_neuropix\\Documents\\GitHub\\ecephys_spike_sorting\\ecephys_spike_sorting\\modules\\noise_templates\\classifier.pkl"
+            "classifier_path" : os.path.join(os.getcwd(), 'ecephys_spike_sorting', 'modules', 'noise_templates', 'rf_classifier.pkl')
 
         },
 
         "quality_metrics_params" : {
             "isi_threshold" : 0.0015,
-            "min_isi" : 0.0007,
+            "min_isi" : 0.000166,
             "num_channels_to_compare" : 13,
             "max_spikes_for_unit" : 500,
             "max_spikes_for_nn" : 10000,
