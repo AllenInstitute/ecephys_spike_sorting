@@ -1,147 +1,136 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Jun 30 14:01:40 2018
-
-@author: joshs
-"""
-
 import os
 import glob
 import numpy as np
+import pandas as pd
 
 import matplotlib.pyplot as plt
 
-from sklearn.ensemble import RandomForestClassifier
-
 base_directory = '/mnt/md0/data'
 
-mice = ('386467', '386129', '386130')
+mice = ['392810', '405755', '448504', '407972', '444384']
 
 def load(directory, file):
     return np.load(os.path.join(directory, file))
 
-def read_cluster_group_tsv(filename):
+def read_template_ratings_file(filename):
 
-    info = np.genfromtxt(filename, dtype='str')
-    cluster_ids = info[1:,0].astype('int')
-    cluster_quality = info[1:,1]
+    qualities = ['good','noise1','noise2','noise3','noise4','noise5']
+    
+    info = pd.read_csv(filename)
+    cluster_ids = list(info['cluster_id'].values)
+    cluster_quality = [qualities.index(x) for x in info['rating'].values]
     
     return cluster_ids, cluster_quality
 
-convert_to_seconds = True
-
-features = np.zeros((10000, 61))
-labels = np.zeros((10000,))
+original_features = np.zeros((15000, 61, 32))
+labels = np.zeros((15000,))
 
 unit_idx = 0
 
 for mouse in mice:
     
+    print(mouse)
+    
     directory = os.path.join(base_directory, 'mouse' + mouse)
     
-    probe_directories = glob.glob(directory + '/probe*')
+    probe_directories = glob.glob(directory + '/*probe*sorted')
+    probe_directories.sort()
     
     for folder in probe_directories:
         
-        print(folder)
+        subfolder = glob.glob(os.path.join(folder, 'continuous', 'Neuropix-*-100.0'))[0]
         
-        spike_times = load(folder,'spike_times.npy')
-        spike_clusters = load(folder,'spike_clusters.npy')
-        amplitudes = load(folder,'amplitudes.npy')
-        templates_raw = load(folder,'templates.npy')
-        unwhitening_mat = load(folder,'whitening_mat_inv.npy')
-        channel_map = np.squeeze(load(folder, 'channel_map.npy'))
-        channel_positions = load(folder, 'channel_positions.npy')
-                    
-        templates_raw = templates_raw[:,21:,:] # remove zeros
-        spike_clusters = np.squeeze(spike_clusters) # fix dimensions
-        spike_times = np.squeeze(spike_times)# fix dimensions
-        if convert_to_seconds:
-           spike_times = spike_times / 30000 # convert to seconds
-                        
-        templates = np.zeros((templates_raw.shape))
+        templates_raw = load(subfolder,'templates.npy')
+        unwhitening_mat = load(subfolder,'whitening_mat_inv.npy')
+        cluster_ids, cluster_quality = read_template_ratings_file(os.path.join(subfolder, 'template_ratings_new.csv'))
         
-        cluster_ids = np.unique(spike_clusters)
+        templates = np.zeros(templates_raw.shape)
         
         for temp_idx in range(templates.shape[0]):
             
             templates[temp_idx,:,:] = np.dot(np.ascontiguousarray(templates_raw[temp_idx,:,:]),np.ascontiguousarray(unwhitening_mat))
             
-        new_cluster_ids, cluster_quality = read_cluster_group_tsv(os.path.join(folder, 'cluster_group.tsv'))
-        
-        is_noise = new_cluster_ids[cluster_quality == 'noise']
-        
-        manual_labels = np.zeros((cluster_ids.shape))
-        manual_labels[is_noise] = 1
+        peak_channels = np.argmin(np.min(templates,1),1)
         
         for idx, unit in enumerate(cluster_ids):
                     
-            template = templates[unit,:,:]
-            depth = find_depth(template)
-            features[unit_idx,:] = template[:,depth]
-            
-            labels[unit_idx] = manual_labels[unit]
-            unit_idx += 1
+            peak_channel = peak_channels[unit]
+
+            min_chan = np.max([0,peak_channel-16])
+            if min_chan == 0:
+                max_chan = 32
+            else:
+                max_chan = np.min([templates.shape[2], peak_channel+16])
+                if max_chan == templates.shape[2]:
+                    min_chan = max_chan - 32
     
+            sub_template = templates[unit, 21:, min_chan:max_chan]
+
+            original_features[unit_idx,:,:] = sub_template
+            labels[unit_idx] = cluster_quality[idx]
+            unit_idx += 1
+        
     print(probe_directories)
 # %%
-    
-features = features[:unit_idx,:]
+original_features = original_features[:unit_idx,:,:]
+features = np.reshape(original_features[:,:,:], (original_features.shape[0], original_features.shape[1] * original_features.shape[2]), 2)
+features = features[:,::4]
 labels = labels[:unit_idx]
-    
+
 # %%
-    
-def find_depth(template):
-    
-    return np.argmax(np.max(template,0)-np.min(template,0))
 
-    # %%
-    
-train_size = 2000 #int(6*labels.size/8)
+noise_templates = np.where(labels > 0)[0]
+good_templates = np.where(labels == 0)[0]
 
-order = np.random.permutation(labels.size)
+order_noise = np.random.permutation(noise_templates.size)
+order_good = np.random.permutation(good_templates.size)
 
-feat_train = features[order[:train_size],:]
-label_train = labels[order[:train_size]]
+# %%
 
-feat_test = features[order[train_size:],:]
-label_test = labels[order[train_size:]]
+# # # # # # # # # # # #
 
-clf = RandomForestClassifier(n_estimators=10, max_depth=4, random_state=10)
-clf.fit(feat_train, label_train)
+# These numbers are critical. The ratio of good units vs. noise units used in training
+# determines the hit rate and false alarm rate.
 
-predicted_labels = clf.predict(feat_test)
+n_train_noise = 300
+n_train_good = 500
+# # # # # # # # # # # #
 
-a = np.where(predicted_labels == label_test)[0]
+x_train = np.concatenate((features[noise_templates[order_noise[:n_train_noise]],:], features[good_templates[order_good[:n_train_good]],:]))
+y_train = np.concatenate((labels[noise_templates[order_noise[:n_train_noise]]], labels[good_templates[order_good[:n_train_good]]]))
 
-plt.figure(99)
+x_test = np.concatenate((features[noise_templates[order_noise[n_train_noise:]],:], features[good_templates[order_good[n_train_good:]],:]))
+y_test = np.concatenate((labels[noise_templates[order_noise[n_train_noise:]]], labels[good_templates[order_good[n_train_good:]]]))
+
+# %%
+
+from sklearn.ensemble import RandomForestClassifier
+
+clf = RandomForestClassifier(n_estimators=50, max_depth=50, random_state=10, bootstrap = False, warm_start=True, criterion='entropy', class_weight={0 : 0.01, 1: 1})
+
+clf.n_estimators = 50
+clf.fit(x_train, y_train)
+
+predicted_labels = clf.predict(x_test)
+
+hits = np.sum((predicted_labels == 0) * (y_test == 0)) / np.sum(y_test == 0)
+fp = np.sum((predicted_labels == 0) * (y_test > 0)) / np.sum(y_test > 0)
+
+confusion_matrix = np.zeros((5,5))
+
+for i in range(5):
+    for j in range(5):
+        confusion_matrix[i,j] = np.sum((predicted_labels == i) * (y_test == j)) / np.sum(y_test == j)
+
+overall = np.sum(((predicted_labels == 0) * (y_test == 0)) + ((predicted_labels > 0) * (y_test > 0))) / len(y_test)
+
+print('Hit rate: ' + str(hits))
+print('FP rate: ' + str(fp))
+print('Overall rate: ' + str(overall))
+
+plt.figure(14111)
 plt.clf()
 
-for i in range(0,200):
-    if label_train[i] == 0:
-        plt.subplot(2,2,1)
-    else:
-        plt.subplot(2,2,2)
-        
-    plt.plot(feat_train[i,:],'k',alpha=0.2)
-    
-for i in range(0,200):
-    if predicted_labels[i] == 0:
-        plt.subplot(2,2,3)
-    else:
-        plt.subplot(2,2,4)
-        
-    plt.plot(feat_test[i,:],'k',alpha=0.2)
+plt.imshow(confusion_matrix)
 
-accuracy = int(len(a) / len(label_test) * 100)
-
-plt.subplot(2,2,4)
-plt.title(str(accuracy) + '% classification accuracy')
-    
-    # %%
-    
-plt.figure(100)
-plt.clf()
-plt.plot(clf.feature_importances_)
-
+# %%

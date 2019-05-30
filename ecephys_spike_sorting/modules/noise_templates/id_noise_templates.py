@@ -18,7 +18,7 @@ def id_noise_templates_rf(spike_times, spike_clusters, cluster_ids, templates, p
     spike_clusters : cluster IDs for each spike time []
     cluster_ids : all unique cluster ids
     templates : template for each unit output by Kilosort
-    classifier : sklearn Random Forest classifier trained on hand-curated data
+    params : parameters for this module
 
     Outputs:
     -------
@@ -39,16 +39,32 @@ def id_noise_templates_rf(spike_times, spike_clusters, cluster_ids, templates, p
 
     classifier = pickle.load(open(classifier_path, 'rb'))
 
-    feature_matrix = np.zeros((cluster_ids.size,templates.shape[1]))
+    feature_matrix = np.zeros((cluster_ids.size, 61, 32))
+
+    peak_channels = np.squeeze(np.argmax(np.max(templates,1) - np.min(templates,1),1))
 
     for idx, unit in enumerate(cluster_ids):
         
-        template = templates[unit,:,:]
-        depth = find_depth(template)
-        feature_matrix[idx,:] = template[:,depth]
+        peak_channel = peak_channels[unit]
 
-    is_noise = 1-2*classifier.predict(feature_matrix)
-    
+        min_chan = np.max([0,peak_channel-16])
+        if min_chan == 0:
+            max_chan = 32
+        else:
+            max_chan = np.min([templates.shape[2], peak_channel+16])
+            if max_chan == templates.shape[2]:
+                min_chan = max_chan - 32
+
+        sub_template = templates[unit, :, min_chan:max_chan]
+
+        feature_matrix[idx,:,:] = sub_template
+
+    feature_matrix = np.reshape(feature_matrix[:,:,:], (feature_matrix.shape[0], feature_matrix.shape[1] * feature_matrix.shape[2]), 2)
+    feature_matrix = feature_matrix[:,::4]
+
+    is_noise = classifier.predict(feature_matrix)
+    is_noise[is_noise > 0] = -1
+
     return cluster_ids, is_noise
     
 
@@ -89,9 +105,7 @@ def id_noise_templates(spike_times, spike_clusters, cluster_ids, templates, para
 
     # #############################################
 
-
     auto_noise = np.zeros(cluster_ids.shape,dtype=bool)
-
 
     for idx, clusterID in enumerate(cluster_ids):
     

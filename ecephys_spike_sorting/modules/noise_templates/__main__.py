@@ -18,10 +18,6 @@ def classify_noise_templates(args):
             load_kilosort_data(args['directories']['kilosort_output_directory'], \
                 args['ephys_params']['sample_rate'], \
                 convert_to_seconds = True)
-    
-    #cluster_ids, is_noise = id_noise_templates(spike_times, spike_clusters, \
-    #    cluster_ids, templates, \
-    #    args['noise_waveform_params'])
 
     cluster_ids, is_noise = id_noise_templates_rf(spike_times, spike_clusters, \
         cluster_ids, templates, \
@@ -29,8 +25,6 @@ def classify_noise_templates(args):
 
     write_cluster_group_tsv(cluster_ids, is_noise, args['directories']['kilosort_output_directory'])
     
-    print(is_noise)
-
     execution_time = time.time() - start
     
     return {"execution_time" : execution_time} # output manifest
