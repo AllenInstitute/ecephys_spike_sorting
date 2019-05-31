@@ -4,7 +4,7 @@ from argschema.fields import Nested, InputDir, String, Float, Dict, Int, NumpyAr
 from ...common.schemas import EphysParams, Directories
 
 class NoiseWaveformParams(DefaultSchema):
-	classifier_path = String(required=True, default='classifier.pkl', help='Path to waveform classifier')
+	classifier_path = String(required=True, help='Path to pre-trained waveform classifier')
 
 class InputParameters(ArgSchema):
     

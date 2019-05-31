@@ -1,6 +1,6 @@
 Mean Waveforms
 ==============
-Extracts mean waveforms from raw data, given Kilosort spike times and cluster IDs.
+Extracts mean waveforms from raw data, given spike times and cluster IDs.
 
 Computes waveforms separately for individual epochs, as well as for the entire experiment. If no epochs are specified, waveforms are selected randomly from the entire recording. Waveform standard deviation is currently computed, but not saved.
 
@@ -18,7 +18,7 @@ Metrics are computed for every waveform, and include features of the 1D peak-cha
 
 **2D waveform features**: Waveform spread, velocity above the soma, and velocity below the soma.
 
-Source: [Jia et al. (2019) J Neurophys](https://doi.org/10.1152/jn.00680.2018)
+Source: [Jia et al. (2019) "High-density extracellular probes reveal dendritic backpropagation and facilitate neuron classification." _J Neurophys_ **121**: 1831-1847](https://doi.org/10.1152/jn.00680.2018)
 
 
 Running

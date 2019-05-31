@@ -83,17 +83,6 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
 
         epoch_name = [epoch.name] * len(cluster_ids)
 
-        print(len(firing_rate))
-        print(len(presence_ratio))
-        print(len(isi_viol))
-        print(len(amplitude_cutoff))
-        print(len(isolation_distance))
-        print(len(l_ratio))
-        print(len(d_prime))
-        print(len(nn_hit_rate))
-        print(len(nn_miss_rate))
-        print(len(epoch_name))
-
         metrics = pd.concat((metrics, pd.DataFrame(data= OrderedDict((('cluster_id', cluster_ids),
                                 ('firing_rate' , firing_rate),
                                 ('presence_ratio' , presence_ratio),

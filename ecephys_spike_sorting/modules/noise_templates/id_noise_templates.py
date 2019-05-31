@@ -10,7 +10,8 @@ from ...common.spike_template_helpers import find_depth
 
 def id_noise_templates_rf(spike_times, spike_clusters, cluster_ids, templates, params):
 
-    """Identify non-neural units based on waveform shape and ISI histogram
+    """
+    Uses a random forest classifier to identify noise units based on waveform shape
 
     Inputs:
     -------
@@ -18,7 +19,6 @@ def id_noise_templates_rf(spike_times, spike_clusters, cluster_ids, templates, p
     spike_clusters : cluster IDs for each spike time []
     cluster_ids : all unique cluster ids
     templates : template for each unit output by Kilosort
-    params : parameters for this module
 
     Outputs:
     -------
@@ -27,7 +27,7 @@ def id_noise_templates_rf(spike_times, spike_clusters, cluster_ids, templates, p
 
     Parameters:
     ----------
-    none
+    'classifier_path' : path to pickled classifier object
 
     """
     
@@ -71,7 +71,8 @@ def id_noise_templates_rf(spike_times, spike_clusters, cluster_ids, templates, p
 
 def id_noise_templates(spike_times, spike_clusters, cluster_ids, templates, params):
 
-    """Identify non-neural units based on waveform shape and ISI histogram
+    """
+    Uses a set of heuristics to identify noise units based on waveform shape
 
     Inputs:
     -------
@@ -90,10 +91,6 @@ def id_noise_templates(spike_times, spike_clusters, cluster_ids, templates, para
     std_thresh : 
     waveform_spread :
     thresh2 :
-    min_peak_sample :
-    min_trough_sample :
-    contamination_ratio :
-    min_height :
 
     """
     
