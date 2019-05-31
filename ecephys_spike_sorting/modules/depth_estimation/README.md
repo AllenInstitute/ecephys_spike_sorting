@@ -1,6 +1,11 @@
 Depth Estimation
 ==============
-Creates a JSON file for probe with information about the DC offset of each channel, as well as the channel closest to the brain surface.
+Creates a JSON file with information about the DC offset of each channel, as well as the channel closest to the brain surface. This information is needed to perform the median subtraction step.
+
+Implementation
+--------------
+![Depth estimation](images/probe_depth.png "Surface estimation method")
+This module uses the sharp increase in low-frequency LFP band power to estimate the brain surface location.
 
 Running
 -------
@@ -17,4 +22,5 @@ Input data
 
 Output data
 -----------
-- **probe_info.json** : contains information about each channel, as well as the surface and air channels for the probe
+- **probe_info.json** : contains information about each channel, as well as the surface channel for the probe
+- **probe_depth.png** : image showing the estimated surface channel location

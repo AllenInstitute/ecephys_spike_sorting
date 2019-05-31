@@ -6,6 +6,8 @@ Reads event times from the NPX file and writes them as .npy files.
 
 Converts the settings.xml file for an experiment into a JSON file with parameters such as sample rate and bit volts for each channel.
 
+The NpxExtractor executable (Windows only) can be found [here](https://github.com/open-ephys-GUI-binaries/open-ephys/tree/neuropix/Tools/NpxExtractor).
+
 Running
 -------
 ```
