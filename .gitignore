@@ -79,3 +79,6 @@ target/
 
 # virtual environment
 .venv/
+
+# macOS
+.DS_Store
