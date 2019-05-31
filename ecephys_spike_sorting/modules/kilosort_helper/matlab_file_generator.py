@@ -1,13 +1,13 @@
 import os
         
-def create_chanmap(kilosort_location, EndChan, StartChan = 1, Nchannels = 384, MaskChannels = []):
+def create_chanmap(kilosort_location, EndChan, StartChan = 1, probe_type = '3A', Nchannels = 384, MaskChannels = []):
     mask_string = '['
     for channel in MaskChannels:
         mask_string += str(channel+1)
         mask_string += ' '
     mask_string += ']'
 
-    chanmap_string = make_chanmap_string(EndChan, StartChan, Nchannels, MaskChannels = mask_string)   
+    chanmap_string = make_chanmap_string(EndChan, StartChan, Nchannels, probe_type=probe_type, MaskChannels = mask_string)   
     chanmap_path = os.path.join(kilosort_location,'createChannelMapFile.m')    
     with open(chanmap_path,"w+") as f:
         f.write(chanmap_string)
@@ -24,8 +24,10 @@ def create_config2(kilosort_location,forwardslash_data_file_location, ephys_para
     with open(config_path,"w+") as f:
         f.write(config_string)
 
-def make_chanmap_string(EndChan = 384, StartChan = 1, Nchannels = 384, MaskChannels = '[ ]'):
-    chanmap_string = """map = load('neuropixPhase3A_kilosortChanMap.mat');
+def make_chanmap_string(EndChan = 384, StartChan = 1, Nchannels = 384, probe_type, MaskChannels = '[ ]'):
+    chanmap_string = "map = load('neuropixPhase""" + probe_type + "_kilosortChanMap.mat');"
+
+    chanmap_string += """
 
         chanMap = map.chanMap;
         chanMap0ind = map.chanMap0ind;

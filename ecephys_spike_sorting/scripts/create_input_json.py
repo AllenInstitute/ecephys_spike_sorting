@@ -14,15 +14,24 @@ def create_samba_directory(samba_server, samba_share):
 
     return data_dir
 
-def createInputJson(npx_directory, output_file, nwb_file = None):
+def createInputJson(npx_directory, kilosort_output_directory, output_file, probe_type='3A'):
 
-    settings_xml = os.path.join(npx_directory, 'settings.xml')
+    if npx_directory is not None:
+        settings_xml = os.path.join(npx_directory, 'settings.xml')
 
-    drive, tail = os.path.split(npx_directory)
+        drive, tail = os.path.split(npx_directory)
 
-    extracted_data_directory = npx_directory + '_sorted'
-    probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
-    kilosort_output_directory = glob.glob(os.path.join(extracted_data_directory, 'continuous', 'Neuropix-*-100.0'))[0]
+        extracted_data_directory = npx_directory + '_sorted'
+        probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
+    else:
+        settings_xml = None
+        probe_json = None
+        extracted_data_directory = 'None'
+
+    if probe_type == '3A':
+        reference_channels = [36, 75, 112, 151, 188, 227, 264, 303, 340, 379]
+    else:
+        reference_channels = [191]
 
     dictionary = \
     {
@@ -54,7 +63,7 @@ def createInputJson(npx_directory, output_file, nwb_file = None):
             "lfp_sample_rate" : 2500,
             "bit_volts" : 0.195,
             "num_channels" : 384,
-            "reference_channels" : [36, 75, 112, 151, 188, 227, 264, 303, 340, 379],
+            "reference_channels" : reference_channels,
             "vertical_site_spacing" : 20e-6
         }, 
 
@@ -75,35 +84,17 @@ def createInputJson(npx_directory, output_file, nwb_file = None):
         }, 
 
         "kilosort2_params" : {
+
             "chanMap" : "'chanMap.mat'",
-            "trange" : '[0 Inf]',
-            "fproc" : "fullfile('C:/data/kilosort', 'temp_wh.dat')",
-            "fbinary" : "fullfile(ops.rootZ, 'continuous.dat')",
-            "datatype" : "'.dat'",
             "fshigh" : 150,
-            "Th" : '[12 12]',
-            "lam" : 100,
-            "mergeThreshold" : 0.25,
-            "ccsplit" : 0.97,
+            "minfr_goodchannels" : 0.1,
+            "Th" : '[10 4]',
+            "lam" : 10,
+            "AUCsplit" : 0.9,
             "minFR" : 1/50.,
-            "ThS" : '[8 8]',
             "momentum" : '[20 400]',
             "sigmaMask" : 30,
-            "Nfilt" : 1024,
-            "nPCs" : 3,
-            "useRAM" : 0,
-            "ThPre" : 8,
-            "GPU" : 1,
-            "nSkipCov" : 5,
-            "ntbuff" : 64,
-            "scaleproc" : 200,
-            "NT" : '64*1024 + ops.ntbuff',
-            "spkTh" : -6,
-            "loc_range" : '[5 4]',
-            "long_range" : '[30 6]',
-            "maskMaxChannels" : 5,
-            "criterionNoiseChannels" : 0.2,
-            "whiteningRange" : 32
+            "ThPre" : 8
         },
 
         "ks_postprocessing_params" : {
