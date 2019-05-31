@@ -165,13 +165,13 @@ for mouse in mice.keys():
 
         print(npx_file)
 
-        probe_directory = os.path.dirname(npx_file)
+        probe_directory = glob.glob(os.path.join(os.path.dirname(npx_file) + '_sorted','continuous','Neuropix*100.0'))[0]
         session_id = os.path.basename(probe_directory)
 
         input_json = os.path.join(json_directory, session_id + '-input.json')
         output_json = os.path.join(json_directory, session_id + '-output.json')
 
-        info = createInputJson(probe_directory, input_json)
+        info = createInputJson(None, probe_directory, input_json)
 
         new_metrics_file = info['quality_metrics_params']['quality_metrics_output_file']
 
