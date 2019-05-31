@@ -52,6 +52,17 @@ We recommend using [pipenv](https://github.com/pypa/pipenv) to run these modules
     $ pipenv shell
     (ecephys_spike_sorting) $ pip install .
 ```
+You can now edit one of the processing scripts found in `ecephys_spike_sorting/scripts` and run via:
+
+```shell
+    (ecephys_spike_sorting) $ python ecephys_spike_sorting/scripts/example_script.py
+```
+To leave the pipenv virtual environment, simply type:
+
+```shell
+    (ecephys_spike_sorting) $ exit
+```
+
 ### Windows
 
 ```shell
@@ -63,20 +74,15 @@ We recommend using [pipenv](https://github.com/pypa/pipenv) to run these modules
 ```
 **Note:** This will work in the standard Command Prompt, but the [cmder console emulator](https://cmder.net/) has better compatibility with Python virtual environments.
 
-### Running Scripts
-
-You can edit one of the processing scripts found in `ecephys_spike_sorting/scripts` and run via:
+You can now edit one of the processing scripts found in `ecephys_spike_sorting\scripts` and run via:
 
 ```shell
-    (ecephys_spike_sorting) $ python ecephys_spike_sorting/scripts/example_script.py
+    (.venv) $ python ecephys_spike_sorting\scripts\example_script.py
 ```
-
-### Wrapping Up
-
 To leave the pipenv virtual environment, simply type:
 
 ```shell
-    (ecephys_spike_sorting) $ exit
+    (.venv) $ exit
 ```
 
 ## Entry Points
