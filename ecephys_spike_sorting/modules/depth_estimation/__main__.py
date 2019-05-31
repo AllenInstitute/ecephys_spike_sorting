@@ -11,6 +11,8 @@ from ...common.utils import get_ap_band_continuous_file, get_lfp_band_continuous
 
 def run_depth_estimation(args):
 
+    print('ecephys spike sorting: depth estimation module')
+
     start = time.time()
 
     numChannels = args['ephys_params']['num_channels']
@@ -33,6 +35,9 @@ def run_depth_estimation(args):
 
 
     execution_time = time.time() - start
+
+    print('total time: ' + str(execution_time) + ' seconds')
+    print( )
         
     return {"surface_channel": info['surface_channel'],
             "air_channel": info['air_channel'],

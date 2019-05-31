@@ -15,6 +15,8 @@ from .create_settings_json import create_settings_json
 
 def run_npx_extractor(args):
 
+    print('ecephys spike sorting: npx extractor module')
+
     repo = Repo(args['npx_extractor_repo'])
     headcommit = repo.head.commit
 
@@ -26,8 +28,6 @@ def run_npx_extractor(args):
     
     assert(free > filesize * 2)
     
-    logging.info('Running NPX Extractor')
-
     if not os.path.exists(args['directories']['extracted_data_directory']):
         os.mkdir(args['directories']['extracted_data_directory'])
 
@@ -41,6 +41,9 @@ def run_npx_extractor(args):
 
     #with io.open(output_file, 'w', encoding='utf-8') as f:
     #    f.write(json.dumps(settings_json, ensure_ascii=False, sort_keys=True, indent=4))
+
+    print('total time: ' + str(execution_time) + ' seconds')
+    print( )
     
     return {"execution_time" : execution_time,
            # "settings_json" : settings_json,

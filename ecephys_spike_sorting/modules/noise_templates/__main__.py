@@ -10,7 +10,7 @@ from ...common.utils import write_cluster_group_tsv, load_kilosort_data
 
 def classify_noise_templates(args):
 
-    logging.info('Running noise template identification')
+    print('ecephys spike sorting: noise templates module')
     
     start = time.time()
 
@@ -26,6 +26,9 @@ def classify_noise_templates(args):
     write_cluster_group_tsv(cluster_ids, is_noise, args['directories']['kilosort_output_directory'])
     
     execution_time = time.time() - start
+
+    print('total time: ' + str(execution_time) + ' seconds')
+    print( )
     
     return {"execution_time" : execution_time} # output manifest
 

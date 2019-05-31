@@ -16,7 +16,7 @@ from .metrics import calculate_metrics
 
 def calculate_quality_metrics(args):
 
-    print("Calculating quality metrics...")
+    print('ecephys spike sorting: quality metrics module')
 
     start = time.time()
 
@@ -45,10 +45,13 @@ def calculate_quality_metrics(args):
     #waveform_metrics = np.load(args['waveforms_metrics_file'])
     # join waveform metrics and quality metrics dataframes
 
-    print("Saving data")
+    print("Saving data...")
     metrics.to_csv(output_file)
 
     execution_time = time.time() - start
+
+    print('total time: ' + str(execution_time) + ' seconds')
+    print( )
     
     return {"execution_time" : execution_time,
             "quality_metrics_output_file" : output_file} # output manifest

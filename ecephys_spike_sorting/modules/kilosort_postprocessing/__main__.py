@@ -12,6 +12,8 @@ from .postprocessing import remove_double_counted_spikes
 
 def run_postprocessing(args):
 
+    print('ecephys spike sorting: kilosort postprocessing module')
+
     print("Loading data...")
 
     start = time.time()
@@ -46,6 +48,9 @@ def run_postprocessing(args):
     np.save(os.path.join(args['directories']['kilosort_output_directory'], 'overlap_matrix.npy'), overlap_matrix)
 
     execution_time = time.time() - start
+
+    print('total time: ' + str(execution_time) + ' seconds')
+    print( )
     
     return {"execution_time" : execution_time} # output manifest
 

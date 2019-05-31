@@ -1,5 +1,5 @@
 import os
-import shutil
+import subprocess
 
 from create_input_json import createInputJson
 
@@ -15,9 +15,11 @@ for npx_file in npx_files:
 	input_json = os.path.join(json_directory, session_id + '-input.json')
 	output_json = os.path.join(json_directory, session_id + '-output.json')
 
-	info = createInputJson(npx_file, os.path.dirname(npx_file) + '_sorted', input_json)
+	kilosort_output_directory = os.path.join(os.path.dirname(npx_file) + '_sorted', 'continuous','Neuropix-PXI-100.0')
 
-	commands = ('depth_estimation', 
+	info = createInputJson(os.path.dirname(npx_file), kilosort_output_directory, input_json)
+
+	commands = (#'depth_estimation', 
 				'kilosort_helper',
 				'kilosort_postprocessing',
 				'noise_templates',
@@ -29,7 +31,7 @@ for npx_file in npx_files:
 		command = "python -m ecephys_spike_sorting.modules." + command + " --input_json " + input_json \
 		          + " --output_json " + output_json
 
-		os.system(command)
+		subprocess.check_call(command.split(' '))
 
 
 

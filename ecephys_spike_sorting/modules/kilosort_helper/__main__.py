@@ -4,6 +4,7 @@ import logging
 import subprocess
 import time
 from git import Repo
+import shutil
 
 import numpy as np
 
@@ -13,6 +14,8 @@ from . import matlab_file_generator
 from ...common.utils import read_probe_json, get_ap_band_continuous_file
 
 def run_kilosort(args):
+
+    print('ecephys spike sorting: kilosort helper module')
 
     repo = Repo(args['kilosort_repo'])
     headcommit = repo.head.commit
@@ -25,6 +28,9 @@ def run_kilosort(args):
 
     top_channel = np.min([args['ephys_params']['num_channels'], int(surface_channel) + args['surface_channel_buffer']])
 
+    shutil.copyfile(os.path.join('ecephys_spike_sorting','modules','kilosort_helper','kilosort2_master_file.m'),
+        os.path.join(args['kilosort_location'],'kilosort2_master_file.m'))
+
     matlab_file_generator.create_chanmap(args['kilosort_location'], \
                                         EndChan = top_channel, \
                                         probe_type = args['ephys_params']['probe_type'],
@@ -36,8 +42,6 @@ def run_kilosort(args):
     else:
         return
 
-    logging.info('Running Kilosort')
-    
     start = time.time()
     
     eng = matlab.engine.start_matlab()
@@ -51,6 +55,9 @@ def run_kilosort(args):
         eng.kilosort2_master_file(nargout=0)
 
     execution_time = time.time() - start
+
+    print('total time: ' + str(execution_time) + ' seconds')
+    print( )
     
     return {"execution_time" : execution_time,
             "kilosort_commit_date" : time.strftime("%a, %d %b %Y %H:%M", time.gmtime(headcommit.committed_date)),
