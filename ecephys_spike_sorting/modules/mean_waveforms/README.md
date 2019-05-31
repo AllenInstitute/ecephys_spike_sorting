@@ -4,15 +4,18 @@ Extracts mean waveforms from raw data, given Kilosort spike times and cluster ID
 
 Computes waveforms separately for individual epochs, as well as for the entire experiment. If no epochs are specified, waveforms are selected randomly from the entire recording. Waveform standard deviation is currently computed, but not saved.
 
-Metrics are computed for every waveform, and include SNR as well as features of the 1D peak-channel waveform and the 2D waveform centered on the soma location.
+Metrics are computed for every waveform, and include features of the 1D peak-channel waveform and the 2D waveform centered on the soma location.
 
 ![1D features](images/1d_waveform_features.png "1D waveform features")
+
 **1D waveform features**: Waveform duration, peak-trough ratio, repolarization slope, and recovery slope.
 
 ![2D waveform](images/2d_waveform.png "2D waveform")
-**Example 2D waveform**: Signals from channels along one edge of the probe are smoothed with a moving average to create the 2D waveform.
+
+**Example 2D waveform**: Signals from channels along one edge of the probe are smoothed with a moving average to create the 2D waveform. Green dots indicate the location of the waveform trough on each channel.
 
 ![2D features](images/2d_waveform_features.png "2D waveform features")
+
 **2D waveform features**: Waveform spread, velocity above the soma, and velocity below the soma.
 
 Source: [Jia et al. (2019) J Neurophys](https://doi.org/10.1152/jn.00680.2018)
