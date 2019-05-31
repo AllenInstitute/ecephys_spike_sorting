@@ -1,0 +1,19 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2013
+Project("{A218467C-808A-5074-B7B6-4D41CC6B2DB4}") = "SpikeBandMedianSubtraction", "SpikeBandMedianSubtraction.vcxproj", "{740AC1EC-829B-0D4D-6AA0-FB2B59CAA93B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{740AC1EC-829B-0D4D-6AA0-FB2B59CAA93B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{740AC1EC-829B-0D4D-6AA0-FB2B59CAA93B}.Debug|Win32.Build.0 = Debug|Win32
+		{740AC1EC-829B-0D4D-6AA0-FB2B59CAA93B}.Release|Win32.ActiveCfg = Release|Win32
+		{740AC1EC-829B-0D4D-6AA0-FB2B59CAA93B}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

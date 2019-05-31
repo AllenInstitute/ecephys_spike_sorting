@@ -1,0 +1,12 @@
+# intermediate files
+*.o
+*.d
+
+*.obj
+*.opensdf
+*.suo
+*.pdb
+*.res
+*.log
+*.tlog
+*.sdf

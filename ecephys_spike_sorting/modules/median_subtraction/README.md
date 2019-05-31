@@ -1,6 +1,12 @@
 Median Subtraction
 ==============
-Calls a binary executable that removes the DC offset and common-mode noise from a spike-band continuous file.
+Calls an executable that removes the DC offset and common-mode noise from a spike-band continuous file.
+
+Because noise on Neuropixels probes is highly correlated across sites that share an ADC, we compute the median of every 24th channel, rather than using the median across all sites. This ends up creating a residual on the order of a few microvolts for large spikes, which can appear in the mean waveform. However, this is well below the probe's noise floor, and shouldn't affect spike sorting or data analysis.
+
+Dependencies
+------------
+C++ source code for the median subtraction binary is available in the [SpikeBandMedianSubtraction](SpikeBandMedianSubtraction/) folder. This must be compiled prior to running this module.
 
 Running
 -------

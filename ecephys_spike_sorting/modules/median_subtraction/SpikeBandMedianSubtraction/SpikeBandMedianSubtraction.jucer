@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="EnIiaS" name="SpikeBandMedianSubtraction" projectType="consoleapp"
+              version="1.0.0" bundleIdentifier="com.yourcompany.SpikeBandMedianSubtraction"
+              includeBinaryInAppConfig="1" jucerVersion="4.2.1">
+  <MAINGROUP id="Fzv6UU" name="SpikeBandMedianSubtraction">
+    <GROUP id="{08863BB3-B929-F9C8-6C92-A1BFB56908E8}" name="Source">
+      <FILE id="Lr5Cfw" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <VS2013 targetFolder="Builds/VisualStudio2013">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
+                       isDebug="1" optimisation="1" targetName="SpikeBandMedianSubtraction"/>
+        <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
+                       isDebug="0" optimisation="3" targetName="SpikeBandMedianSubtraction"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_events" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_video" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+      </MODULEPATHS>
+    </VS2013>
+    <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" libraryPath="/usr/X11R6/lib/" isDebug="1" optimisation="1"
+                       targetName="SpikeBandMedianSubtraction"/>
+        <CONFIGURATION name="Release" libraryPath="/usr/X11R6/lib/" isDebug="0" optimisation="3"
+                       targetName="SpikeBandMedianSubtraction"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_events" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_video" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../../../../plugin-GUI/JuceLibraryCode/modules"/>
+      </MODULEPATHS>
+    </LINUX_MAKE>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_video" showAllCode="1" useLocalCopy="0"/>
+  </MODULES>
+  <JUCEOPTIONS/>
+</JUCERPROJECT>
