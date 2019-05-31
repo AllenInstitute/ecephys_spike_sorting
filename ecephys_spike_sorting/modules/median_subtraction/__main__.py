@@ -14,6 +14,8 @@ from ...common.utils import get_ap_band_continuous_file
 
 def run_median_subtraction(args):
 
+    print('ecephys spike sorting: median subtraction module')
+
     repo = Repo(args['median_subtraction_repo'])
     headcommit = repo.head.commit
 
@@ -28,6 +30,9 @@ def run_median_subtraction(args):
     subprocess.check_call([args['median_subtraction_executable'], args['probe_json'], spikes_file, str(int(air_channel))])
     
     execution_time = time.time() - start
+
+    print('total time: ' + str(execution_time) + ' seconds')
+    print( )
     
     return {"median_subtraction_execution_time" : execution_time,
             "median_subtraction_commit_date" : time.strftime("%a, %d %b %Y %H:%M", time.gmtime(headcommit.committed_date)),

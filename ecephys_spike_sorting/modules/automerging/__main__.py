@@ -10,8 +10,8 @@ from ...common.utils import write_cluster_group_tsv, load_kilosort_data
 
 def run_automerging(args):
 
-    logging.info('Running automerging')
-    
+    print('ecephys spike sorting: automerging module')
+
     start = time.time()
     
     spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
@@ -25,6 +25,9 @@ def run_automerging(args):
     np.save(os.path.join(args['directories']['kilosort_output_directory'], 'spike_clusters.npy'), spike_clusters)
 
     execution_time = time.time() - start
+
+    print('total time: ' + str(execution_time) + ' seconds')
+    print( )
     
     return {"execution_time" : execution_time} # output manifest
 

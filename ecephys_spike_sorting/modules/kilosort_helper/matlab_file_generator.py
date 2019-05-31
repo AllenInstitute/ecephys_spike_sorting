@@ -24,7 +24,7 @@ def create_config2(kilosort_location,forwardslash_data_file_location, ephys_para
     with open(config_path,"w+") as f:
         f.write(config_string)
 
-def make_chanmap_string(EndChan = 384, StartChan = 1, Nchannels = 384, probe_type, MaskChannels = '[ ]'):
+def make_chanmap_string(EndChan = 384, StartChan = 1, Nchannels = 384, probe_type='3A', MaskChannels = '[ ]'):
     chanmap_string = "map = load('neuropixPhase""" + probe_type + "_kilosortChanMap.mat');"
 
     chanmap_string += """

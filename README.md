@@ -36,12 +36,14 @@ Further documentation can be found in each module's README file. For more inform
 
 8. [quality_metrics](ecephys_spike_sorting/modules/quality_metrics/README.md): Calculates quality metrics for each unit to assess isolation and sorting quality.
 
-Not used: [automerging](ecephys_spike_sorting/modules/automerging/README.md): Automatically merges templates that belong to the same unit (included in case it's helpful to others).
+(Not used) [automerging](ecephys_spike_sorting/modules/automerging/README.md): Automatically merges templates that belong to the same unit (included in case it's helpful to others).
 
 
 ## Installation and Usage
 
-We recommend using [pipenv](https://github.com/pypa/pipenv) to run these modules. From the `ecephys_spike_sorting` top-level directory, run the following commands:
+We recommend using [pipenv](https://github.com/pypa/pipenv) to run these modules. From the `ecephys_spike_sorting` top-level directory, run the following commands from a terminal:
+
+### Linux
 
 ```shell
     $ pip install --user pipenv
@@ -50,16 +52,37 @@ We recommend using [pipenv](https://github.com/pypa/pipenv) to run these modules
     $ pipenv shell
     (ecephys_spike_sorting) $ pip install .
 ```
-At this point, you can edit one of the processing scripts found in `ecephys_spike_sorting/scripts` and run via:
+You can now edit one of the processing scripts found in `ecephys_spike_sorting/scripts` and run via:
 
 ```shell
-    (ecephys_spike_sorting) $ python ecephys_spike_sorting/scripts/example_script.py
+    (ecephys_spike_sorting) $ python ecephys_spike_sorting/scripts/batch_processing.py
 ```
-
 To leave the pipenv virtual environment, simply type:
 
 ```shell
     (ecephys_spike_sorting) $ exit
+```
+
+### Windows
+
+```shell
+    $ pip install --user pipenv
+    $ set PIPENV_VENV_IN_PROJECT=1
+    $ pipenv install
+    $ pipenv shell
+    (.venv) $ pip install .
+```
+**Note:** This will work in the standard Command Prompt, but the [cmder console emulator](https://cmder.net/) has better compatibility with Python virtual environments.
+
+You can now edit one of the processing scripts found in `ecephys_spike_sorting\scripts` and run via:
+
+```shell
+    (.venv) $ python ecephys_spike_sorting\scripts\batch_processing.py
+```
+To leave the pipenv virtual environment, simply type:
+
+```shell
+    (.venv) $ exit
 ```
 
 ## Level of Support

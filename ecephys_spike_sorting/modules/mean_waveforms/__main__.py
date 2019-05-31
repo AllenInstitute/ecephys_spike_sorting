@@ -13,6 +13,8 @@ from .extract_waveforms import extract_waveforms, writeDataAsNpy
 from .waveform_metrics import calculate_waveform_metrics
 
 def calculate_mean_waveforms(args):
+
+    print('ecephys spike sorting: mean waveforms module')
     
     start = time.time()
 
@@ -42,6 +44,9 @@ def calculate_mean_waveforms(args):
     metrics.to_csv(args['waveform_metrics_file'])
 
     execution_time = time.time() - start
+
+    print('total time: ' + str(execution_time) + ' seconds')
+    print( )
     
     return {"execution_time" : execution_time} # output manifest
 
