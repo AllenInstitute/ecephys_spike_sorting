@@ -1,5 +1,7 @@
 # ecephys spike sorting
 
+![ecephys_spike_sorting_icon](icon.png)
+
 https://github.com/AllenInstitute/ecephys_spike_sorting
 
 Modules for processing **e**xtra**c**ellular **e**lectro**phys**iology data from Neuropixels probes.
