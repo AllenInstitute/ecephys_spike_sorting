@@ -2,6 +2,8 @@ Automerging
 ==============
 Looks for clusters that likely belong to the same cell, and merges them automatically.
 
+This is not currently part of our pipeline since switching to Kilosort2, but we're keeping the code around in case others find it useful. For example, it could be helpful for matching units across a series of chronic recordings.
+
 
 Running
 -------

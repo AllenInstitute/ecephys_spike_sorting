@@ -16,7 +16,7 @@ def calculate_mean_waveforms(args):
     
     start = time.time()
 
-    print("Calculating mean waveforms...")
+    print("Loading data...")
 
     rawDataFile = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
     rawData = np.memmap(rawDataFile, dtype='int16', mode='r')
@@ -26,6 +26,8 @@ def calculate_mean_waveforms(args):
             load_kilosort_data(args['directories']['kilosort_output_directory'], \
                 args['ephys_params']['sample_rate'], \
                 convert_to_seconds = False)
+
+    print("Calculating mean waveforms...")
 
     waveforms, spike_counts, coords, labels, metrics = extract_waveforms(data, spike_times, \
                 spike_clusters,

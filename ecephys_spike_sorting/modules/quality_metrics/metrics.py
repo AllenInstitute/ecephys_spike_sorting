@@ -10,6 +10,7 @@ from scipy.ndimage.filters import gaussian_filter1d
 
 from ...common.spike_template_helpers import find_depth_std
 from ...common.epoch import Epoch
+from ...common.utils import printProgressBar
 
 
 def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_features, pc_feature_ind, params, epochs = None):
@@ -111,6 +112,9 @@ def calculate_isi_violations(spike_times, spike_clusters, total_units, isi_thres
     viol_rates = np.zeros((total_units,))
 
     for idx, cluster_id in enumerate(cluster_ids):
+
+        printProgressBar(idx+1, total_units)
+
         for_this_cluster = (spike_clusters == cluster_id)
         viol_rates[cluster_id], num_violations = isi_violations(spike_times[for_this_cluster], 
                                                        min_time = np.min(spike_times), 
@@ -127,6 +131,9 @@ def calculate_presence_ratio(spike_times, spike_clusters, total_units):
     ratios = np.zeros((total_units,))
 
     for idx, cluster_id in enumerate(cluster_ids):
+
+        printProgressBar(idx+1, total_units)
+
         for_this_cluster = (spike_clusters == cluster_id)
         ratios[cluster_id] = presence_ratio(spike_times[for_this_cluster], 
                                                        min_time = np.min(spike_times), 
@@ -145,9 +152,10 @@ def calculate_firing_rate(spike_times, spike_clusters, total_units):
     min_time = np.min(spike_times)
     max_time = np.max(spike_times)
 
-    print("Total duration: " + str(max_time - min_time))
-
     for idx, cluster_id in enumerate(cluster_ids):
+
+        printProgressBar(idx+1, total_units)
+
         for_this_cluster = (spike_clusters == cluster_id)
         firing_rates[cluster_id] = firing_rate(spike_times[for_this_cluster], 
                                         min_time = np.min(spike_times),
@@ -163,6 +171,10 @@ def calculate_amplitude_cutoff(spike_clusters, amplitudes, total_units):
     amplitude_cutoffs = np.zeros((total_units,))
 
     for idx, cluster_id in enumerate(cluster_ids):
+
+        printProgressBar(idx+1, total_units)
+
+
         for_this_cluster = (spike_clusters == cluster_id)
         amplitude_cutoffs[cluster_id] = amplitude_cutoff(amplitudes[for_this_cluster])
 
@@ -202,10 +214,9 @@ def calculate_pc_metrics(spike_clusters,
         peak_channels[cluster_id] = feature_inds[pc_max]
         actual_channels[cluster_id] = channel_map[int(peak_channels[idx])]
 
-
     for idx, cluster_id in enumerate(cluster_ids):
 
-        print(cluster_id)
+        printProgressBar(idx+1, total_units)
 
         peak_channel = peak_channels[idx]
 

@@ -1,18 +1,9 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Nov 20 16:03:27 2017
-
-@author: greggh
-"""
-#%%
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy as scipy
 from scipy.signal import convolve
 import collections
 
-
-#%%
 def find_ISI(spike_times1):
     #spike_times = template_times_list[template_ID]
     intervals = np.diff(spike_times1)
@@ -163,12 +154,9 @@ def compare_cISI(ISI1, cISI, rcISI, window):
     if window>0:
         window = max((100,min((window,400))))
         window = np.int(1.25*window)
-        #print("window", window)
-        #print("ISI")
+
         smoothISI1, num1 = smooth_ISI(ISI1,window)
-        #print("cISI")
         smoothcISI, numc = smooth_ISI(cISI,window)
-        #print("rcISI")
         smoothrcISI, numrc = smooth_ISI(rcISI,window)
         norm_smoothISI1 = normalize_smoothed_ISI(smoothISI1)
         norm_smoothcISI = normalize_smoothed_ISI(smoothcISI)
@@ -179,9 +167,7 @@ def compare_cISI(ISI1, cISI, rcISI, window):
         dotc_self = np.dot(norm_smoothcISI,norm_smoothcISI)
         dotrc_self= np.dot(norm_smoothrcISI,norm_smoothrcISI)
         simc_1 = dotc_1/np.max((dot1_self,dotc_self))
-        #print("simc_1:", simc_1)
         simr_1 = np.max((0,dotr_1/np.max((dot1_self,dotrc_self))))
-        #print("simr_1:", simr_1)
         score = (simc_1 - simr_1)/(1-simr_1)
     else: 
         score = 0 
@@ -195,14 +181,10 @@ def find_cISI_score(spike_times1, spike_times2, max_time):
     ISI2 = find_ISI(spike_times2)
     cISI = find_cISI(spike_times1, spike_times2, max_time)
     rcISI = find_rcISI(spike_times1, spike_times2, max_time)
-    #modecISI = interval_dist_mode(cISI)
+
     sim_1, num1, numc1 = compare_cISI(ISI1, cISI, rcISI, interval_dist_mode(ISI1))
-    #print("sim1:", sim_1)
     sim_2, num2, numc2 = compare_cISI(ISI2, cISI, rcISI, interval_dist_mode(ISI2))
-    #print("sim2:", sim_2)
-    #If the correllogram is empty we want the value of the score relative to other scores - score_effectiveness
-    #if the ISI is empty then we want to favor the other ISI
-    
+
     weight1 = np.min((1,num1/1000.)) #These will be changed to account for drastically different rates
     weight2 = np.min((1,num2/1000.)) #placing more value on the similarity to the cluster with a higher max rate
     rel_weight1 =  weight1/(weight1+weight2+.000001)   
@@ -213,9 +195,7 @@ def find_cISI_score(spike_times1, spike_times2, max_time):
     rel_score = sim_1*rel_weight1+sim_2*rel_weight2 
     cISI_score = min_score*balanced+rel_score*(1-balanced)
     score_weight = np.min((1,(numc1+numc2)/200.))
-    
-   # print ISI1.shape
-    
+ 
     isi1 = normalize_smoothed_ISI(smooth_ISI(ISI1, window=1000)[0])
     isi2 = normalize_smoothed_ISI(smooth_ISI(ISI2, window=1000)[0])
     cisi = normalize_smoothed_ISI(smooth_ISI(cISI, window=1000)[0])
@@ -231,26 +211,11 @@ def find_cISI_score_matrix(ISI_list, times_list):
             if comparison_matrix[i,j]>0: 
                 print('calculating cISI score for',i,j)
                 cISI_score, score_weight = find_cISI_score(i,j)
-                
-                """
-                #cISI_score = find_cISI_score(ISI_list[i],ISI_list[j],cISI,rcISI)
-                score_dict = collections.OrderedDict()   
-                score_dict.update({'icross' : np.dot(ISI_list[i],cISI),'jcross' : np.dot(ISI_list[j],cISI),'reversecross' : np.dot(rcISI,cISI) })
-                score_dict.update({'iself' : np.dot(ISI_list[i],ISI_list[i]),'jself' : np.dot(ISI_list[j],ISI_list[j]),'crossself': np.dot(cISI,cISI)})    
-                cISI_score = (score_dict['icross']/score_dict['iself']+score_dict['jcross']/score_dict['jself'])/2# - np.max((score_dict['reversecross']/score_dict['crossself'],0)))
-    #max_score = np.dot(cISI,cISI)#np.max((np.dot(ISI_list[i],ISI_list[i]),np.dot(ISI_list[j],ISI_list[j])))
-     #           cISI_score = cISI_score/max_score
-                
-     """
                 cISI_score_matrix[i,j] = cISI_score
                 cISI_score_matrix[j,i] = cISI_score 
                 cISI_score_weight_matrix[i,j] = score_weight
                 cISI_score_weight_matrix[j,i] = score_weight 
     return cISI_score_matrix, cISI_score_weight_matrix
-
- #%%
-#test out the isi metrics
-
 
 
 #%%
@@ -277,24 +242,7 @@ def compare(ID1, ID2):
     cISI_score = find_cISI_score(ID1,ID2)
     print("cISI_score:",cISI_score)
     return
-    #cISI_score = find_cISI_score(ISI_list[i],ISI_list[j],cISI,rcISI)
-"""    
-    score_dict = collections.OrderedDict()   
-    score_dict.update({'icross' : np.dot(ISI_list[i],cISI),'jcross' : np.dot(ISI_list[j],cISI),'reversecross' : np.dot(rcISI,cISI) })
-    score_dict.update({'iself' : np.dot(ISI_list[i],ISI_list[i]),'jself' : np.dot(ISI_list[j],ISI_list[j]),'crossself': np.dot(cISI,cISI)})    
-    score_dict.update({'iscore':score_dict['icross']/score_dict['iself'],'jscore':score_dict['jcross']/score_dict['jself'],'reversescore':score_dict['reversecross']/score_dict['crossself']})
-    cISI_score = (score_dict['iscore']+score_dict['jscore'])/2# - np.max((score_dict['reversescore'],0)))
-    score_dict.update({'cISI_score': cISI_score})
-   
-    max_score = np.dot(cISI,cISI)#np.max((np.dot(ISI_list[i],ISI_list[i]),np.dot(ISI_list[j],ISI_list[j])))
-    #score_dict.update({'max_score': max_score})
-    norm_cISI_score = cISI_score/max_score
-    #score_dict.update({'norm_cISI_score': norm_cISI_score})
-    for key,value in score_dict.items():
-        print(key, value)
-"""
-    
-    
+
 
 
 def remove_outliers(dist,reps=3):

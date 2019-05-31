@@ -78,13 +78,15 @@ def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_
 
     for epoch_idx, epoch in enumerate(epochs):
 
+        print("Epoch: " + epoch.name)
+
         in_epoch = ((spike_times / sample_rate) > epoch.start_time) * ((spike_times / sample_rate) < epoch.end_time)
 
         spike_times_in_epoch = spike_times[in_epoch]
 
         for cluster_idx, cluster_id in enumerate(cluster_ids):
 
-            print(cluster_id)
+            printProgressBar(cluster_idx+1, total_units)
 
             in_cluster = (spike_clusters[in_epoch] == cluster_id)
 

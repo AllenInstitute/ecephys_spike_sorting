@@ -1,30 +1,29 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Feb  1 19:00:45 2018
-
-@author: joshs
-"""
-
 from scipy.interpolate import griddata
 from scipy.signal import correlate
 import numpy as np
 from .spike_ISI import *    
 
-# %%
-
-
-# finds depth, based on maximum range
 def find_depth(template):
+    
+    """
+    Finds depth based on channel with maximum range.
+    """
     
     return np.argmax(np.max(template,0)-np.min(template,0))
 
 def find_height(template):
+
+    """
+    Maximum peak-to-trough amplitude of a template
+    """
     
     return np.max(np.max(template,0)-np.min(template,0))
 
-# returns False if it's a noise template
 def check_template(template, times):
+
+    """
+    Detects noise templates based on a set of heuristics
+    """
    
     depth = find_depth(template)
 
@@ -36,8 +35,7 @@ def check_template(template, times):
     wv = template[:,depth]
     C = correlate(wv,wv,mode='same')
     C = C/np.max(C)
-    #plt.plot(C)
-    
+
     a = np.where(C > thresh2)[0]
     d = np.diff(a)
     b = np.where(d > 1)[0]
@@ -51,41 +49,7 @@ def check_template(template, times):
         return False
     else:
         return True
-"""
-    
-    thresh1 = 0.25
-    thresh2 = 0.10
-    thresh3 = 0.20
-    thresh4 = -0.20
-    
-    wv = template[:,depth]*0.195    
-    mx = np.argmax(wv)
-    mn = np.argmin(wv)
-    
-    if (mn >= 19 or mx >= 19) and mn < 40:
-        
-        C = correlate(wv,wv,mode='same')
-        C = C/np.max(C)
-        
-        a = np.where(C > thresh2)[0]
-        d = np.diff(a)
-        b = np.where(d > 1)[0]
-            
-        a2 = np.where(C < -thresh2)[0]
-        d2 = np.diff(a2)
-        b2 = np.where(d2 > 1)[0]
-        
-        ddd = np.diff(C[0:2])
-        
-        DDD = np.diff(np.diff(C))
-            
-        if C[0] < -thresh1 or C[0] > thresh1 or len(b) > 0 or len(b2) < 1 or ddd[0] > thresh3 or np.min(DDD) < thresh4:
-            return False
-        else:
-            return True
-    else:
-        return False
-"""
+
 
 def make_actual_channel_locations(min_chan, max_chan):
     actual_channel_locations = np.zeros((max_chan-min_chan,2))
@@ -147,9 +111,6 @@ def compare_templates(t1, t2):
     else:
         padding_pos = max_padding
     
-    #print padding_neg
-    #print padding_pos
-    
     m1 = np.zeros((61, total_channels+padding_neg+padding_pos, 7))
     m1[:,padding_neg:total_channels+padding_neg,:] = t1
     m2 = np.zeros((61, total_channels+padding_neg+padding_pos, 7))
@@ -162,7 +123,6 @@ def compare_templates(t1, t2):
         m2[:,padding_neg+offset:total_channels+padding_neg+offset,:] = t2
         sim[ii] = np.corrcoef(m1.flatten(), m2.flatten())[0,1]
         offset_distance[idx] = -offset*10
-        #np.power(np.mean(np.power(m1-m2,2)),0.5)
         ii += 1
         
     return sim, offset_distance
@@ -196,11 +156,5 @@ def percent_overlap(t1, t2, min_t, max_t, num_bins = 50):
 def get_templates_for_cluster(spike_templates, spike_clusters, clusterId):
     
     templatesForCluster = np.unique(spike_templates[spike_clusters == clusterId])
-    
-    #tempInds = np.zeros((templateIDs.size,))
-    
-    #for ID in templatesForCluster:
-        
-    #    tempInds = tempInds + (templateIDs == ID)
     
     return templatesForCluster

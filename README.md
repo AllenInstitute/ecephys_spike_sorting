@@ -6,7 +6,7 @@ https://github.com/AllenInstitute/ecephys_spike_sorting
 
 Modules for processing **e**xtra**c**ellular **e**lectro**phys**iology data from Neuropixels probes.
 
-These modules take data saved by the [Open Ephys GUI](https://github.com/open-ephys/plugin-gui) and prepare it for spike sorting by [Kilosort2](https://github.com/MouseLand/Kilosort2). Following the spike-sorting step (using the [kilosort helper](ecephys_spike_sorting/modules/kilosort_helper/README.md) module), we clean up the outputs and calculate mean waveforms and quality metrics for each unit.
+These modules take data saved by the [Open Ephys GUI](https://github.com/open-ephys/plugin-gui) and prepare it for spike sorting by [Kilosort2](https://github.com/MouseLand/Kilosort2). Following the spike-sorting step (using the [kilosort_helper](ecephys_spike_sorting/modules/kilosort_helper/README.md) module), we clean up the outputs and calculate mean waveforms and quality metrics for each unit.
 
 This code is still under development, and we welcome feedback about any step in the pipeline.
 
@@ -48,7 +48,7 @@ We recommend using [pipenv](https://github.com/pypa/pipenv) to run these modules
 At this point, you can edit one of the processing scripts found in `ecephys_spike_sorting/scripts` and run via:
 
 ```shell
-    (ecephys_spike_sorting) $ python ecephys_spike_sorting/scripts/batch_processing.py
+    (ecephys_spike_sorting) $ python ecephys_spike_sorting/scripts/example_script.py
 ```
 
 To leave the pipenv virtual environment, simply type:

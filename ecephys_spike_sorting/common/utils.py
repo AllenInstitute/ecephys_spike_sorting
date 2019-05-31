@@ -3,6 +3,7 @@ import os
 import numpy as np
 import json
 import glob
+import sys
 
 def get_lfp_band_continuous_file(base_directory):
 
@@ -136,3 +137,43 @@ def load_kilosort_data(folder, sample_rate, convert_to_seconds = True, use_maste
         return spike_times, spike_clusters, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality
     else:
         return spike_times, spike_clusters, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality, pc_features, pc_feature_ind
+
+
+def printProgressBar(iteration, total, prefix = '', suffix = '', decimals = 0, length = 40, fill = '▒'):
+    
+    """
+    Call in a loop to create terminal progress bar
+
+    Code from https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
+
+    Inputs:
+    -------
+    iteration - Int
+        Current iteration
+    total - Int
+        Total iterations
+    prefix - Str (optional)
+        Prefix string
+    suffix - Str (optional)
+        Suffix string
+    decimals - Int (optional)
+        Positive number of decimals in percent complete
+    length - Int (optional)
+        Character length of bar
+    fill - Str (optional)
+        Bar fill character
+
+    Outputs:
+    --------
+    None
+    
+    """
+    
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '░' * (length - filledLength)
+    sys.stdout.write('\r%s %s %s%% %s' % (prefix, bar, percent, suffix))
+    sys.stdout.flush()
+
+    if iteration == total: 
+        print()
