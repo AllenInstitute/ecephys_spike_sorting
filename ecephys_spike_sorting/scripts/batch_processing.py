@@ -3,8 +3,6 @@ import shutil
 
 from create_input_json import createInputJson
 
-#import ecephys_spike_sorting.modules.extract_from_npx as extract_from_npx
-
 npx_files = [r'E:\704166722_380486_20180531_probeC\recording1.npx', 
              r'E:\704514354_380485_20180601_probeC\recording2.npx',
              r'E:\704514354_380485_20180601_probeB\recording1.npx']

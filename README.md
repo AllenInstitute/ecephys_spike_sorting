@@ -41,7 +41,9 @@ Not used: [automerging](ecephys_spike_sorting/modules/automerging/README.md): Au
 
 ## Installation and Usage
 
-We recommend using [pipenv](https://github.com/pypa/pipenv) to run these modules. From the `ecephys_spike_sorting` top-level directory, run the following commands:
+We recommend using [pipenv](https://github.com/pypa/pipenv) to run these modules. From the `ecephys_spike_sorting` top-level directory, run the following commands from a terminal
+
+### Linux
 
 ```shell
     $ pip install --user pipenv
@@ -50,11 +52,27 @@ We recommend using [pipenv](https://github.com/pypa/pipenv) to run these modules
     $ pipenv shell
     (ecephys_spike_sorting) $ pip install .
 ```
-At this point, you can edit one of the processing scripts found in `ecephys_spike_sorting/scripts` and run via:
+### Windows
+
+This will work in the standard Command Prompt, but the [cmder console emulator](https://cmder.net/) has better compatibility with Python virtual environments.
+
+```shell
+    $ pip install --user pipenv
+    $ set PIPENV_VENV_IN_PROJECT=1
+    $ pipenv install
+    $ pipenv shell
+    (.venv) $ pip install .
+```
+
+### Running Scripts
+
+You can edit one of the processing scripts found in `ecephys_spike_sorting/scripts` and run via:
 
 ```shell
     (ecephys_spike_sorting) $ python ecephys_spike_sorting/scripts/example_script.py
 ```
+
+### Wrapping Up
 
 To leave the pipenv virtual environment, simply type:
 
