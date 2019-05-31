@@ -12,5 +12,5 @@ class EphysParams(DefaultSchema):
     probe_type = String(required=False, default='3A')
 
 class Directories(DefaultSchema):
-    kilosort_output_directory = String()
-    extracted_data_directory = String()
+    kilosort_output_directory = String(required=False, default='None', help='Location of Kilosort output files')
+    extracted_data_directory = String(required=False, default='None', help='Location of extracted data')
