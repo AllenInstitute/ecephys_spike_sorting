@@ -1,6 +1,12 @@
 Kilosort Post-Processing
 ==============
-Clean-up Kilosort outputs by removing putative double-counted spikes.
+Clean up Kilosort outputs by removing putative double-counted spikes.
+
+Kilosort occasionally fits a spike template to the residual of another spike. See [this discussion](https://github.com/MouseLand/Kilosort2/issues/29) for more information.
+
+This module aims to correct for this by removing spikes from the same unit or neighboring units that occur within 5 samples (0.16 ms) of one another. This is not ideal, since it can potentially remove real spike times, but it probably better than having spurious zero-time-lag correlation between units.
+
+We are not currently taking into account spike amplitude when removing spikes; the module just deletes the spike in an overlapping pair that occurred later in time.
 
 Running
 -------
@@ -16,4 +22,4 @@ Input data
 
 Output data
 -----------
-- **Updated Kilosort output files** : updated .npy files for spike times, cluster labels, amplitudes, and PC features 
+- **Updated Kilosort output files** : overwrites .npy files for spike times, cluster labels, amplitudes, and PC features. The original outputs can be extracted from the `rez.mat` file if necessary.

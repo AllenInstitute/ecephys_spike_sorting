@@ -1,8 +1,14 @@
 Mean Waveforms
 ==============
-Extracts mean waveforms from raw data, given spike times and cluster IDs.
+Extracts mean waveforms from raw data, given Kilosort spike times and cluster IDs.
 
-Computes waveforms separately for individual epochs linearly spaced throughout the experiment, as well as for the entire experiment. Waveform standard deviation is also saved.
+Computes waveforms separately for individual epochs, as well as for the entire experiment. If no epochs are specified, waveforms are selected randomly from the entire recording. Waveform standard deviation is currently computed, but not saved.
+
+Metrics are computed for every waveform, and include SNR as well as features of the 1D peak-channel waveform and the 2D waveform centered on the soma location.
+
+![1D features](images/1d_waveform_features "1D waveform features")
+
+Source: [Jia et al. (2019) J Neurophys](https://doi.org/10.1152/jn.00680.2018)
 
 
 Running
