@@ -6,7 +6,7 @@ Computes waveforms separately for individual epochs, as well as for the entire e
 
 Metrics are computed for every waveform, and include SNR as well as features of the 1D peak-channel waveform and the 2D waveform centered on the soma location.
 
-![1D features](images/1d_waveform_features "1D waveform features")
+![1D features](images/1d_waveform_features.png "1D waveform features")
 
 Source: [Jia et al. (2019) J Neurophys](https://doi.org/10.1152/jn.00680.2018)
 
