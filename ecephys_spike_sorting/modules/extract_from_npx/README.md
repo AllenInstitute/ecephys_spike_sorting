@@ -20,7 +20,7 @@ See the schema file for detailed information about input json contents.
 
 Input data
 ----------
-- **NPX file** : Written by Open Ephys (https://github.com/open-ephys-gui-binaries/open-ephys/tree/neuropix). Contains all of the data recorded from one Neuropixels probe.
+- **NPX file** : Written by Open Ephys (https://github.com/open-ephys-gui-binaries/open-ephys/tree/neuropix). Contains all of the data recorded from one or more Neuropixels probes.
 - **settings.xml** : Written by Open Ephys. Contains information about the signal chain that was used for the experiment.
 
 
