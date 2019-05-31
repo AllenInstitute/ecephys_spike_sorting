@@ -5,6 +5,7 @@ Creates a JSON file with information about the DC offset of each channel, as wel
 Implementation
 --------------
 ![Depth estimation](images/probe_depth.png "Surface estimation method")
+
 This module uses the sharp increase in low-frequency LFP band power to estimate the brain surface location.
 
 Running
