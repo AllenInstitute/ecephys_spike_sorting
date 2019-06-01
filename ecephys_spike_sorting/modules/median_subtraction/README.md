@@ -22,10 +22,10 @@ See the `_schemas.py` file for detailed information about the contents of the in
 
 Input data
 ----------
-- **ap band .dat or .bin file** : int16 binary files written by [Open Ephys](https://github.com/open-ephys/plugin-GUI), [SpikeGLX](https://github.com/billkarsh/spikeglx), or the `extract_from_npx` module.
+- **AP band .dat or .bin file** : int16 binary files written by [Open Ephys](https://github.com/open-ephys/plugin-GUI), [SpikeGLX](https://github.com/billkarsh/spikeglx), or the `extract_from_npx` module.
 - **probe_info.json** : file written by `depth_estimation` module.
 
 Output data
 -----------
-- **ap band .dat or .bin file** : overwrites the existing file with the median-subtracted data.
+- **AP band .dat or .bin file** : overwrites the existing file with the median-subtracted data.
 - **residuals.dat** : contains the subtracted signals, which makes it possible to reconstruct the original data if necessary.

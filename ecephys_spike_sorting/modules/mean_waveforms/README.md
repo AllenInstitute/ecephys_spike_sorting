@@ -34,7 +34,7 @@ See the `_schemas.py` file for detailed information about the contents of the in
 
 Input data
 ----------
-- **continuous data file** : Raw data in int16 binary format
+- **AP band .dat or .bin file** : int16 binary files written by [Open Ephys](https://github.com/open-ephys/plugin-GUI), [SpikeGLX](https://github.com/billkarsh/spikeglx), or the `extract_from_npx` module.
 - **Kilosort outputs** : includes spike times, spike clusters, cluster quality, etc.
 
 

@@ -32,7 +32,7 @@ The `createInputJson` function has one required input argument, the location for
     ```
 3. `kilosort_output_directory`: The directory containing the AP band `.dat` or `.bin` file, and potentially the `.npy` files saved by Kilosort. This is the required for running the `kilosort_helper`, `kilosort_postprocessing`, `noise_templates`, `mean_waveforms`, or `quality_metrics` modules.
 
-You can also specify the Neuropixels probe type ('3A', '3B1', or '3B2'), because the reference channels will differ depending on which one you're using.
+You can also specify the Neuropixels `probe_type` ('3A', '3B1', or '3B2'), because the reference channels will differ depending on which one you're using.
 
 `createInputJson` contains a dictionary entry for each module's parameters, as well as four entries for parameters that span modules. The default implementation contains many assumptions about file locations that are specific to the Allen Institute, so make sure that these match what's on your system. You only need to update the parameters for modules that you're actually going to use.
 
@@ -42,7 +42,7 @@ Once you've updated the parameters dictionary, you can edit `batch_processing.py
 
 Then, you can run the script using `pipenv`:
 
-#### Linux:
+#### Linux
 
 ```shell
     $ pipenv shell
@@ -50,7 +50,7 @@ Then, you can run the script using `pipenv`:
     (ecephys_spike_sorting) $ exit
 ```
 
-#### Windows:
+#### Windows
 
 ```shell
     $ pipenv shell

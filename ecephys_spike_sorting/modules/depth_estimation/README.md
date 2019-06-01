@@ -21,7 +21,7 @@ See the `_schemas.py` file for detailed information about the contents of the in
 
 Input data
 ----------
-- **ap band .dat or .bin file** : int16 binary files written by [Open Ephys](https://github.com/open-ephys/plugin-GUI), [SpikeGLX](https://github.com/billkarsh/spikeglx), or the `extract_from_npx` module.
+- **AP band and LFP band .dat or .bin files** : int16 binary files written by [Open Ephys](https://github.com/open-ephys/plugin-GUI), [SpikeGLX](https://github.com/billkarsh/spikeglx), or the `extract_from_npx` module.
 
 
 Output data

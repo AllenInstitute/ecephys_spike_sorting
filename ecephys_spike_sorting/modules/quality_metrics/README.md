@@ -35,7 +35,6 @@ See the `_schemas.py` file for detailed information about the contents of the in
 
 ## Input data
 
-- **continuous data file** : Raw data in int16 binary format
 - **Kilosort outputs** : includes spike times, spike clusters, cluster quality, etc.
 
 
