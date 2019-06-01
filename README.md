@@ -57,6 +57,8 @@ You can now edit one of the processing scripts found in `ecephys_spike_sorting/s
 ```shell
     (ecephys_spike_sorting) $ python ecephys_spike_sorting/scripts/batch_processing.py
 ```
+See the scripts [README](ecephys_spike_sorting/scripts/README.md) file for more information on their usage.
+
 To leave the pipenv virtual environment, simply type:
 
 ```shell
@@ -79,6 +81,8 @@ You can now edit one of the processing scripts found in `ecephys_spike_sorting\s
 ```shell
     (.venv) $ python ecephys_spike_sorting\scripts\batch_processing.py
 ```
+See the scripts [README](ecephys_spike_sorting/scripts/README.md) file for more information on their usage.
+
 To leave the pipenv virtual environment, simply type:
 
 ```shell

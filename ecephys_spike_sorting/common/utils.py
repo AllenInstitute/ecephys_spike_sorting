@@ -57,7 +57,37 @@ def rms(data):
 
     return np.power(np.mean(np.power(data.astype('float32'),2)),0.5)
 
-def write_probe_json(output_file, channels, offset, scaling, mask, surface_chan, air_chan, vertical_pos, horizontal_pos):
+def write_probe_json(output_file, channels, offset, scaling, mask, surface_channel, air_channel, vertical_pos, horizontal_pos):
+
+    """
+    Writes a json file containing information about one Neuropixels probe.
+
+    Inputs:
+    -------
+    output_file : file path
+        Location for writing the json file
+    channels : numpy.ndarray (384 x 0)
+        Probe channel numbers
+    offset : numpy.ndarray (384 x 0)
+        Offset of each channel from zero
+    scaling : numpy.ndarray (384 x 0)
+        Relative noise level on each channel
+    mask : numpy.ndarray (384 x 0)
+        1 if channel contains valid data, 0 otherwise
+    surface_channel : Int
+        Index of channel at brain surface
+    air_channel : Int
+        Index of channel at interface between saline/agar and air
+    vertical_pos : numpy.ndarray (384 x 0)
+        Distance (in microns) of each channel from the probe tip
+    horizontal_pos : numpy.ndarray (384 x 0)
+        Distance (in microns) of each channel from the probe edge
+
+    Outputs:
+    --------
+    output_file.json (written to disk)
+
+    """
 
     with open(output_file, 'w') as outfile:
         json.dump( 
@@ -66,8 +96,8 @@ def write_probe_json(output_file, channels, offset, scaling, mask, surface_chan,
                         'offset' : offset.tolist(), 
                         'scaling' : scaling.tolist(), 
                         'mask' : mask.tolist(), 
-                        'surface_channel' : surface_chan, 
-                        'air_channel' : air_chan,
+                        'surface_channel' : surface_channel, 
+                        'air_channel' : air_channel,
                         'vertical_pos' : vertical_pos.tolist(),
                         'horizontal_pos' : horizontal_pos.tolist()
                    },
@@ -77,6 +107,29 @@ def write_probe_json(output_file, channels, offset, scaling, mask, surface_chan,
                  ) 
 
 def read_probe_json(input_file):
+
+    """
+    Reads a json file containing information about one Neuropixels probe.
+
+    Inputs:
+    -------
+    input_file : file path
+        Location of file to read
+
+    Outputs:
+    --------
+    mask : numpy.ndarray (384 x 0)
+        1 if channel contains valid data, 0 otherwise
+    offset : numpy.ndarray (384 x 0)
+        Offset of each channel from zero
+    scaling : numpy.ndarray (384 x 0)
+        Relative noise level on each channel
+    surface_channel : Int
+        Index of channel at brain surface
+    air_channel : Int
+        Index of channel at interface between saline/agar and air
+
+    """
     
     with open(input_file) as data_file:
         data = json.load(data_file)
