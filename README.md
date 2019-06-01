@@ -93,3 +93,6 @@ This code is an important part of the internal Allen Institute code base and we 
 ## Terms of Use
 
 See [Allen Institute Terms of Use](https://alleninstitute.org/legal/terms-use/)
+
+
+© 2019 Allen Institute for Brain Science
