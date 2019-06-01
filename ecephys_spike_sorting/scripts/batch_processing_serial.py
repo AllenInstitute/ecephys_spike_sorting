@@ -71,7 +71,7 @@ for idx, npx_directory in enumerate(npx_directories):
 				input_json = os.path.join(json_directory, session_id + '_' + module + '-input.json')
 				output_json = os.path.join(json_directory, session_id + '_' + module +'-output.json')
 
-				info = createInputJson(npx_directory, input_json)
+				info = createInputJson(input_json, npx_directory=npx_directory)
 
 				command_string = ["python", "-m", "ecephys_spike_sorting.modules." + module, 
 							"--input_json", input_json,

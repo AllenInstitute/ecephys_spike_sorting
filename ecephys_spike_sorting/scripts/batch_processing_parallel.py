@@ -21,7 +21,7 @@ import multiprocessing
 import json
 import xml.etree.ElementTree as ET
 
-logging.basicConfig(level = logging.DEBUG)
+logging.basicConfig(level = logging.INFO)
 
 
 from helpers.check_data_processing import check_data_processing, check_all_space
@@ -29,135 +29,41 @@ from helpers.check_data_processing import check_data_processing, check_all_space
 from create_input_json import createInputJson
 from zro import RemoteObject, Proxy
 
-class RemoteInterface(RemoteObject):
-	def __init__(self, rep_port, parent):
-		super(RemoteInterface, self).__init__(rep_port=rep_port)
-		print('Opening Remote Interface on port: '+ str(rep_port))
-		self.parent = parent
 
-	def process_npx(self, session_name, probes = []):
-		print('Attempting to initiate processing from remote command')
-		print('Probes = '+ str(probes))
-		self.parent.set_session( session_name)
-		started = self.parent.start_processing(session_name, probes)
-		return started
-
-	def ping(self):
-		print("its alive")       
-
-
-class Processing_Agent(QWidget):
-	def __init__(self):
-		super(Processing_Agent, self).__init__()
-
-		#logging.basicConfig(level=logging.DEBUG,
-		#        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-		#self.config = mpeconfig.source_configuration('neuropixels')
-
-		self.interface = RemoteInterface(rep_port=1234, parent=self)
-		print('Starting Remote Interface')
-
-		self.interfaceTimer = QtCore.QTimer()
-		self.interfaceTimer.timeout.connect(self._check_sock)
-		self.interfaceTimer.start(100)
-
-		self.smallFont = QtGui.QFont()
-		self.smallFont.setPointSize(8)
-		self.smallFont.setBold(False)
-
-		self.bigFont = QtGui.QFont()
-		self.bigFont.setPointSize(12)
-		self.bigFont.setBold(False)
-
-		self.vLayout = QVBoxLayout()
-
-		self.header = QLabel()
-		self.header.setFont(self.bigFont)
-		self.header.setText('NPX Processing Agent')
-		self.header.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-		self.vLayout.addWidget(self.header)
-
-		self.processing_layout = QGridLayout()
-
-		self.sessoin_label = QLabel()
-		self.sessoin_label = QLabel()
-		self.sessoin_label.setFont(self.smallFont)
-		self.sessoin_label.setText('Full session name:')
-		self.sessoin_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-		self.session_entry = QLineEdit()
-		self.session_entry.setFont(self.smallFont)
-		self.processing_layout.addWidget(self.sessoin_label, 1, 0)
-		self.processing_layout.addWidget(self.session_entry, 1, 1)
-
-		self.vLayout.addLayout(self.processing_layout)
-
-		self.processButton = QPushButton("Process Data")
-		self.processButton.setStyleSheet("color: #333; border: 2px solid #555; border-radius: 11px; padding: 5px;background: qradialgradient(cx: 0.3, cy: -0.4,fx: 0.3, fy: -0.4,radius: 1.35, stop: 0 #fff, stop: 1 #388E3C);min-width: 80px;font-size:15px;")
-		self.processButton.clicked.connect(self.process_button_press)
-		self.vLayout.addWidget(self.processButton)
-
-
-		###############################################################
-
-		self.setLayout(self.vLayout)
-
-	def set_session(self, session_name):
-		self.session_entry.setText(session_name)
-
-	def process_button_press(self):
-		session_name = self.session_entry.text()
-		reply = QMessageBox.question(self, 'Message', "Are you sure you want to process npx with session name: "+session_name+"?", QMessageBox.Yes, QMessageBox.No)
-		if reply == QMessageBox.Yes:
-			self.start_processing(session_name)
-		else:
-			pass
-
-	def closeEvent(self, event):
-		reply = QMessageBox.question(self, 'Message', "Are you sure to quit?", QMessageBox.Yes, QMessageBox.No)
-
-		if reply == QMessageBox.Yes:
-			event.accept()
-		else:
-			event.ignore()
-
-	def _check_sock(self):
-		self.interface._check_rep()
-
-   
 
 #For testing session_name = 'data_test'
-	def start_processing(self, session_name, probes):
-		print('checking readiness for '+session_name)
-		try:
-			check_ready_for_processing(session_name, probes)
-			print('Processing npx for '+session_name)
-			p = multiprocessing.Process(target=process_npx, args=(session_name,probes))
-			#time.sleep(100)
-			p.start()
-			started_processing = True
-		except Exception as E:
-			logging.exception('Failed to start processing')
-			started_processing = False
-		print('finished initiating processing')
-		return started_processing
+def start_processing():
+	session_name = 'multiple'
+	print('checking readiness for '+session_name)
+	try:
+		check_ready_for_processing(session_name)
+		print('Processing npx for '+session_name)
+		p = multiprocessing.Process(target=process_npx, args=(session_name,))
+		#time.sleep(100)
+		p.start()
+		started_processing = True
+	except Exception as E:
+		logging.exception('Failed to start processing')
+		started_processing = False
+	print('finished initiating processing')
+	return started_processing
 			
 
-def make_constants(session_name, probes):
+def make_constants(session_name):
 	npx_params = namedtuple('npx_params',['start_module','end_module','backup1','backup2'])
 
 	default_backup1 = r'T:'
 	default_backup2 = os.path.join(r'\\sd5\sd5', session_name)
-	default_start = 'primary_backup_raw_data'
+	default_start = 'depth_estimation'
 	default_end = 'cleanup'
 	json_directory = r'C:\Users\svc_neuropix\Documents\json_files'
 
 	npx_directories = OrderedDict()
-	if 'A' in probes:
-		npx_directories[os.path.join(r'J:', session_name+'_probeA')]=npx_params(default_start,default_end,default_backup1,default_backup2)
-	if 'B' in probes:
-		npx_directories[os.path.join(r'K:', session_name+'_probeB')]=npx_params(default_start,default_end,default_backup1,default_backup2)
-	if 'C' in probes:
-		npx_directories[os.path.join(r'L:', session_name+'_probeC')]=npx_params(default_start,default_end,default_backup1,default_backup2)
+	npx_directories[os.path.join(r'J:', '826765736_430993_20190221_probeA')]=npx_params(default_start,default_end,default_backup1,os.path.join(r'\\sd5\sd5', '826765736_430993_20190221'))
+	npx_directories[os.path.join(r'K:', '826765736_430993_20190221_probeB')]=npx_params(default_start,default_end,default_backup1,os.path.join(r'\\sd5\sd5', '826765736_430993_20190221'))
+	npx_directories[os.path.join(r'L:', '826765736_430993_20190221_probeC')]=npx_params(default_start,default_end,default_backup1,os.path.join(r'\\sd5\sd5', '826765736_430993_20190221'))
+	npx_directories[os.path.join(r'J:', '826095427_430994_20190220_probeA')]=npx_params(default_start,default_end,default_backup1,os.path.join(r'\\sd5\sd5', '826095427_430994_20190220'))
+	npx_directories[os.path.join(r'L:', '826095427_430994_20190220_probeC')]=npx_params('extract_from_npx',default_end,default_backup1,os.path.join(r'\\sd5\sd5', '826095427_430994_20190220'))
 
 
 
@@ -175,7 +81,7 @@ def make_constants(session_name, probes):
 			   'quality_metrics',
 			   'copy_logs',
 			   'primary_backup_processed_data',
-			   'secondary_backup_raw_data',
+			   #'secondary_backup_raw_data',
 			   'secondary_backup_processed_data',
 			   'cleanup'
 			   ]
@@ -205,8 +111,8 @@ def make_constants(session_name, probes):
 	return npx_directories, modules, copy_while_waiting_modules, json_directory, no_process_modules, copy_modules
 
 
-def check_ready_for_processing(session_name, probes):
-	npx_directories, modules, copy_while_waiting_modules, json_directory, no_process_modules, copy_modules = make_constants(session_name, probes)
+def check_ready_for_processing(session_name):
+	npx_directories, modules, copy_while_waiting_modules, json_directory, no_process_modules, copy_modules = make_constants(session_name)
 	#Add test of matlab engine
 	npx_module_dict = {}
 	for dirname,params in npx_directories.items():
@@ -321,8 +227,8 @@ def check_ready_for_processing(session_name, probes):
 	#raise(ValueError)
 	####################################################################
 
-def process_npx(session_name, probes):
-	npx_directories, modules, copy_while_waiting_modules, json_directory, no_process_modules, copy_modules = make_constants(session_name, probes)
+def process_npx(session_name):
+	npx_directories, modules, copy_while_waiting_modules, json_directory, no_process_modules, copy_modules = make_constants(session_name)
 	pprint(npx_directories)
 	#time.sleep(20)
 	#raise(ValueError)
@@ -374,7 +280,7 @@ def process_npx(session_name, probes):
 			session_id = os.path.basename(npx_directory)
 			input_json = os.path.join(json_directory, session_id + '_' + next_module + '-input.json')
 			output_json = os.path.join(json_directory, session_id + '_' + next_module +'-output.json')
-			info = createInputJson(npx_directory, input_json)
+			info = createInputJson(input_json, npx_directory=npx_directory)
 			command_string = ["python", "-m", "ecephys_spike_sorting.modules." + next_module, 
 									"--input_json", input_json,
 									"--output_json", output_json]
@@ -479,6 +385,7 @@ def process_npx(session_name, probes):
 
 	def get_settings_xml_element_text(npx_directory, element_name, default):
 		settings_path = os.path.join(npx_directory, 'settings*.xml')
+		value = default
 		try:
 			settings_path = glob.glob(settings_path)[0]
 			#serial_number = None
@@ -488,7 +395,6 @@ def process_npx(session_name, probes):
 				value = elemnt.text
 		except Exception as E:
 			logger_dict[npx_directory].exception(E)
-			value = default
 		return value
 
 	def check_noise_channels(mask):
@@ -901,16 +807,5 @@ def set_completed(session, computer):
 		print('failed to signal complete')
 		print(E)
 				
-def main():
-	app = QApplication([])
-	styles.dark(app)
-
-	g = windows.ModernWindow(Processing_Agent())
-	# g.resize(350,100)
-	g.move(50,270)
-	g.setWindowTitle('Neuropixels Surgery/Experiment Notes')
-	g.show()
-	app.exec_()
-	
 if __name__ == '__main__':
-	main()
+	start_processing()

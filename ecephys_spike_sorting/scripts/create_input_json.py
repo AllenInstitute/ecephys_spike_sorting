@@ -14,31 +14,39 @@ def create_samba_directory(samba_server, samba_share):
 
     return data_dir
 
-def createInputJson(npx_directory, kilosort_output_directory, output_file, probe_type='3A'):
+def createInputJson(output_file, 
+                    npx_directory=None, 
+                    extracted_data_directory=None,
+                    kilosort_output_directory=None, 
+                    probe_type='3A'):
 
-    if kilosort_output_directory is None and npx_directory is None:
+    if kilosort_output_directory is None \
+         and extracted_data_directory is None \
+         and npx_directory is None:
         raise Exception('Must specify at least one input directory')
 
     if probe_type == '3A':
         acq_system = '3a'
         reference_channels = [36, 75, 112, 151, 188, 227, 264, 303, 340, 379]
     else:
-        reference_channels = [191]
         acq_system = 'PXI'
-
+        reference_channels = [191]
+        
     if npx_directory is not None:
         settings_xml = os.path.join(npx_directory, 'settings.xml')
-        extracted_data_directory = npx_directory + '_sorted'
+        if extracted_data_directory is None:
+            extracted_data_directory = npx_directory + '_sorted'
         probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
         settings_json = os.path.join(extracted_data_directory, 'open-ephys.json')
     else:
         settings_xml = None
         settings_json = None
         probe_json = None
-        extracted_data_directory = kilosort_output_directory
+        if extracted_data_directory is None:
+            extracted_data_directory = kilosort_output_directory
 
     if kilosort_output_directory is None:
-        kilosort_output_directory = os.path.join(npx_directory + '_sorted', 'continuous', 'Neuropix-' + acq_system + '-100.0')
+        kilosort_output_directory = os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.0')
 
     dictionary = \
     {
