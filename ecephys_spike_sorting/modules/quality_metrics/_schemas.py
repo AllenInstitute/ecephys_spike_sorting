@@ -1,7 +1,7 @@
 from argschema import ArgSchema, ArgSchemaParser 
 from argschema.schemas import DefaultSchema
 from argschema.fields import Nested, InputDir, String, Float, Dict, Int
-from ...common.schemas import EphysParams, Directories
+from ...common.schemas import EphysParams, Directories, WaveformMetricsFile
 
 
 class QualityMetricsParams(DefaultSchema):
@@ -19,10 +19,8 @@ class InputParameters(ArgSchema):
     quality_metrics_params = Nested(QualityMetricsParams)
     ephys_params = Nested(EphysParams)
     directories = Nested(Directories)
+    waveform_metrics = Nested(WaveformMetricsFile)
     
-    mean_waveforms_file = String(required=True, help='Path to mean waveforms file (.npy)')
-    #nwb_file = String(required=False, help='Path to NWB file with stimulus info')
-
 class OutputSchema(DefaultSchema): 
     input_parameters = Nested(InputParameters, 
                               description=("Input parameters the module " 

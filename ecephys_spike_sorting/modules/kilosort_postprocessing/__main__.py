@@ -25,8 +25,6 @@ def run_postprocessing(args):
                     use_master_clock = False,
                     include_pcs = True)
 
-    print("Removing spikes...")
-
     spike_times, spike_clusters, amplitudes, pc_features, overlap_matrix = \
         remove_double_counted_spikes(spike_times, 
                                      spike_clusters, 
@@ -49,7 +47,7 @@ def run_postprocessing(args):
 
     execution_time = time.time() - start
 
-    print('total time: ' + str(execution_time) + ' seconds')
+    print('total time: ' + str(np.around(execution_time,2)) + ' seconds')
     print( )
     
     return {"execution_time" : execution_time} # output manifest

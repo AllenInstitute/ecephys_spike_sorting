@@ -3,6 +3,8 @@ import os
 import logging
 import time
 
+import numpy as np
+
 from .id_noise_templates import id_noise_templates_rf
 
 from ...common.utils import write_cluster_group_tsv, load_kilosort_data
@@ -27,8 +29,8 @@ def classify_noise_templates(args):
     
     execution_time = time.time() - start
 
-    print('total time: ' + str(execution_time) + ' seconds')
-    print( )
+    print('total time: ' + str(np.around(execution_time,2)) + ' seconds')
+    print()
     
     return {"execution_time" : execution_time} # output manifest
 

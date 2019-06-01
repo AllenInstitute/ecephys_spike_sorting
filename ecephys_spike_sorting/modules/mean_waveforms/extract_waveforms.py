@@ -9,6 +9,7 @@ import warnings
 
 from .waveform_metrics import calculate_waveform_metrics
 from ...common.epoch import Epoch
+from ...common.utils import printProgressBar
 
 def extract_waveforms(raw_data, spike_times, spike_clusters, templates, channel_map, bit_volts, sample_rate, site_spacing, params, epochs=None):
     

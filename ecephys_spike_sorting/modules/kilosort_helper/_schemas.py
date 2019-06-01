@@ -1,7 +1,7 @@
 from argschema import ArgSchema, ArgSchemaParser 
 from argschema.schemas import DefaultSchema
 from argschema.fields import Nested, InputDir, String, Float, Dict, Int
-from ...common.schemas import EphysParams, Directories
+from ...common.schemas import EphysParams, Directories, CommonFiles
 
 class KilosortParameters(DefaultSchema):
 
@@ -40,17 +40,25 @@ class Kilosort2Parameters(DefaultSchema):
     nPCs = Int(required=False, default=3, help='how many PCs to project the spikes into')
     useRAM = Int(required=False, default=0, help='must be 0')
 
+class KilosortHelperParameters(DefaultSchema):
+
+    kilosort_version = Int(required=True, default=2, help='Kilosort version to use (1 or 2)')
+
+    surface_channel_buffer = Int(required=False, default=15, help='Number of channels above brain surface to include in spike sorting')
+
+    matlab_home_directory = InputDir(help='Location from which Matlab files can be copied and run.')
+    kilosort_repository = InputDir(help='Local directory for the Kilosort source code repository.')
+    
+    kilosort_params = Nested(KilosortParameters, required=False, help='Parameters used to auto-generate a Kilosort config file')
+    kilosort2_params = Nested(Kilosort2Parameters, required=False, help='Parameters used to auto-generate a Kilosort2 config file')
+
 class InputParameters(ArgSchema):
     
-    kilosort_location = String()
-    kilosort_repo = String()
-    probe_json = String()
-    kilosort_params = Nested(KilosortParameters, required=False)
-    kilosort2_params = Nested(Kilosort2Parameters, required=False)
+    kilosort_helper_params = Nested(KilosortHelperParameters)
+
     directories = Nested(Directories)
     ephys_params = Nested(EphysParams)
-    kilosort_version = Int(required=True, default=2)
-    surface_channel_buffer = Int(required=True, default=15)
+    common_files = Nested(CommonFiles)
     
 
 class OutputSchema(DefaultSchema): 

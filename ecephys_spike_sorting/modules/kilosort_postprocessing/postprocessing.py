@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from collections import OrderedDict
 
+from ...common.utils import printProgressBar
 
 def remove_double_counted_spikes(spike_times, spike_clusters, amplitudes, channel_map, templates, pc_features, pc_feature_ind, sample_rate, params, epochs = None):
 
@@ -59,11 +60,13 @@ def remove_double_counted_spikes(spike_times, spike_clusters, amplitudes, channe
     within_unit_overlap_samples = int(params['within_unit_overlap_window'] * sample_rate)
     between_unit_overlap_samples = int(params['between_unit_overlap_window'] * sample_rate)
 
-    print('  Within unit...')
+    print('Removing within-unit overlapping spikes...')
 
     spikes_to_remove = np.zeros((0,))
 
     for idx1, unit_id1 in enumerate(unit_list[order]):
+
+        printProgressBar(idx1+1, len(unit_list))
 
         for_unit1 = np.where(spike_clusters == unit_id1)[0]
 
@@ -75,11 +78,13 @@ def remove_double_counted_spikes(spike_times, spike_clusters, amplitudes, channe
 
     spike_times, spike_clusters, amplitudes, pc_features = remove_spikes(spike_times, spike_clusters, amplitudes, pc_features, spikes_to_remove)
 
-    print('  Between units...')
+    print('Removing between-unit overlapping spikes...')
 
     spikes_to_remove = np.zeros((0,))
 
     for idx1, unit_id1 in enumerate(unit_list[order]):
+
+        printProgressBar(idx1+1, len(unit_list))
 
         for_unit1 = np.where(spike_clusters == unit_id1)[0]
         

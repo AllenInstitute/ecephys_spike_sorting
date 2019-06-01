@@ -6,7 +6,6 @@ import time
 import numpy as np
 import pandas as pd
 
-from ...common.utils import get_ap_band_continuous_file
 from ...common.utils import load_kilosort_data
 
 from .extract_waveforms import extract_waveforms, writeDataAsNpy
@@ -20,8 +19,7 @@ def calculate_mean_waveforms(args):
 
     print("Loading data...")
 
-    rawDataFile = get_ap_band_continuous_file(args['directories']['extracted_data_directory'])
-    rawData = np.memmap(rawDataFile, dtype='int16', mode='r')
+    rawData = np.memmap(args['ephys_params']['ap_band_file'], dtype='int16', mode='r')
     data = np.reshape(rawData, (int(rawData.size/args['ephys_params']['num_channels']), args['ephys_params']['num_channels']))
 
     spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
@@ -40,13 +38,13 @@ def calculate_mean_waveforms(args):
                 args['ephys_params']['vertical_site_spacing'], \
                 args['mean_waveform_params'])
 
-    writeDataAsNpy(waveforms, args['mean_waveforms_file'])
-    metrics.to_csv(args['waveform_metrics_file'])
+    writeDataAsNpy(waveforms, args['mean_waveforms_params']['mean_waveforms_file'])
+    metrics.to_csv(args['waveform_metrics']['waveform_metrics_file'])
 
     execution_time = time.time() - start
 
-    print('total time: ' + str(execution_time) + ' seconds')
-    print( )
+    print('total time: ' + str(np.around(execution_time,2)) + ' seconds')
+    print()
     
     return {"execution_time" : execution_time} # output manifest
 

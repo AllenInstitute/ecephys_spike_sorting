@@ -5,50 +5,49 @@ import subprocess
 import time
 import shutil
 
-from git import Repo
-
 import numpy as np
 
 import io, json, os
 
 from .create_settings_json import create_settings_json
+from ...common.utils import get_repo_commit_date_and_hash
 
 def run_npx_extractor(args):
 
     print('ecephys spike sorting: npx extractor module')
 
-    repo = Repo(args['npx_extractor_repo'])
-    headcommit = repo.head.commit
+    start = time.time()
+
+    npx_extractor_commit_date, npx_extractor_hash = get_repo_commit_date_and_hash(args['extract_from_npx_params']['npx_extractor_repo'])
 
     extracted_data_drive, directory = os.path.splitdrive(args['directories']['extracted_data_directory'])
     
     total, used, free = shutil.disk_usage(extracted_data_drive)
     
-    filesize = os.path.getsize(args['npx_file'])
+    filesize = os.path.getsize(args['extract_from_npx_params']['npx_directory'])
     
     assert(free > filesize * 2)
     
     if not os.path.exists(args['directories']['extracted_data_directory']):
         os.mkdir(args['directories']['extracted_data_directory'])
 
-    #settings_json = create_settings_json(args['settings_xml'])
-    
-    output_file = os.path.join(args['directories']['extracted_data_directory'], 'open-ephys.json')
+    subprocess.check_call([args['extract_from_npx_params']['npx_extractor_executable'], 
+                           args['extract_from_npx_params']['npx_directory'], 
+                           args['directories']['extracted_data_directory']])
 
-    start = time.time()
-    subprocess.check_call([args['npx_extractor_executable'], args['npx_file'], args['directories']['extracted_data_directory']])
     execution_time = time.time() - start
 
-    #with io.open(output_file, 'w', encoding='utf-8') as f:
+    #settings_json = create_settings_json(args['extract_from_npx_params']['settings_xml'])
+
+    #with io.open(args['common_files']['settings_json'], 'w', encoding='utf-8') as f:
     #    f.write(json.dumps(settings_json, ensure_ascii=False, sort_keys=True, indent=4))
 
-    print('total time: ' + str(execution_time) + ' seconds')
-    print( )
+    print('total time: ' + str(np.around(execution_time,2)) + ' seconds')
+    print()
     
     return {"execution_time" : execution_time,
-           # "settings_json" : settings_json,
-            "npx_extractor_commit_date" : time.strftime("%a, %d %b %Y %H:%M", time.gmtime(headcommit.committed_date)),
-            "npx_extractor_commit_hash" : headcommit.hexsha } # output manifest
+            "npx_extractor_commit_date" : npx_extractor_commit_date,
+            "npx_extractor_commit_hash" : npx_extractor_commit_hash } # output manifest
 
 
 def main():

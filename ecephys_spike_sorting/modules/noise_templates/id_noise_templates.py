@@ -5,9 +5,6 @@ from sklearn.ensemble import RandomForestClassifier
 
 import pickle
 
-from ...common.spike_template_helpers import find_depth
-
-
 def id_noise_templates_rf(spike_times, spike_clusters, cluster_ids, templates, params):
 
     """
@@ -104,6 +101,8 @@ def id_noise_templates(spike_times, spike_clusters, cluster_ids, templates, para
 
     auto_noise = np.zeros(cluster_ids.shape,dtype=bool)
 
+    peak_channels = np.squeeze(np.argmax(np.max(templates,1) - np.min(templates,1),1))
+
     for idx, clusterID in enumerate(cluster_ids):
     
         for_this_cluster = (spike_clusters == clusterID)
@@ -114,7 +113,7 @@ def id_noise_templates(spike_times, spike_clusters, cluster_ids, templates, para
 
         if times.size > 0:
 
-            depth = find_depth(template)
+            depth = peak_channels[idx]
 
             min_chan = np.max([0, depth-waveform_spread])
             max_chan = np.min([depth+waveform_spread, template.shape[1]])

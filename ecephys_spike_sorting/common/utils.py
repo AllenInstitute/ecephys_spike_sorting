@@ -4,22 +4,34 @@ import numpy as np
 import json
 import glob
 import sys
+import time
 
-def get_lfp_band_continuous_file(base_directory):
-
-    f1 = os.path.join(base_directory, os.path.join('continuous','Neuropix*.1'))
-    ap_directory = glob.glob(f1)[0]
-    return os.path.join(ap_directory, 'continuous.dat')
-
-def get_ap_band_continuous_file(base_directory):
-    
-    f1 = os.path.join(base_directory, os.path.join('continuous','Neuropix*.0'))
-    ap_directory = glob.glob(f1)[0]
-    return os.path.join(ap_directory, 'continuous.dat')
+from git import Repo
 
 
 def find_range(x,a,b,option='within'):
-    """Find data within range [a,b]"""
+    
+    """
+    Find indices of data within or outside range [a,b]
+
+    Inputs:
+    -------
+    x - numpy.ndarray
+        Data to search
+    a - float or int
+        Minimum value
+    b - float or int
+        Maximum value
+    option - String
+        'within' or 'outside'
+
+    Output:
+    -------
+    inds - numpy.ndarray
+        Indices of x that fall within or outside specified range
+
+    """
+
     if option=='within':
         return np.where(np.logical_and(x>=a, x<=b))[0]
     elif option=='outside':
@@ -29,6 +41,20 @@ def find_range(x,a,b,option='within'):
 
 
 def rms(data):
+
+    """
+    Computes root-mean-squared voltage of a signal
+
+    Input:
+    -----
+    data - numpy.ndarray
+
+    Output:
+    ------
+    rms_value - float
+    
+    """
+
     return np.power(np.mean(np.power(data.astype('float32'),2)),0.5)
 
 def write_probe_json(output_file, channels, offset, scaling, mask, surface_chan, air_chan, vertical_pos, horizontal_pos):
@@ -62,6 +88,7 @@ def read_probe_json(input_file):
     air_channel = data['air_channel']
 
     return mask, offset, scaling, surface_channel, air_channel
+
 
 def write_cluster_group_tsv(IDs, quality, output_directory):
 
@@ -137,6 +164,35 @@ def load_kilosort_data(folder, sample_rate, convert_to_seconds = True, use_maste
         return spike_times, spike_clusters, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality
     else:
         return spike_times, spike_clusters, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality, pc_features, pc_feature_ind
+
+
+def get_repo_commit_date_and_hash(repo_location):
+
+    """
+    Finds the date and hash of the latest commit in a git repository
+
+    Input:
+    ------
+    repo_location - String
+        Local directory containing the git repository
+
+    Outputs:
+    --------
+    commit_date - String
+        Date string of the latest commit
+    commit_hash - String
+        Hash of the latest commit
+
+    """
+
+    if os.path.exists(repo_location):
+        repo = Repo(repo_location)
+        headcommit = repo.head.commit
+        npx_extractor_commit_date = time.strftime("%a, %d %b %Y %H:%M", time.gmtime(headcommit.committed_date))
+        npx_extractor_commit_hash = headcommit.hexsha
+    else:
+        npx_extractor_commit_date = 'none'
+        npx_extractor_commit_hash = 'none'
 
 
 def printProgressBar(iteration, total, prefix = '', suffix = '', decimals = 0, length = 40, fill = '▒'):

@@ -6,10 +6,8 @@ import time
 import numpy as np
 import pandas as pd
 
-from ...common.utils import get_ap_band_continuous_file
 from ...common.utils import load_kilosort_data
 from ...common.epoch import get_epochs_from_nwb_file
-
 
 from .metrics import calculate_metrics
 
@@ -42,7 +40,7 @@ def calculate_quality_metrics(args):
 
     output_file = args['quality_metrics_params']['quality_metrics_output_file']
 
-    #waveform_metrics = np.load(args['waveforms_metrics_file'])
+    #waveform_metrics = np.load(args['waveform_metrics']['waveforms_metrics_file'])
     # join waveform metrics and quality metrics dataframes
 
     print("Saving data...")
@@ -50,8 +48,8 @@ def calculate_quality_metrics(args):
 
     execution_time = time.time() - start
 
-    print('total time: ' + str(execution_time) + ' seconds')
-    print( )
+    print('total time: ' + str(np.around(execution_time,2)) + ' seconds')
+    print()
     
     return {"execution_time" : execution_time,
             "quality_metrics_output_file" : output_file} # output manifest

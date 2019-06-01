@@ -1,5 +1,5 @@
 from argschema.schemas import DefaultSchema
-from argschema.fields import Nested, InputDir, String, Float, Dict, Int, NumpyArray
+from argschema.fields import Nested, InputDir, OutputDir, String, Float, Dict, Int, NumpyArray
 
 class EphysParams(DefaultSchema):
     sample_rate = Float(required=True, default=30000.0, help='Sample rate of Neuropixels AP band continuous data')
@@ -8,9 +8,20 @@ class EphysParams(DefaultSchema):
     num_channels = Int(required=True, default=384, help='Total number of channels in binary data files')
     reference_channels = NumpyArray(required=False, default=[36, 75, 112, 151, 188, 227, 264, 303, 340, 379], help='Reference channels on Neuropixels probe (numbering starts at 0)')
     template_zero_padding = Int(required=True, default=21, help='Zero-padding on templates output by Kilosort')
-    vertical_site_spacing = Float(required=False, default=20e-6) 
-    probe_type = String(required=False, default='3A')
+    vertical_site_spacing = Float(required=False, default=20e-6, help='Vertical site spacing in meters') 
+    probe_type = String(required=False, default='3A', help='3A, 3B1, or 3B2')
+    lfp_band_file = String(required=False, help='Location of LFP band binary file')
+    ap_band_file = String(required=False, help='Location of AP band binary file')
 
 class Directories(DefaultSchema):
-    kilosort_output_directory = String(required=False, default='None', help='Location of Kilosort output files')
-    extracted_data_directory = String(required=False, default='None', help='Location of extracted data')
+
+    kilosort_output_directory = OutputDir(help='Location of Kilosort output files')
+    extracted_data_directory = OutputDir(help='Location for NPX file extraction')
+
+class CommonFiles(DefaultSchema):
+
+    probe_json = String(help='Location of probe JSON file')
+    settings_json = String(help='Location of settings JSON written by extract_from_npx module')
+
+class WaveformMetricsFile(DefaultSchema):
+    waveform_metrics_file = String(help='Location of waveform metrics CSV')

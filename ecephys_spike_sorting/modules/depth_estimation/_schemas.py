@@ -1,7 +1,7 @@
 from argschema import ArgSchema, ArgSchemaParser 
 from argschema.schemas import DefaultSchema
 from argschema.fields import Nested, InputDir, NumpyArray, String, Float, Dict, Int, Bool, OutputFile
-from ...common.schemas import EphysParams, Directories
+from ...common.schemas import EphysParams, Directories, CommonFiles
 
 class DepthEstimationParams(DefaultSchema):
     hi_noise_thresh = Float(required=True, default=50.0, help='Max RMS noise for including channels')
@@ -27,8 +27,10 @@ class DepthEstimationParams(DefaultSchema):
 class InputParameters(ArgSchema):
     
     depth_estimation_params = Nested(DepthEstimationParams)
+
     ephys_params = Nested(EphysParams)
     directories = Nested(Directories)
+    common_files = Nested(CommonFiles)
 
 class OutputSchema(DefaultSchema): 
 

@@ -66,7 +66,7 @@ def find_surface_channel(data, params, reference_channels, nchannels=384, sample
         candidates[p] = surface_chan
         
         if save_figure:
-            plot_results(chunk, power, in_range, values, nchannels, surface_chan, power_thresh, diff_thresh, figure_location)
+            plot_results(chunk, power, in_range, values, nchannels, surface_chan, power_thresh, diff_thresh, params['figure_location'])
       
     surface_channel = np.median(candidates)
     air_channel = np.min([surface_channel + params['air_gap'], nchannels])
@@ -95,7 +95,7 @@ def plot_results(chunk, power, in_range, values, nchannels, surface_chan, power_
     
     plt.plot([surface_chan, surface_chan],[-0.2, diff_thresh],'--r')
     plt.title(surface_chan)
-    plt.savefig(os.path.join(figure_location, 'probe_depth.png'))
+    plt.savefig(figure_location)
 
 
 def compute_offset_and_surface_channel(ap_data, lfp_data, ephys_params, params):

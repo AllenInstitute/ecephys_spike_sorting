@@ -16,46 +16,45 @@ def create_samba_directory(samba_server, samba_share):
 
 def createInputJson(npx_directory, kilosort_output_directory, output_file, probe_type='3A'):
 
-    if npx_directory is not None:
-        settings_xml = os.path.join(npx_directory, 'settings.xml')
-
-        drive, tail = os.path.split(npx_directory)
-
-        extracted_data_directory = npx_directory + '_sorted'
-        probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
-    else:
-        settings_xml = None
-        probe_json = None
-        extracted_data_directory = 'None'
+    if kilosort_output_directory is None and npx_directory is None:
+        raise Exception('Must specify at least one input directory')
 
     if probe_type == '3A':
+        acq_system = '3a'
         reference_channels = [36, 75, 112, 151, 188, 227, 264, 303, 340, 379]
     else:
         reference_channels = [191]
+        acq_system = 'PXI'
+
+    if npx_directory is not None:
+        settings_xml = os.path.join(npx_directory, 'settings.xml')
+        extracted_data_directory = npx_directory + '_sorted'
+        probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
+        settings_json = os.path.join(extracted_data_directory, 'open-ephys.json')
+    else:
+        settings_xml = None
+        settings_json = None
+        probe_json = None
+        extracted_data_directory = kilosort_output_directory
+
+    if kilosort_output_directory is None:
+        kilosort_output_directory = os.path.join(npx_directory + '_sorted', 'continuous', 'Neuropix-' + acq_system + '-100.0')
 
     dictionary = \
     {
-        "npx_file": npx_directory,
-        "settings_xml": settings_xml,
-        "probe_json" : probe_json,
-
-        "npx_extractor_executable": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\npxextractor\\Release\\NpxExtractor.exe",
-        "npx_extractor_repo": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\npxextractor",
-
-        "median_subtraction_executable": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\spikebandmediansubtraction\\Builds\\VisualStudio2013\\Release\\SpikeBandMedianSubtraction.exe",
-        "median_subtraction_repo": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\spikebandmediansubtraction\\",
-
-        "kilosort_location": "C:\\Users\\svc_neuropix\\Documents\\MATLAB",
-        "kilosort_repo": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\kilosort2",
-        "kilosort_version" : 2,
-        "surface_channel_buffer" : 15,
-
-        "mean_waveforms_file" : os.path.join(kilosort_output_directory, 'mean_waveforms.npy'),
-        "waveform_metrics_file" : os.path.join(kilosort_output_directory, 'waveform_metrics.csv'),
 
         "directories": {
             "extracted_data_directory": extracted_data_directory,
             "kilosort_output_directory": kilosort_output_directory
+        },
+
+        "common_files": {
+            "settings_json" : settings_json,
+            "probe_json" : probe_json,
+        },
+
+        "waveform_metrics" : {
+            "waveform_metrics_file" : os.path.join(kilosort_output_directory, 'waveform_metrics.csv')
         },
 
         "ephys_params": {
@@ -64,14 +63,23 @@ def createInputJson(npx_directory, kilosort_output_directory, output_file, probe
             "bit_volts" : 0.195,
             "num_channels" : 384,
             "reference_channels" : reference_channels,
-            "vertical_site_spacing" : 20e-6
+            "vertical_site_spacing" : 20e-6,
+            "ap_band_file" : os.path.join(kilosort_output_directory, 'continuous.dat'),
+            "lfp_band_file" : os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.1', 'continuous.dat')
         }, 
+
+        "extract_from_npx_params" : {
+            "npx_directory": npx_directory,
+            "settings_xml": settings_xml,
+            "npx_extractor_executable": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\npxextractor\\Release\\NpxExtractor.exe",
+            "npx_extractor_repo": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\npxextractor",
+        },
 
         "depth_estimation_params" : {
             "hi_noise_thresh" : 50.0,
             "lo_noise_thresh" : 3.0,
             "save_figure" : 1,
-            "figure_location" : extracted_data_directory,
+            "figure_location" : os.path.join(extracted_data_directory, 'probe_depth.png'),
             "smoothing_amount" : 5,
             "power_thresh" : 2.5,
             "diff_thresh" : -0.06,
@@ -83,18 +91,31 @@ def createInputJson(npx_directory, kilosort_output_directory, output_file, probe
             "skip_s_per_pass" : 1000
         }, 
 
-        "kilosort2_params" : {
+        "median_subtraction_params" : {
+            "median_subtraction_executable": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\spikebandmediansubtraction\\Builds\\VisualStudio2013\\Release\\SpikeBandMedianSubtraction.exe",
+            "median_subtraction_repo": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\spikebandmediansubtraction\\",
+        },
 
-            "chanMap" : "'chanMap.mat'",
-            "fshigh" : 150,
-            "minfr_goodchannels" : 0.1,
-            "Th" : '[10 4]',
-            "lam" : 10,
-            "AUCsplit" : 0.9,
-            "minFR" : 1/50.,
-            "momentum" : '[20 400]',
-            "sigmaMask" : 30,
-            "ThPre" : 8
+        "kilosort_helper_params" : {
+
+            "matlab_home_directory": "C:\\Users\\svc_neuropix\\Documents\\MATLAB",
+            "kilosort_repository": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\kilosort2",
+            "kilosort_version" : 2,
+            "surface_channel_buffer" : 15,
+
+            "kilosort2_params" :
+            {
+                "chanMap" : "'chanMap.mat'",
+                "fshigh" : 150,
+                "minfr_goodchannels" : 0.1,
+                "Th" : '[10 4]',
+                "lam" : 10,
+                "AUCsplit" : 0.9,
+                "minFR" : 1/50.,
+                "momentum" : '[20 400]',
+                "sigmaMask" : 30,
+                "ThPre" : 8
+            }
         },
 
         "ks_postprocessing_params" : {
@@ -104,6 +125,9 @@ def createInputJson(npx_directory, kilosort_output_directory, output_file, probe
         },
 
         "mean_waveform_params" : {
+        
+            "mean_waveforms_file" : os.path.join(kilosort_output_directory, 'mean_waveforms.npy'),
+
             "samples_per_spike" : 82,
             "pre_samples" : 20,
             "num_epochs" : 1,

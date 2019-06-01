@@ -1,18 +1,17 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Fri May 11 15:05:56 2018
-
-@author: joshs
-"""
-
 import json
 import os
 import numpy as np
 
 class OEContinuousFile:
     
-    """ Stores information about an Open Ephys .dat file, including the number of channels, the sample rate, and the bit volts value for each channel. """
+    """ 
+    
+    Stores information about an Open Ephys .dat file, including:
+    - the number of channels
+    - the sample rate
+    - the bit volts value for each channel. 
+
+    """
     
     def __init__(self, json_file, file_num = 0):
         

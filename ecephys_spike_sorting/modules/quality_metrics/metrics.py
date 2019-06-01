@@ -8,7 +8,6 @@ from scipy.spatial.distance import cdist
 from scipy.stats import chi2
 from scipy.ndimage.filters import gaussian_filter1d
 
-from ...common.spike_template_helpers import find_depth_std
 from ...common.epoch import Epoch
 from ...common.utils import printProgressBar
 
@@ -69,7 +68,7 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
         print("Calculating amplitude cutoff")
         amplitude_cutoff = calculate_amplitude_cutoff(spike_clusters[in_epoch], amplitudes[in_epoch], total_units)
         
-        print("Calculating PC metrics")
+        print("Calculating PC-based metrics")
         isolation_distance, l_ratio, d_prime, nn_hit_rate, nn_miss_rate = calculate_pc_metrics(spike_clusters[in_epoch], 
                                                                                                total_units,
                                                                                                channel_map,
