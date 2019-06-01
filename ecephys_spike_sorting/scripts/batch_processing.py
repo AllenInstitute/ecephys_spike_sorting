@@ -19,9 +19,9 @@ for directory in sorted_directories:
 
 	info = createInputJson(None, directory, input_json, probe_type)
 
-	modules = [#'kilosort_postprocessing',
-				#'noise_templates',
-				#'mean_waveforms',
+	modules = ['kilosort_postprocessing',
+				'noise_templates',
+				'mean_waveforms',
 				'quality_metrics']
 
 	for module in modules:
