@@ -18,7 +18,7 @@ def run_npx_extractor(args):
 
     start = time.time()
 
-    npx_extractor_commit_date, npx_extractor_hash = get_repo_commit_date_and_hash(args['extract_from_npx_params']['npx_extractor_repo'])
+    commit_date, commit_hash = get_repo_commit_date_and_hash(args['extract_from_npx_params']['npx_extractor_repo'])
 
     extracted_data_drive, directory = os.path.splitdrive(args['directories']['extracted_data_directory'])
     
@@ -46,8 +46,8 @@ def run_npx_extractor(args):
     print()
     
     return {"execution_time" : execution_time,
-            "npx_extractor_commit_date" : npx_extractor_commit_date,
-            "npx_extractor_commit_hash" : npx_extractor_commit_hash } # output manifest
+            "npx_extractor_commit_date" : commit_date,
+            "npx_extractor_commit_hash" : commit_hash } # output manifest
 
 
 def main():
