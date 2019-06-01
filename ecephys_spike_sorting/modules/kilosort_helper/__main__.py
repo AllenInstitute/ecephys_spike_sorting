@@ -37,7 +37,7 @@ def run_kilosort(args):
                                             spike_dir_forward_slash, 
                                             os.path.basename(args['ephys_params']['ap_band_file']), 
                                             args['kilosort_helper_params']['kilosort_params'])
-    elif args['kilosort_version'] == 2:
+    elif args['kilosort_helper_params']['kilosort_version'] == 2:
         matlab_file_generator.create_config2(args['kilosort_helper_params']['matlab_home_directory'], 
                                              spike_dir_forward_slash, 
                                              args['ephys_params'], 

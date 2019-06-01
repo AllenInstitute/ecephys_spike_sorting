@@ -188,11 +188,13 @@ def get_repo_commit_date_and_hash(repo_location):
     if os.path.exists(repo_location):
         repo = Repo(repo_location)
         headcommit = repo.head.commit
-        npx_extractor_commit_date = time.strftime("%a, %d %b %Y %H:%M", time.gmtime(headcommit.committed_date))
-        npx_extractor_commit_hash = headcommit.hexsha
+        commit_date = time.strftime("%a, %d %b %Y %H:%M", time.gmtime(headcommit.committed_date))
+        commit_hash = headcommit.hexsha
     else:
-        npx_extractor_commit_date = 'none'
-        npx_extractor_commit_hash = 'none'
+        commit_date = 'none'
+        commit_hash = 'none'
+
+    return commit_date, commit_hash
 
 
 def printProgressBar(iteration, total, prefix = '', suffix = '', decimals = 0, length = 40, fill = '▒'):
