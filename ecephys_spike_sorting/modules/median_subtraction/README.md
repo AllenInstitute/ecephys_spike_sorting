@@ -18,9 +18,10 @@ See the schema file for detailed information about input json contents.
 
 Input data
 ----------
-- **ap band .dat file** : int16 binary files written by the extract_from_npx module.
-- **probe_info.json** : file written by depth_estimation module.
+- **ap band .dat or .bin file** : int16 binary files written by [Open Ephys](https://github.com/open-ephys/plugin-GUI), [SpikeGLX](https://github.com/billkarsh/spikeglx), or the `extract_from_npx` module.
+- **probe_info.json** : file written by `depth_estimation` module.
 
 Output data
 -----------
-- **ap band .dat file** : overwrites the existing file with the median-subtracted data.
+- **ap band .dat or .bin file** : overwrites the existing file with the median-subtracted data.
+- **residuals.dat** : contains the subtracted signals, which makes it possible to reconstruct the original data if necessary.
