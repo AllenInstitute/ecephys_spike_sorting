@@ -18,7 +18,7 @@ See the schema file for detailed information about input json contents.
 
 Input data
 ----------
-- **ap band and lfp band .dat files** : in16 binary files written by the extract_from_npx module.
+- **ap band .dat or .bin file** : int16 binary files written by [Open Ephys](https://github.com/open-ephys/plugin-GUI), [SpikeGLX](https://github.com/billkarsh/spikeglx), or the `extract_from_npx` module.
 
 
 Output data

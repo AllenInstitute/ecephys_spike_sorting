@@ -1,6 +1,6 @@
 Kilosort Helper
 ==============
-Python wrapper for Matlab-based spike sorting with Kilosort/Kilosort2.
+Python wrapper for Matlab-based spike sorting with Kilosort.
 
 This module auto-generates the channel map, configuration file, and master file for Kilosort, and runs everything via the Matlab engine.
 
@@ -19,7 +19,7 @@ See the schema file for detailed information about input json contents.
 
 Input data
 ----------
-- **ap band .dat or .bin file** : in16 binary files written by [Open Ephys](https://github.com/open-ephys/plugin-GUI), [SpikeGLX](https://github.com/billkarsh/spikeglx), or the `extract_from_npx` module.
+- **ap band .dat or .bin file** : int16 binary files written by [Open Ephys](https://github.com/open-ephys/plugin-GUI), [SpikeGLX](https://github.com/billkarsh/spikeglx), or the `extract_from_npx` module.
 
 Output data
 -----------
