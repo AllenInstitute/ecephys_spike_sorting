@@ -1,15 +1,5 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Feb  1 19:06:59 2018
-
-@author: joshs
-"""
-
 import numpy as np
         
-# %%
-
 
 def constrainValues(input_array):
     
@@ -55,10 +45,6 @@ def compute_overall_score(comparison_matrix):
     
     return overall_score[selection], i_index[selection], j_index[selection]
     
-    
-
-# %%
-
 def getTemplateIndsForCluster(spike_templates, spike_clusters, clusterId, templateIDs):
     
     templatesForCluster = np.unique(spike_templates[spike_clusters == clusterId])
@@ -82,27 +68,9 @@ def should_merge(waveform_similarity, isi_similarity, isi_score, t1 = 0.2, t2 =0
        if not np.isnan(isi_similarity): 
            
            return isi_similarity >= 0.9 - pow(waveform_similarity*1.1, np.e)
-            #return True
-        
-  #  else:
-  #      if waveform_similarity > t4 and isi_similarity > t5:
-  #          return True
-    
-    #return isi_similarity >= 0.95 - pow(waveform_similarity*1.1, np.e)
-                
-              #  return True
     
     return False
     
-    #if not np.isnan(isi_similarity):
-    
-    #   return isi_similarity >= 0.95 - pow(waveform_similarity*1.1, np.e)
-    
-   # else:
-   #     return False #
-        #return waveform_similarity >= 0.85
-
-# %%
 
 # identify the merge groups
                 
@@ -127,11 +95,7 @@ def ID_merge_groups(merges):
                     for idx, group in enumerate(connected_groups):
                         
                         if u1 in group or u2 in group:
-                            
-                            #print group 
-                            #print u1
-                            #print u2
-                            
+
                             if u1 not in group:
                                 group.extend([u1])
                             if u2 not in group:
@@ -152,10 +116,7 @@ def ID_merge_groups(merges):
                                 L = len(set(group1).intersection(group2))
                                 
                                 if L > 0 and idx != idx2:
-                                    
-                                    #print group1
-                                   # print group2
-                                    
+
                                     connected_groups[idx] = list(np.sort(group1 + list(set(group2) - set(group1))))
                                     connected_groups[idx2] = []
                                 
@@ -163,8 +124,6 @@ def ID_merge_groups(merges):
                                 
     return connected_groups
 
-# %%
-    
 
 # make the merges
 def make_merges(connected_groups, spike_clusters, spike_templates, templateIDs):
@@ -176,14 +135,7 @@ def make_merges(connected_groups, spike_clusters, spike_templates, templateIDs):
         maxId += 1
         
         for unit_idx in merge_group:
-            """
-            ID = sorted_ids[unit_idx]
-            spike_idx = np.where(spike_clusters == ID)
-            spike_clusters[spike_idx] = maxId
-            """
+
             spike_clusters[np.where(spike_templates == templateIDs[unit_idx])[0]] = maxId
             
-    #np.save(folder + 'spike_clusters.npy', spike_clusters)
     return spike_clusters
-
-# %%

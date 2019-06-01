@@ -35,9 +35,6 @@ def automerging(spike_times, spike_clusters, clusterIDs, cluster_quality, templa
             
     print('Total comparisons: ' + str(np.where(comparison_matrix[:,:,0] == 1)[0].size))
 
-    # %%
-    # first pass
-
     print('Calculating initial metrics...')
 
     max_time = np.max(spike_times)
@@ -45,8 +42,6 @@ def automerging(spike_times, spike_clusters, clusterIDs, cluster_quality, templa
     for i in range(0,depths.size):
 
         if is_good[i]:
-            
-            #print("unit " + str(i))
             
             temp1 = make_interp_temp(templates,[clusterIDs[i]]) #
             times1 = spike_times[spike_clusters == clusterIDs[i]]
@@ -66,7 +61,6 @@ def automerging(spike_times, spike_clusters, clusterIDs, cluster_quality, templa
                     comparison_matrix[i,j,2] = another_score
                     comparison_matrix[i,j,3] = cISI_score
 
-    # %%
     overall_score, i_index, j_index = compute_overall_score(comparison_matrix)
 
     comparison_matrix[:,:,4] = 0
@@ -78,8 +72,6 @@ def automerging(spike_times, spike_clusters, clusterIDs, cluster_quality, templa
             comparison_matrix[i_index[index],j_index[index],4] = 1
 
 
-    # %%
-
     print('Total merges = ' + str(np.where(comparison_matrix[:,:,4] == 1)[0].size))
     print(' ')
 
@@ -88,10 +80,6 @@ def automerging(spike_times, spike_clusters, clusterIDs, cluster_quality, templa
     clusters = make_merges(groups, clusters, spike_clusters, clusterIDs) 
 
     print('  Total clusters = ' + str(np.unique(clusters).size))
-
-    # %%
-
-    # save files
 
     cluster_quality = []
     cluster_index = []
