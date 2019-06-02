@@ -145,6 +145,24 @@ def read_probe_json(input_file):
 
 def write_cluster_group_tsv(IDs, quality, output_directory):
 
+    """
+    Writes a tab-separated cluster_group.tsv file
+
+    Inputs:
+    -------
+    IDs : list
+        List of cluster IDs
+    quality : list
+        Quality ratings for each unit (same size as IDs)
+    output_directory : String
+        Location to save the file
+
+    Outputs:
+    --------
+    cluster_group.tsv (written to disk)
+
+    """
+
     cluster_quality = []
     cluster_index = []
     
@@ -168,17 +186,94 @@ def write_cluster_group_tsv(IDs, quality, output_directory):
 
 def read_cluster_group_tsv(filename):
 
+    """
+    Reads a tab-separated cluster_group.tsv file from disk
+
+    Inputs:
+    -------
+    filename : String
+        Full path of file
+
+    Outputs:
+    --------
+    IDs : list
+        List of cluster IDs
+    quality : list
+        Quality ratings for each unit (same size as IDs)
+
+    """
+
     info = np.genfromtxt(filename, dtype='str')
     cluster_ids = info[1:,0].astype('int')
     cluster_quality = info[1:,1]
 
     return cluster_ids, cluster_quality
 
+
 def load(folder, filename):
+
+    """
+    Loads a numpy file from a folder.
+
+    Inputs:
+    -------
+    folder : String
+        Directory containing the file to load
+    filename : String
+        Name of the numpy file
+
+    Outputs:
+    --------
+    data : numpy.ndarray
+        File contents
+
+    """
 
     return np.load(os.path.join(folder, filename))
 
-def load_kilosort_data(folder, sample_rate, convert_to_seconds = True, use_master_clock = False, include_pcs = False, template_zero_padding= 21):
+
+def load_kilosort_data(folder, sample_rate = None, convert_to_seconds = True, use_master_clock = False, include_pcs = False, template_zero_padding= 21):
+
+    """
+    Loads Kilosort output files from a directory
+
+    Inputs:
+    -------
+    folder : String
+        Location of Kilosort output directory
+    sample_rate : float (optional)
+        AP band sample rate in Hz
+    convert_to_seconds : bool (optional)
+        Flags whether to return spike times in seconds (requires sample_rate to be set)
+    use_master_clock : bool (optional)
+        Flags whether to load spike times that have been converted to the master clock timebase
+    include_pcs : bool (optional)
+        Flags whether to load spike principal components (large file)
+    template_zero_padding : int (default = 21)
+        Number of zeros added to the beginning of each template
+
+    Outputs:
+    --------
+    spike_times : numpy.ndarray (N x 0)
+        Times for N spikes
+    spike_clusters : numpy.ndarray (N x 0)
+        Cluster IDs for N spikes
+    amplitudes : numpy.ndarray (N x 0)
+        Amplitudes for N spikes
+    unwhitened_temps : numpy.ndarray (M x samples x channels) 
+        Templates for M units
+    channel_map : numpy.ndarray
+        Channels from original data file used for sorting
+    cluster_ids : Python list
+        Cluster IDs for M units
+    cluster_quality : Python list
+        Quality ratings from cluster_group.tsv file
+    pc_features (optinal) : numpy.ndarray (N x channels x num_PCs)
+        PC features for each spike
+    pc_feature_ind (optional) : numpy.ndarray (M x channels)
+        Channels used for PC calculation for each unit
+
+    """
 
     if use_master_clock:
         spike_times = load(folder,'spike_times_master_clock.npy')
@@ -198,8 +293,9 @@ def load_kilosort_data(folder, sample_rate, convert_to_seconds = True, use_maste
     templates = templates[:,template_zero_padding:,:] # remove zeros
     spike_clusters = np.squeeze(spike_clusters) # fix dimensions
     spike_times = np.squeeze(spike_times)# fix dimensions
-    if convert_to_seconds:
-       spike_times = spike_times / sample_rate # convert to seconds
+
+    if convert_to_seconds and sample_rate is not None:
+       spike_times = spike_times / sample_rate 
                     
     unwhitened_temps = np.zeros((templates.shape))
     
@@ -244,8 +340,8 @@ def get_repo_commit_date_and_hash(repo_location):
         commit_date = time.strftime("%a, %d %b %Y %H:%M", time.gmtime(headcommit.committed_date))
         commit_hash = headcommit.hexsha
     else:
-        commit_date = 'none'
-        commit_hash = 'none'
+        commit_date = 'repository not available'
+        commit_hash = 'repository not available'
 
     return commit_date, commit_hash
 
