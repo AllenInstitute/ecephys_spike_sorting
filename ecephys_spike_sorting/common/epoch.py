@@ -19,7 +19,7 @@ class Epoch():
         start_time : float
             Start time in seconds
         end_time : float
-            End time in seconds
+            End time in seconds (can be Inf to use the full file)
         """
 
         self.start_time = start_time
