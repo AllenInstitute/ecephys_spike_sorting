@@ -38,7 +38,7 @@ def calculate_mean_waveforms(args):
                 args['ephys_params']['vertical_site_spacing'], \
                 args['mean_waveform_params'])
 
-    writeDataAsNpy(waveforms, args['mean_waveforms_params']['mean_waveforms_file'])
+    writeDataAsNpy(waveforms, args['mean_waveform_params']['mean_waveforms_file'])
     metrics.to_csv(args['waveform_metrics']['waveform_metrics_file'])
 
     execution_time = time.time() - start
