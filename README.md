@@ -41,7 +41,9 @@ Further documentation can be found in each module's README file. For more inform
 
 ## Installation and Usage
 
-These modules require **Python 3.5+**, and have been tested with Python 3.5, 3.6, and 3.7. 
+These modules require **Python 3.5+**, and have been tested with Python 3.5, 3.6, and 3.7.
+
+Three of the modules (`extract_from_npx`, `median_subtraction`, and `kilosort_helper`) have non-Python dependencies that will need to be installed prior to use.
 
 We recommend using [pipenv](https://github.com/pypa/pipenv) to run these modules. From the `ecephys_spike_sorting` top-level directory, run the following commands from a terminal:
 
