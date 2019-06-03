@@ -69,6 +69,8 @@ To leave the pipenv virtual environment, simply type:
 
 ### macOS
 
+If you don't have it already, install [homebrew](https://brew.sh/).
+
 ```shell
     $ brew install pipenv
     $ export PIPENV_VENV_IN_PROJECT=1
