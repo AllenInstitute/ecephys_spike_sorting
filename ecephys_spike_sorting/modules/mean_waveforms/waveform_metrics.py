@@ -66,7 +66,7 @@ def calculate_waveform_metrics(waveforms,
     mean_1D_waveform = resample(
         mean_2D_waveform[peak_channel, :], new_sample_count)
 
-    timestamps = np.linspace(0, len(mean_1D_waveform) / sample_rate, new_sample_count)
+    timestamps = np.linspace(0, waveforms.shape[2] / sample_rate, new_sample_count)
 
     duration = calculate_waveform_duration(mean_1D_waveform, timestamps)
     halfwidth = calculate_waveform_halfwidth(mean_1D_waveform, timestamps)
@@ -180,13 +180,13 @@ def calculate_waveform_halfwidth(waveform, timestamps):
             thresh_crossing_2 = np.min(
                 np.where(waveform[trough_idx:] > threshold)[0]) + trough_idx
 
-        halfwidth = (timestamps[thresh_crossing_2] - timestamps[thresh_crossing_1]) * 1e3
+        halfwidth = (timestamps[thresh_crossing_2] - timestamps[thresh_crossing_1]) 
 
     except ValueError:
 
         halfwidth = np.nan
 
-    return halfwidth 
+    return halfwidth * 1e3
 
 
 def calculate_waveform_PT_ratio(waveform):
