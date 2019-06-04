@@ -40,9 +40,9 @@ Documentation on input parameters can be found in the `_schemas.py` file for eac
 
 Once you've updated the parameters dictionary, you can edit `batch_processing.py`. Here, you'll want to update the list of directories containing files to process and the location where JSON files can be saved. Finally, comment out the names of the modules you don't want to use.
 
-Then, you can run the script using `pipenv` (which is installed by calling `pip install --user pipenv`):
+Then, you can run the script using `pipenv` (assuming you've already created a pipenv virtual environment based on the steps in the main [README](../../README.md) file):
 
-#### Linux
+#### Linux / macOS
 
 ```shell
     $ pipenv shell
