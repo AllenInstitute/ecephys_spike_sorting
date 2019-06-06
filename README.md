@@ -119,7 +119,7 @@ To leave the pipenv virtual environment, simply type:
 
 ## Level of Support
 
-This code is an important part of the internal Allen Institute code base and we are actively using and maintaining it. Issues are encouraged, but because this tool is so central to our mission, pull requests might not be accepted if they conflict with our existing plans.
+This code is an important part of the internal Allen Institute code base and we are actively using and maintaining it. The implementation is not yet finalized, so we welcome feedback about any aspects of the software. If you'd like to submit changes to this repository, we encourage you to create an issue beforehand, so we know what others are working on.
 
 
 ## Terms of Use

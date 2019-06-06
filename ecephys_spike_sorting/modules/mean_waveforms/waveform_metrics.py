@@ -284,8 +284,8 @@ def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold =
 
     Inputs:
     ------
-    waveform : numpy.ndarray (N samples x M channels)
-    timestamps : numpy.ndarray (N samples)
+    waveform : numpy.ndarray (N channels x M samples)
+    timestamps : numpy.ndarray (M samples)
     peak_channel : int
     spread_threshold : float
     site_range: int
@@ -304,11 +304,13 @@ def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold =
 
     sites_to_sample = np.arange(-site_range, site_range+1, 2) + peak_channel
 
+    sites_to_sample = sites_to_sample[(sites_to_sample > 0) * (sites_to_sample < waveform.shape[0])]
+
     wv = waveform[sites_to_sample, :]
 
     smoothed_waveform = np.zeros((wv.shape[0]-1,wv.shape[1]))
 
-    for i in range(site_range-1):
+    for i in range(wv.shape[0]-1):
         smoothed_waveform[i,:] = np.mean(wv[i:i+2,:],0)
 
     trough_idx = np.argmin(smoothed_waveform,1)
@@ -321,6 +323,7 @@ def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold =
 
     overall_amplitude = peak_amplitude - trough_amplitude
     amplitude = np.max(overall_amplitude)
+    max_chan = np.argmax(overall_amplitude)
 
     points_above_thresh = np.where(overall_amplitude > (amplitude * spread_threshold))[0]
     
@@ -329,10 +332,10 @@ def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold =
 
     spread = len(points_above_thresh) * site_spacing * 1e6
 
-    channels = sites_to_sample[:-1] - peak_channel
+    channels = sites_to_sample[:-1] - max_chan
     channels = channels[points_above_thresh]
 
-    trough_times = timestamps[trough_idx] - timestamps[trough_idx[int(site_range/2)]]
+    trough_times = timestamps[trough_idx] - timestamps[trough_idx[max_chan]]
     trough_times = trough_times[points_above_thresh]
 
     velocity_above, velocity_below = get_velocity(channels, trough_times, site_spacing)
