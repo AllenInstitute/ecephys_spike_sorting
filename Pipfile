@@ -21,8 +21,6 @@ cookiecutter = "*"
 sphinx-gallery = "*"
 pytest = "*"
 "ruamel.yaml" = "*"
-ecephys_cached_data_service = ">=0.1.5"
-
 
 [packages]
 
@@ -37,4 +35,5 @@ xmljson= "*"
 xarray= "*"
 scikit-learn = "*"
 h5py = "*"
-
+urllib3 = ">=1.24.2"
+requests = ">=2.20.0"
