@@ -326,6 +326,7 @@ def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold =
 
     overall_amplitude = peak_amplitude - trough_amplitude
     amplitude = np.max(overall_amplitude)
+    max_chan = np.argmax(overall_amplitude)
 
     points_above_thresh = np.where(overall_amplitude > (amplitude * spread_threshold))[0]
     
