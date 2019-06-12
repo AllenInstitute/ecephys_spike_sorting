@@ -64,7 +64,7 @@ def calculate_waveform_metrics(waveforms,
     new_sample_count = int(num_samples * upsampling_factor)
 
     mean_1D_waveform = resample(
-        mean_2D_waveform[peak_channel, :], new_sample_count)
+        mean_2D_waveform[local_peak, :], new_sample_count)
 
     timestamps = np.linspace(0, num_samples / sample_rate, new_sample_count)
 
