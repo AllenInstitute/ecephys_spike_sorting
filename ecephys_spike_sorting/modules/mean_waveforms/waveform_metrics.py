@@ -44,7 +44,7 @@ def calculate_waveform_metrics(waveforms,
     site_range : float
         Number of sites to use for 2D waveform metrics
     site_spacing : float
-        Vertical distance between sites (m)
+        Average vertical distance between sites (m)
     epoch_name : str
         Name of epoch for which these waveforms originated
 
@@ -281,7 +281,7 @@ def calculate_waveform_recovery_slope(waveform, timestamps, window=20):
 # ==========================================================
 
 
-def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold = 0.12, site_range=16, site_spacing=20e-6):
+def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold = 0.12, site_range=16, site_spacing=10e-6):
     
     """ 
     Compute features of 2D waveform (channels x samples)
@@ -299,7 +299,7 @@ def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold =
     --------
     amplitude : uV
     spread : um
-    velocity_above : s / m 
+    velocity_above : s / m
     velocity_below : s / m
 
     """
@@ -312,22 +312,20 @@ def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold =
 
     wv = waveform[sites_to_sample, :]
 
-    smoothed_waveform = np.zeros((wv.shape[0]-1,wv.shape[1]))
+    #smoothed_waveform = np.zeros((wv.shape[0]-1,wv.shape[1]))
+    #for i in range(wv.shape[0]-1):
+    #    smoothed_waveform[i,:] = np.mean(wv[i:i+2,:],0)
 
-    for i in range(wv.shape[0]-1):
-        smoothed_waveform[i,:] = np.mean(wv[i:i+2,:],0)
+    trough_idx = np.argmin(wv, 1)
+    trough_amplitude = np.min(wv, 1)
 
-    trough_idx = np.argmin(smoothed_waveform,1)
-    trough_amplitude = np.min(smoothed_waveform,1)
-
-    peak_idx = np.argmax(smoothed_waveform,1)
-    peak_amplitude = np.max(smoothed_waveform,1)
+    peak_idx = np.argmax(wv, 1)
+    peak_amplitude = np.max(wv, 1)
 
     duration = np.abs(timestamps[peak_idx] - timestamps[trough_idx])
 
     overall_amplitude = peak_amplitude - trough_amplitude
     amplitude = np.max(overall_amplitude)
-    max_chan = np.argmax(overall_amplitude)
 
     points_above_thresh = np.where(overall_amplitude > (amplitude * spread_threshold))[0]
     
@@ -336,7 +334,7 @@ def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold =
 
     spread = len(points_above_thresh) * site_spacing * 1e6
 
-    channels = sites_to_sample[:-1] - max_chan
+    channels = sites_to_sample - peak_channel
     channels = channels[points_above_thresh]
 
     trough_times = timestamps[trough_idx] - timestamps[trough_idx[max_chan]]
@@ -354,7 +352,7 @@ def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold =
 # ==========================================================
 
 
-def get_velocity(channels, times, distance_between_channels = 20e-6):
+def get_velocity(channels, times, distance_between_channels = 10e-6):
     
     """
     Calculate slope of trough time above and below soma.
@@ -371,9 +369,9 @@ def get_velocity(channels, times, distance_between_channels = 20e-6):
     Outputs:
     --------
     velocity_above : float
-        Velocity of spike propagation above the soma (channels / s)
+        Inverse of velocity of spike propagation above the soma (s / m)
     velocity_below : float
-        Velocity of spike propagation below the soma (channels / s)
+        Inverse of velocity of spike propagation below the soma (s / m)
 
     """
 

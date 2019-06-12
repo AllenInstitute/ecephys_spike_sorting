@@ -76,7 +76,7 @@ def createInputJson(output_file,
             "bit_volts" : 0.195,
             "num_channels" : 384,
             "reference_channels" : reference_channels,
-            "vertical_site_spacing" : 20e-6,
+            "vertical_site_spacing" : 10e-6,
             "ap_band_file" : os.path.join(kilosort_output_directory, 'continuous.dat'),
             "lfp_band_file" : os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.1', 'continuous.dat')
         }, 
