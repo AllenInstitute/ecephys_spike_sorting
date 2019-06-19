@@ -18,12 +18,13 @@ def createInputJson(output_file,
                     npx_directory=None, 
                     extracted_data_directory=None,
                     kilosort_output_directory=None, 
+                    kilosort_output_tmp=None, 
                     probe_type='3A'):
 
     if kilosort_output_directory is None \
          and extracted_data_directory is None \
          and npx_directory is None:
-        raise Exception('Must specify at least one input directory')
+        raise Exception('Must specify at least one output directory')
 
     if probe_type == '3A':
         acq_system = '3a'
@@ -48,12 +49,16 @@ def createInputJson(output_file,
     if kilosort_output_directory is None:
         kilosort_output_directory = os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.0')
 
+    if kilosort_output_tmp is None:
+        kilosort_output_tmp = kilosort_output_directory
+
     dictionary = \
     {
 
         "directories": {
             "extracted_data_directory": extracted_data_directory,
-            "kilosort_output_directory": kilosort_output_directory
+            "kilosort_output_directory": kilosort_output_directory,
+            "kilosort_output_tmp": kilosort_output_tmp
         },
 
         "common_files": {
@@ -62,7 +67,7 @@ def createInputJson(output_file,
         },
 
         "waveform_metrics" : {
-            "waveform_metrics_file" : os.path.join(kilosort_output_directory, 'waveform_metrics.csv')
+            "waveform_metrics_file" : os.path.join(kilosort_output_tmp, 'waveform_metrics.csv')
         },
 
         "ephys_params": {
@@ -71,7 +76,7 @@ def createInputJson(output_file,
             "bit_volts" : 0.195,
             "num_channels" : 384,
             "reference_channels" : reference_channels,
-            "vertical_site_spacing" : 20e-6,
+            "vertical_site_spacing" : 10e-6,
             "ap_band_file" : os.path.join(kilosort_output_directory, 'continuous.dat'),
             "lfp_band_file" : os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.1', 'continuous.dat')
         }, 
@@ -134,7 +139,7 @@ def createInputJson(output_file,
 
         "mean_waveform_params" : {
         
-            "mean_waveforms_file" : os.path.join(kilosort_output_directory, 'mean_waveforms.npy'),
+            "mean_waveforms_file" : os.path.join(kilosort_output_tmp, 'mean_waveforms.npy'),
 
             "samples_per_spike" : 82,
             "pre_samples" : 20,
@@ -156,7 +161,7 @@ def createInputJson(output_file,
             "max_spikes_for_unit" : 500,
             "max_spikes_for_nn" : 10000,
             "n_neighbors" : 4,
-            "quality_metrics_output_file" : os.path.join(kilosort_output_directory, "new_metrics.csv")
+            "quality_metrics_output_file" : os.path.join(kilosort_output_tmp, "new_metrics.csv")
         }
 
     }
