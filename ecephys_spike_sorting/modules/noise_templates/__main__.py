@@ -16,7 +16,7 @@ def classify_noise_templates(args):
     
     start = time.time()
 
-    spike_times, spike_clusters, amplitudes, templates, channel_map, cluster_ids, cluster_quality = \
+    spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, cluster_ids, cluster_quality = \
             load_kilosort_data(args['directories']['kilosort_output_directory'], \
                 args['ephys_params']['sample_rate'], \
                 convert_to_seconds = True)
