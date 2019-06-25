@@ -232,7 +232,12 @@ def load(folder, filename):
     return np.load(os.path.join(folder, filename))
 
 
-def load_kilosort_data(folder, sample_rate = None, convert_to_seconds = True, use_master_clock = False, include_pcs = False, template_zero_padding= 21):
+def load_kilosort_data(folder, 
+                       sample_rate = None, 
+                       convert_to_seconds = True, 
+                       use_master_clock = False, 
+                       include_pcs = False,
+                       template_zero_padding= 21):
 
     """
     Loads Kilosort output files from a directory
@@ -258,6 +263,8 @@ def load_kilosort_data(folder, sample_rate = None, convert_to_seconds = True, us
         Times for N spikes
     spike_clusters : numpy.ndarray (N x 0)
         Cluster IDs for N spikes
+    spike_templates : numpy.ndarray (N x 0)
+        Template IDs for N spikes
     amplitudes : numpy.ndarray (N x 0)
         Amplitudes for N spikes
     unwhitened_temps : numpy.ndarray (M x samples x channels) 
@@ -281,6 +288,7 @@ def load_kilosort_data(folder, sample_rate = None, convert_to_seconds = True, us
         spike_times = load(folder,'spike_times.npy')
         
     spike_clusters = load(folder,'spike_clusters.npy')
+    spike_templates = load(folder, 'spike_templates.npy')
     amplitudes = load(folder,'amplitudes.npy')
     templates = load(folder,'templates.npy')
     unwhitening_mat = load(folder,'whitening_mat_inv.npy')
@@ -288,7 +296,7 @@ def load_kilosort_data(folder, sample_rate = None, convert_to_seconds = True, us
 
     if include_pcs:
         pc_features = load(folder, 'pc_features.npy')
-        pc_feature_ind = load(folder, 'pc_feature_ind.npy')
+        pc_feature_ind = load(folder, 'pc_feature_ind.npy') 
                 
     templates = templates[:,template_zero_padding:,:] # remove zeros
     spike_clusters = np.squeeze(spike_clusters) # fix dimensions
@@ -310,9 +318,9 @@ def load_kilosort_data(folder, sample_rate = None, convert_to_seconds = True, us
         cluster_quality = ['unsorted'] * cluster_ids.size
 
     if not include_pcs:
-        return spike_times, spike_clusters, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality
+        return spike_times, spike_clusters, spike_templates, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality
     else:
-        return spike_times, spike_clusters, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality, pc_features, pc_feature_ind
+        return spike_times, spike_clusters, spike_templates, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality, pc_features, pc_feature_ind
 
 
 def get_repo_commit_date_and_hash(repo_location):
