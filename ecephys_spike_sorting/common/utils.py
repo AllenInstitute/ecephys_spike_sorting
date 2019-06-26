@@ -323,6 +323,71 @@ def load_kilosort_data(folder,
         return spike_times, spike_clusters, spike_templates, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality, pc_features, pc_feature_ind
 
 
+def get_spike_depths(spike_clusters, pc_features, pc_feature_ind):
+
+    """
+    Calculates the distance (in microns) of individual spikes from the probe tip
+
+    This implementation is based on Matlab code from github.com/cortex-lab/spikes
+
+    Input:
+    -----
+    spike_clusters : numpy.ndarray (N x 0)
+        Cluster IDs for N spikes
+    pc_features : numpy.ndarray (N x channels x num_PCs)
+        PC features for each spike
+    pc_feature_ind  : numpy.ndarray (M x channels)
+        Channels used for PC calculation for each unit
+
+    Output:
+    ------
+    spike_depths : numpy.ndarray (N x 0)
+        Distance (in microns) from each spike waveform from the probe tip
+
+    """
+
+    pc_features = np.squeeze(pc_features[:,0,:])
+    pc_features[pc_features < 0] = 0
+    pc_power = pow(pc_features,2)
+
+    spike_feat_ind = pc_feature_ind[spike_clusters, :]
+    spike_depths = np.sum(spike_feat_ind * pc_power, 1) / np.sum(pc_power,1)
+
+    return spike_depths * 10
+
+
+def get_spike_amplitudes(spike_templates, templates, amplitudes):
+
+    """
+    Calculates the amplitude of individual spikes, based on the original template
+    plus a scaling factor
+
+    This implementation is based on Matlab code from github.com/cortex-lab/spikes
+
+    Inputs:
+    -------
+    spike_templates : numpy.ndarray (N x 0)
+        Template IDs for N spikes
+    templates : numpy.ndarray (M x samples x channels) 
+        Unwhitened templates for M units
+    amplitudes : numpy.ndarray (N x 0)
+        Amplitudes for N spikes
+
+    Outputs:
+    --------
+    spike_amplitudes : numpy.ndarray (N x 0)
+        Amplitudes for N spikes
+
+    """
+
+    template_amplitudes = np.max(np.max(templates,1) - np.min(templates,1),1)
+
+    spike_amplitudes = template_amplitudes[spike_templates] * amplitudes
+
+    return np.squeeze(spike_amplitudes)
+
+
+
 def get_repo_commit_date_and_hash(repo_location):
 
     """
