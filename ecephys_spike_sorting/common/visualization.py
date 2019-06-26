@@ -1,16 +1,17 @@
 import numpy as np 
 import matplotlib.pyplot as plt 
-from scipy.signal import butter, filtfilt
+from scipy.signal import butter, filtfilt, medfilt
 
 from .utils import (get_spike_depths, 
                     get_spike_amplitudes,
-                    load_kilosort_data)
+                    load_kilosort_data,
+                    rms)
 
 
 def plotKsTemplates(ks_directory, raw_data_file, sample_rate = 30000, bit_volts = 0.195, time_range = [10, 11], exclude_noise=True, fig=None, output_path=None):
 
     """
-    Compares the template times and locations to the raw data
+    Compares the template-based model to the raw data
 
     Inputs:
     ------
@@ -57,13 +58,27 @@ def plotKsTemplates(ks_directory, raw_data_file, sample_rate = 30000, bit_volts 
 
     D = data[start_index:end_index, np.squeeze(channel_map)] * bit_volts
 
-    print(D.shape)
-
     for i in range(D.shape[1]):
         D[:,i] = filtfilt(b, a, D[:,i])
 
     D = D / np.max(np.abs(D))
 
+    if exclude_noise:
+        good_units = clusterIDs[cluster_quality != 'noise']
+    else:
+        good_units = clusterIDs
+
+    spikes_in_time_range = np.where((spike_times > start_index) * (spike_times < end_index))[0]
+    spikes_from_good_units = np.where(np.in1d(spike_templates, good_units))[0]
+    spikes_to_use = np.intersect1d(spikes_in_time_range, spikes_from_good_units)
+
+    Z = np.zeros(D.shape)
+
+    for idx, time in enumerate(spike_times[spikes_to_use] - start_index):
+        if (time < Z.shape[0] - 42 and time > 40):
+            template = np.squeeze(templates[spike_templates[spikes_to_use[idx]],:,:])
+            Z[int(time-40):int(time-40+61),:] += template * amplitudes[spikes_to_use[idx]]
+    
     ax = plt.subplot(211)
 
     ax.imshow(D[:,1::2].T,
@@ -75,26 +90,6 @@ def plotKsTemplates(ks_directory, raw_data_file, sample_rate = 30000, bit_volts 
 
     ax.axis('off')
 
-    if exclude_noise:
-        good_units = clusterIDs[cluster_quality != 'noise']
-    else:
-        good_units = clusterIDs
-
-    spikes_in_time_range = np.where((spike_times > start_index) * (spike_times < end_index))[0]
-    spikes_from_good_units = np.where(np.in1d(spike_templates, good_units))[0]
-    spikes_to_use = np.intersect1d(spikes_in_time_range, spikes_from_good_units)
-
-    times_in_range = spike_times[spikes_to_use]
-    ids_in_range = spike_templates[spikes_to_use]
-    amps_in_range = amplitudes[spikes_to_use]
-
-    Z = np.zeros(D.shape)
-
-    for idx, time in enumerate(times_in_range - start_index):
-        if (time < Z.shape[0] - 42 and time > 40):
-            template = np.squeeze(templates[ids_in_range[idx],:,:])
-            Z[int(time-40):int(time-40+61),:] += template * amps_in_range[idx]
-        
     ax = plt.subplot(212)
 
     ax.imshow(Z[:,1::2].T,
@@ -108,6 +103,7 @@ def plotKsTemplates(ks_directory, raw_data_file, sample_rate = 30000, bit_volts 
 
     if output_path is not None:
         plt.savefig(output_path)
+        fig.close()
 
 
 def plotDriftmap(ks_directory, sample_rate = 30000, time_range = [0, np.inf], exclude_noise=True, subselection = 50, fig=None, output_path=None):
@@ -184,3 +180,125 @@ def plotDriftmap(ks_directory, sample_rate = 30000, time_range = [0, np.inf], ex
 
     if output_path is not None:
         plt.savefig(output_path)
+        fig.close()
+
+
+
+def plotContinuousFile(raw_data_file, sample_rate = 30000, bit_volts = 0.195, noise_threshold = 20, time_range = [1000, 1002], fig=None, output_path=None):
+
+    """
+    Compares the template-based model to the raw data
+
+    Inputs:
+    ------
+    raw_data_file : str
+        Path to raw .dat or .bin file
+    sample_rate : float
+        Sample rate of original data (Hz)
+    bit_volts : float
+        Conversion factor for raw data to microvolts
+    noise_threshold : float
+        Distance above median to classify as noise channel
+    time_range : [float, float]
+        Min/max of time range for plot
+    fig : matplotlib.pyplot.figure
+        Figure handle to use for plotting
+    output_path : str
+        Path for saving the image
+
+    Outputs:
+    --------
+    Saves image to output_path (optional)
+
+    """
+
+    raw_data = np.memmap(raw_data_file, dtype='int16')
+    data = np.reshape(raw_data, (int(raw_data.size / 384), 384))
+
+    if fig is None:
+        fig = plt.figure(figsize=(15,12))
+
+    start_index = time_range[0] * sample_rate
+    end_index = time_range[1] * sample_rate
+
+    b, a = butter(3, [10/(sample_rate/2), 10000/(sample_rate/2)], btype='band')
+
+    D = data[start_index:end_index, :] * bit_volts
+    D_filt = np.zeros(D.shape)
+
+    for i in range(D.shape[1]):
+        D_filt[:,i] = filtfilt(b, a, D[:,i])
+
+    offset_values = np.apply_along_axis(np.median, axis=0, arr=D)
+    rms_values = np.apply_along_axis(rms, axis=0, arr=D_filt)
+     
+    ax = plt.subplot(325)
+    ax.hist(offset_values, bins=np.linspace(-1000,100,50))
+    ax.set_xlabel('Channel offset')
+
+    ax = plt.subplot(326)
+    ax.hist(rms_values, bins=np.linspace(0,100,50))
+    ax.set_xlabel('RMS value')
+
+    above_median = rms_values - medfilt(rms_values,11)
+    noise_channels = np.where(above_median > noise_threshold)[0]
+
+    rms_values[rms_values > 100] = 100
+
+    ax = plt.subplot(321)
+
+    t = np.linspace(0,D.shape[0]/sample_rate,D.shape[0])
+
+    spacing = 500
+
+    for i in range(D.shape[1]):
+        if i in noise_channels:
+            color = 'r'
+        else:
+            color = 'k'
+        ax.plot(t,D[:,i]+i*spacing,color,alpha=rms_values[i]/100)
+
+    ax.axis('off')
+        
+    ax = plt.subplot(322)
+
+    for i in range(D.shape[1]):
+        if i in noise_channels:
+            color = 'r'
+        else:
+            color = 'k'
+        ax.plot(t,D_filt[:,i]+i*spacing,color,alpha=rms_values[i]/100)
+        
+    ax.axis('off')
+
+    ax = plt.subplot(323)
+
+    t = np.linspace(0,D.shape[0]/sample_rate,D.shape[0])
+
+    spacing = 300
+
+    for i in range(10):
+        if i in noise_channels:
+            color = 'r'
+        else:
+            color = 'k'
+        ax.plot(t, np.ones(t.shape)+i*spacing,color='teal',linewidth=1.)
+        ax.plot(t,D[:,i]+i*spacing,color,alpha=0.8,linewidth=0.5)
+        
+    ax.axis('off')
+        
+    ax = plt.subplot(324)
+
+    for i in range(10):
+        if i in noise_channels:
+            color = 'r'
+        else:
+            color = 'k'
+        ax.plot(t, np.ones(t.shape)+i*spacing,color='teal',linewidth=1.)
+        ax.plot(t,D_filt[:,i]+i*spacing,color,alpha=0.8,linewidth=0.5)
+           
+    ax.axis('off')
+
+    if output_path is not None:
+        plt.savefig(output_path)
+        fig.close()
