@@ -1,5 +1,7 @@
 import numpy as np 
 import matplotlib.pyplot as plt 
+import gc
+
 from scipy.signal import butter, filtfilt, medfilt
 
 from .utils import (get_spike_depths, 
@@ -103,7 +105,7 @@ def plotKsTemplates(ks_directory, raw_data_file, sample_rate = 30000, bit_volts 
 
     if output_path is not None:
         plt.savefig(output_path)
-        fig.close()
+        plt.close('all')
 
 
 def plotDriftmap(ks_directory, sample_rate = 30000, time_range = [0, np.inf], exclude_noise=True, subselection = 50, fig=None, output_path=None):
@@ -180,7 +182,7 @@ def plotDriftmap(ks_directory, sample_rate = 30000, time_range = [0, np.inf], ex
 
     if output_path is not None:
         plt.savefig(output_path)
-        fig.close()
+        plt.close('all')
 
 
 
@@ -217,6 +219,8 @@ def plotContinuousFile(raw_data_file, sample_rate = 30000, bit_volts = 0.195, no
 
     if fig is None:
         fig = plt.figure(figsize=(15,12))
+
+    plt.clf()
 
     start_index = time_range[0] * sample_rate
     end_index = time_range[1] * sample_rate
@@ -301,4 +305,4 @@ def plotContinuousFile(raw_data_file, sample_rate = 30000, bit_volts = 0.195, no
 
     if output_path is not None:
         plt.savefig(output_path)
-        fig.close()
+        plt.close('all')
