@@ -1,6 +1,5 @@
 import numpy as np 
 import matplotlib.pyplot as plt 
-import gc
 
 from scipy.signal import butter, filtfilt, medfilt
 
@@ -150,7 +149,7 @@ def plotDriftmap(ks_directory, sample_rate = 30000, time_range = [0, np.inf], ex
     spike_depths = get_spike_depths(spike_clusters, pc_features, pc_feature_ind)
     spike_amplitudes = get_spike_amplitudes(spike_templates, templates, amplitudes)
 
-    if excluse_noise:
+    if exclude_noise:
         good_units = clusterIDs[cluster_quality != 'noise']
     else:
         good_units = clusterIDs
@@ -306,3 +305,100 @@ def plotContinuousFile(raw_data_file, sample_rate = 30000, bit_volts = 0.195, no
     if output_path is not None:
         plt.savefig(output_path)
         plt.close('all')
+        
+
+def plotFullProbeTSNE(ks_directory, total_spikes=150000, exclude_noise = True, fig=None, output_path = None):
+
+    """
+    Plots t-SNE embedding of spikes across the entire probe
+
+    Requires the fast_tsne module
+
+    https://github.com/KlugerLab/FIt-SNE
+
+    This is a useful way to assess overall data quality for an experiment, as it makes probe
+    motion very easy to see.
+
+    This implementation is based on Matlab code from github.com/cortex-lab/spikes
+
+    Inputs:
+    ------
+    ks_directory : str
+        Path to Kilosort outputs
+    total_spikes : int
+        number of spikes to use
+    exclude_noise : bool
+        True if noise units should be ignored, False otherwise
+    fig : matplotlib.pyplot.figure
+        Figure handle to use for plotting
+    output_path : str
+        Path for saving the image
+
+    Outputs:
+    --------
+    Saves image to output_path (optional)
+
+    """
+    from os.path import dirname
+    import sys
+    sys.path.append('/home/joshs/GitHub/FIt-SNE')
+
+    try:
+        from fast_tsne import fast_tsne
+    except ModuleNotFoundError:
+        print('fast_tsne not available; please download from https://github.com/KlugerLab/FIt-SNE')
+        return
+
+    from matplotlib.cm import get_cmap
+
+    spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, clusterIDs, cluster_quality, pc_features, pc_feature_ind = \
+                load_kilosort_data(ks_directory, 
+                    30000., 
+                    convert_to_seconds = False,
+                    use_master_clock = False,
+                    include_pcs = True)
+
+    if exclude_noise:
+        good_units = clusterIDs[cluster_quality != 'noise']
+    else:
+        good_units = clusterIDs
+
+    spikes_from_good_units = np.where(np.in1d(spike_clusters, good_units))[0]
+
+    print("creating PC matrix...")
+
+    random_spike_inds = np.random.permutation(spikes_from_good_units.size)
+    random_spike_inds = random_spike_inds[:total_spikes]
+    num_pc_features = pc_features.shape[1]
+
+    good_spike_clusters = spike_clusters[spikes_from_good_units]
+
+    all_pcs = np.zeros((total_spikes, np.max(pc_feature_ind) * num_pc_features + 1))
+
+    for idx, i in enumerate(random_spike_inds):
+        
+        unit_id = good_spike_clusters[i]
+        channels = pc_feature_ind[unit_id,:]
+        
+        for j in range(0,num_pc_features):
+            all_pcs[idx, channels + np.max(pc_feature_ind) * j] = pc_features[i,j,:]
+
+    print("Computing T-SNE")
+    Z = fast_tsne(all_pcs, perplexity=50, seed=42)
+
+    cmap = get_cmap('Spectral')
+    color_assignment = np.random.rand(np.max(good_spike_clusters)+1)
+    colors = np.squeeze(cmap(color_assignment[good_spike_clusters[random_spike_inds]]))
+
+    print("Plotting...")
+
+    if fig is None:
+        fig = plt.figure(figsize=(10,10))
+
+    ax = plt.subplot(111)
+    ax.scatter(Z[:,0], Z[:,1], c=colors, s=0.5)
+    ax.axis('off')
+    
+    if output_path is not None:
+       plt.savefig(output_path)
+       plt.close('all')
