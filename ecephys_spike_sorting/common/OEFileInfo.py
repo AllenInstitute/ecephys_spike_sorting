@@ -55,7 +55,7 @@ class OEContinuousFile:
     
 
 
-def get_lfp_channel_order(self):
+def get_lfp_channel_order():
 
     """
     Returns the channel ordering for LFP data extracted from NPX files.

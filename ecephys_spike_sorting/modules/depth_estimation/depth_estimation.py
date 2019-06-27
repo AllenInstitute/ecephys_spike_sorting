@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 from scipy.signal import welch
 from scipy.ndimage.filters import gaussian_filter1d
 
-from ...common.utils import find_range, rms
-
+from ...common.utils import find_range, rms, printProgressBar
+from ...common.OEFileInfo import get_lfp_channel_order
 
 def compute_channel_offsets(ap_data, ephys_params, params):
 
@@ -48,8 +48,11 @@ def compute_channel_offsets(ap_data, ephys_params, params):
         end_sample = start_sample + int(params['time_interval'] * ephys_params['sample_rate'])
 
         for ch in range(numChannels):
+
+            printProgressBar(i * numChannels + ch +1, numChannels * numIterations)
+
             data = ap_data[start_sample:end_sample, ch]
-            offsets[ch,i] = np.median(data).astype('int16')
+            offsets[ch,i] = np.median(data)
             median_subtr = data - offsets[ch,i]
             rms_noise[ch,i] = rms(median_subtr) * ephys_params['bit_volts']
         
@@ -62,9 +65,9 @@ def compute_channel_offsets(ap_data, ephys_params, params):
         'channels' : np.arange(numChannels),
         'mask' : mask,
         'scaling' : np.ones((numChannels,)),
-        'offsets' : np.median(offsets,1),
+        'offsets' : np.median(offsets,1).astype('int16'),
         'vertical_pos' : 20*(np.floor(np.arange(0,numChannels)/2)+1).astype('int'),
-        'horizontal_pos' : np.array([43,11,59,27] * numChannels / 4)
+        'horizontal_pos' : np.array([43,11,59,27] * int(numChannels / 4))
 
     }
 
@@ -116,23 +119,26 @@ def find_surface_channel(lfp_data, ephys_params, params):
         else:
             channels = np.arange(nchannels).astype('int')
 
-        chunk = np.copy(data[startPt:endPt,channels])
+        chunk = np.copy(lfp_data[startPt:endPt,channels])
         
-        for channel in channels:
-            chunk[:,channel] = chunk[:,channel] - np.median(chunk[:,channel])
+        for ch in np.arange(nchannels):
+            chunk[:,ch] = chunk[:,ch] - np.median(chunk[:,ch])
             
-        for channel in channels:
-            chunk[:,channel] = chunk[:,channel] - np.median(chunk[:,channel_range[0]:channel_range[1]],1)
+        for ch in np.arange(nchannels):
+            chunk[:,ch] = chunk[:,ch] - np.median(chunk[:,channel_range[0]:channel_range[1]],1)
         
-        power = np.zeros((int(nfft/2+1), channels.size))
+        power = np.zeros((int(nfft/2+1), nchannels))
     
-        for channel in channels:
-            sample_frequencies, Pxx_den = welch(chunk[:,channel], fs=sample_frequency, nfft=nfft)
-            power[:,channel] = Pxx_den
+        for ch in np.arange(nchannels):
+
+            printProgressBar(p * nchannels + ch + 1, nchannels * n_passes)
+
+            sample_frequencies, Pxx_den = welch(chunk[:,ch], fs=sample_frequency, nfft=nfft)
+            power[:,ch] = Pxx_den
         
         in_range = find_range(sample_frequencies, 0, params['max_freq'])
         
-        mask_chans = reference_channels
+        mask_chans = ephys_params['reference_channels']
 
         in_range_gamma = find_range(sample_frequencies, freq_range[0],freq_range[1])
         
@@ -161,7 +167,7 @@ def find_surface_channel(lfp_data, ephys_params, params):
                      in_range, 
                      values, 
                      nchannels, 
-                     surface_chan, 
+                     surface_channel, 
                      power_thresh, 
                      diff_thresh, 
                      params['figure_location'])
