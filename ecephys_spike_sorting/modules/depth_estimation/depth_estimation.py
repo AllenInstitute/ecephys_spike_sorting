@@ -10,8 +10,90 @@ from scipy.ndimage.filters import gaussian_filter1d
 
 from ...common.utils import find_range, rms
 
-def find_surface_channel(data, params, reference_channels, nchannels=384, sample_frequency=2500):
+
+def compute_channel_offsets(ap_data, ephys_params, params):
+
+    """
+    Computes DC offset for AP band data
+
+    Also identifies channels with very high or low rms noise.
+
+    Inputs:
+    ------
+    ap_data : numpy.ndarray (N samples x M channels)
+    ephys_params : dict
+    params : dict
+
+    Outputs:
+    -------
+    output_dict : dict
+        - channels : array of channel numbers
+        - mask : True if channel is good, False otherwise
+        - scaling : array of ones (not computed)
+        - offsets : array of DC offset values
+        - vertical_pos : distance of each channel from the probe tip
+        - horizontal_pos : distance of each channel from the probe edge
+
+    """
+
+    numChannels = ephys_params['num_channels']
+    numIterations = params['n_passes']
+
+    offsets = np.zeros((numChannels, numIterations), dtype = 'int16')
+    rms_noise = np.zeros((numChannels, numIterations), dtype='float')
+
+    for i in range(numIterations):
+
+        start_sample = int((params['start_time'] + params['skip_s_per_pass'] * i)* ephys_params['sample_rate'])
+        end_sample = start_sample + int(params['time_interval'] * ephys_params['sample_rate'])
+
+        for ch in range(numChannels):
+            data = ap_data[start_sample:end_sample, ch]
+            offsets[ch,i] = np.median(data).astype('int16')
+            median_subtr = data - offsets[ch,i]
+            rms_noise[ch,i] = rms(median_subtr) * ephys_params['bit_volts']
+        
+    mask = np.ones((numChannels,), dtype=bool)
+    mask[ephys_params['reference_channels']] = False
+    mask[np.median(rms_noise,1) > params['hi_noise_thresh']] = False
+    mask[np.median(rms_noise,1) < params['lo_noise_thresh']] = False
+
+    output_dict = {
+        'channels' : np.arange(numChannels),
+        'mask' : mask,
+        'scaling' : np.ones((numChannels,)),
+        'offsets' : np.median(offsets,1),
+        'vertical_pos' : 20*(np.floor(np.arange(0,numChannels)/2)+1).astype('int'),
+        'horizontal_pos' : np.array([43,11,59,27] * numChannels / 4)
+
+    }
+
+    return output_dict
+
+
+
+def find_surface_channel(lfp_data, ephys_params, params):
+
+    """
+    Computes surface channel from LFP band data
+
+    Inputs:
+    ------
+    lfp_data : numpy.ndarray (N samples x M channels)
+    ephys_params : dict
+    params : dict
+
+    Outputs:
+    -------
+    output_dict : dict
+        - surface_channel : channel at brain surface
+        - air_channel : channel at agar / air surface (approximate)
+        
+    """
     
+    nchannels = ephys_params['num_channels']
+    sample_frequency = ephys_params['lfp_sample_rate']
+
     smoothing_amount = params['smoothing_amount']
     power_thresh = params['power_thresh']
     diff_thresh = params['diff_thresh']
@@ -21,9 +103,7 @@ def find_surface_channel(data, params, reference_channels, nchannels=384, sample
     n_passes = params['n_passes']
 
     save_figure = params['save_figure']
-    if save_figure:
-        figure_location = params['figure_location']
-    
+
     candidates = np.zeros((n_passes,))
     
     for p in range(n_passes):
@@ -31,7 +111,11 @@ def find_surface_channel(data, params, reference_channels, nchannels=384, sample
         startPt = int(sample_frequency*params['skip_s_per_pass']*p)
         endPt = startPt + int(sample_frequency)
     
-        channels = np.arange(nchannels).astype('int')
+        if ephys_params['reorder_lfp_channels']:
+            channels = get_lfp_channel_order()
+        else:
+            channels = np.arange(nchannels).astype('int')
+
         chunk = np.copy(data[startPt:endPt,channels])
         
         for channel in channels:
@@ -55,26 +139,46 @@ def find_surface_channel(data, params, reference_channels, nchannels=384, sample
         values = np.log10(np.mean(power[in_range_gamma,:],0))
         values[mask_chans] = values[mask_chans-1]
         values = gaussian_filter1d(values,smoothing_amount)
-                        
-        try:
-           #print(np.where(np.diff(values) < diff_thresh))
-           #print(np.where(values < power_thresh))
-           surface_chan = np.max(np.where((np.diff(values) < diff_thresh) * (values[:-1] < power_thresh) )[0])
-        except ValueError:
-           surface_chan = nchannels
-            
-        candidates[p] = surface_chan
-        
-        if save_figure:
-            plot_results(chunk, power, in_range, values, nchannels, surface_chan, power_thresh, diff_thresh, params['figure_location'])
+
+        surface_channels = np.where((np.diff(values) < diff_thresh) * (values[:-1] < power_thresh) )[0]
+
+        if len(surface_channels > 0):
+            candidates[p] = np.max(surface_channels)
+        else:
+            candidates[p] = nchannels
       
     surface_channel = np.median(candidates)
     air_channel = np.min([surface_channel + params['air_gap'], nchannels])
-        
-    return surface_channel, air_channel
+
+    output_dict = {
+        'surface_channel' : surface_channel,
+        'air_channel' : air_channel
+    }
+
+    if save_figure:
+        plot_results(chunk, 
+                     power, 
+                     in_range, 
+                     values, 
+                     nchannels, 
+                     surface_chan, 
+                     power_thresh, 
+                     diff_thresh, 
+                     params['figure_location'])
+
+    return output_dict
 
 
-def plot_results(chunk, power, in_range, values, nchannels, surface_chan, power_thresh, diff_thresh, figure_location):
+
+def plot_results(chunk, 
+                 power, 
+                 in_range, 
+                 values, 
+                 nchannels, 
+                 surface_chan, 
+                 power_thresh, 
+                 diff_thresh, 
+                 figure_location):
 
     plt.figure(figsize=(5,10))
     plt.subplot(4,1,1)
@@ -96,60 +200,3 @@ def plot_results(chunk, power, in_range, values, nchannels, surface_chan, power_
     plt.plot([surface_chan, surface_chan],[-0.2, diff_thresh],'--r')
     plt.title(surface_chan)
     plt.savefig(figure_location)
-
-
-def compute_offset_and_surface_channel(ap_data, lfp_data, ephys_params, params):
-
-    hi_noise_thresh = params['hi_noise_thresh']
-    lo_noise_thresh = params['lo_noise_thresh']
-
-    numChannels = ephys_params['num_channels']
-
-    offsets = np.zeros((numChannels,), dtype = 'int16')
-    rms_noise = np.zeros((numChannels,), dtype='int16')
-    lfp_power = np.zeros((numChannels,), dtype = 'float32')
-
-    # %%
-
-    mask_chans = ephys_params['reference_channels']
-
-    start_time = params['start_sample']
-    recording_time = int(ephys_params['sample_rate'])
-    median_subtr = np.zeros((recording_time,numChannels))
-
-    # 1. cycle through to find median offset
-
-    for ch in range(0,numChannels,1): #
-        
-        channel = ap_data[start_time:start_time+recording_time,ch]
-        offsets[ch] = np.median(channel).astype('int16')
-        median_subtr[:,ch] = channel - offsets[ch]
-        rms_noise[ch] = rms(median_subtr[:,ch])*ephys_params['bit_volts']
-        
-    excluded_chans1 = np.where(rms_noise > hi_noise_thresh)[0]
-    excluded_chans2 = np.where(rms_noise < lo_noise_thresh)[0]
-        
-    mask_chans2 = np.concatenate((mask_chans, excluded_chans1, excluded_chans2))
-
-    surface, air = find_surface_channel(lfp_data, params, ephys_params['reference_channels'], ephys_params['num_channels'], ephys_params['lfp_sample_rate'])
-
-    print("Surface channel: " + str(surface))
-
-    channels = np.arange(0,numChannels)
-    mask = np.ones((channels.shape), dtype=bool)
-    mask[mask_chans2] = False
-    scaling = np.ones((numChannels,))
-    vertical_pos = 20*(np.floor(np.arange(0,384)/2)+1).astype('int')
-    horizontal_pos = np.array([43,11,59,27]*96)
-
-    output_dict = {}
-    output_dict['channels'] = channels
-    output_dict['mask'] = mask
-    output_dict['scaling'] = scaling
-    output_dict['offsets'] = offsets
-    output_dict['surface_channel'] = surface
-    output_dict['air_channel'] = air
-    output_dict['vertical_pos'] = vertical_pos
-    output_dict['horizontal_pos'] = horizontal_pos
-
-    return output_dict

@@ -99,10 +99,12 @@ def createInputJson(output_file,
             "diff_thresh" : -0.06,
             "freq_range" : [0, 10],
             "max_freq" : 150,
-            "channel_range" : [370, 380],
-            "n_passes" : 1,
+            "channel_range" : [374, 384],
+            "n_passes" : 20,
             "air_gap" : 100,
-            "skip_s_per_pass" : 1000
+            "time_interval" : 5,
+            "skip_s_per_pass" : 20,
+            "start_time" : 100
         }, 
 
         "median_subtraction_params" : {

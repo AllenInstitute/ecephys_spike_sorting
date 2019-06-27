@@ -23,14 +23,23 @@ def run_depth_estimation(args):
     rawDataLfp = np.memmap(args['ephys_params']['lfp_band_file'], dtype='int16', mode='r')
     dataLfp = np.reshape(rawDataLfp, (int(rawDataLfp.size/numChannels), numChannels))
 
-    if args['ephys_params']['reorder_lfp_channels']:
-        dataLfp = rawDataLfp[:, get_lfp_channel_order()]
+    info_ap = compute_channel_offsets(dataAp, 
+                                   args['ephys_params'], 
+                                   args['depth_estimation_params'])
 
-    info = compute_offset_and_surface_channel(dataAp, dataLfp, \
-           args['ephys_params'], args['depth_estimation_params'])
+    info_lfp = find_surface_channel(dataLfp, 
+                                args['ephys_params'], 
+                                args['depth_estimation_params'])
 
-    write_probe_json(args['common_files']['probe_json'], info['channels'], info['offsets'], \
-        info['scaling'], info['mask'], info['surface_channel'], info['air_channel'], info['vertical_pos'], info['horizontal_pos'])
+    write_probe_json(args['common_files']['probe_json'], 
+                     info_ap['channels'], 
+                     info_ap['offsets'],
+                     info_ap['scaling'], 
+                     info_ap['mask'], 
+                     info_lfp['surface_channel'], 
+                     info_lfp['air_channel'], 
+                     info_ap['vertical_pos'], 
+                     info_ap['horizontal_pos'])
 
     execution_time = time.time() - start
 
