@@ -78,7 +78,8 @@ def createInputJson(output_file,
             "reference_channels" : reference_channels,
             "vertical_site_spacing" : 10e-6,
             "ap_band_file" : os.path.join(kilosort_output_directory, 'continuous.dat'),
-            "lfp_band_file" : os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.1', 'continuous.dat')
+            "lfp_band_file" : os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.1', 'continuous.dat'),
+            "reorder_lfp_channels" : probe_type == '3A'
         }, 
 
         "extract_from_npx_params" : {

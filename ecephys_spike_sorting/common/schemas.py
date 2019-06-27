@@ -1,5 +1,5 @@
 from argschema.schemas import DefaultSchema
-from argschema.fields import Nested, InputDir, OutputDir, String, Float, Dict, Int, NumpyArray
+from argschema.fields import Nested, InputDir, OutputDir, String, Float, Dict, Int, NumpyArray, Bool
 
 class EphysParams(DefaultSchema):
     sample_rate = Float(required=True, default=30000.0, help='Sample rate of Neuropixels AP band continuous data')
@@ -12,6 +12,7 @@ class EphysParams(DefaultSchema):
     probe_type = String(required=False, default='3A', help='3A, 3B1, or 3B2')
     lfp_band_file = String(required=False, help='Location of LFP band binary file')
     ap_band_file = String(required=False, help='Location of AP band binary file')
+    reorder_lfp_channels = Bool(required=False, default=True, help='Should we fix the ordering of LFP channels (necessary for 3a probes following extract_from_npx modules)')
 
 class Directories(DefaultSchema):
 

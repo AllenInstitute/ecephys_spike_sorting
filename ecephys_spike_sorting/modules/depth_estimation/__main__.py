@@ -7,7 +7,7 @@ import numpy as np
 
 from .depth_estimation import compute_offset_and_surface_channel
 from ...common.utils import write_probe_json
-
+from ...common.OEFileInfo import get_lfp_channel_order
 
 def run_depth_estimation(args):
 
@@ -22,6 +22,9 @@ def run_depth_estimation(args):
 
     rawDataLfp = np.memmap(args['ephys_params']['lfp_band_file'], dtype='int16', mode='r')
     dataLfp = np.reshape(rawDataLfp, (int(rawDataLfp.size/numChannels), numChannels))
+
+    if args['ephys_params']['reorder_lfp_channels']:
+        dataLfp = rawDataLfp[:, get_lfp_channel_order()]
 
     info = compute_offset_and_surface_channel(dataAp, dataLfp, \
            args['ephys_params'], args['depth_estimation_params'])
