@@ -18,8 +18,8 @@ def create_config(kilosort_location,forwardslash_data_file_location, data_file_n
     with open(config_path,"w+") as f:
         f.write(config_string)
 
-def create_config2(kilosort_location,forwardslash_data_file_location, ephys_params, params):
-    config_string = make_config_string2(forwardslash_data_file_location, ephys_params, params)   
+def create_config2(kilosort_location,forwardslash_output_file_location,forwardslash_input_file_location, ephys_params, params):
+    config_string = make_config_string2(forwardslash_output_file_location, forwardslash_input_file_location,ephys_params, params)   
     config_path = os.path.join(kilosort_location,'kilosort2_config_file.m')    
     with open(config_path,"w+") as f:
         f.write(config_string)
@@ -49,11 +49,15 @@ def make_chanmap_string(EndChan = 384, StartChan = 1, Nchannels = 384, probe_typ
 
     return chanmap_string
 
-def make_config_string2(forwardslash_data_file_location, ephys_params, params):
+def make_config_string2(forwardslash_output_file_location, 
+                        forwardslash_input_file_location,
+                        ephys_params, 
+                        params):
 
     # these params need to be written first:
-    config_string = "ops.rootZ = '" + forwardslash_data_file_location + "';\n"
-    config_string += ("ops.ntbuff = " + str(params['ntbuff']) + "';\n")
+    config_string = "ops.rootZ = '" + forwardslash_output_file_location + "';\n"
+    config_string += "ops.datafile = '" + forwardslash_input_file_location + "';\n"
+    config_string += ("ops.ntbuff = " + str(params['ntbuff']) + ";\n")
 
     for param in params.keys():
         if param != 'ntbuff':
