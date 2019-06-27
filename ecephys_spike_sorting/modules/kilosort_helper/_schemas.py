@@ -1,6 +1,6 @@
 from argschema import ArgSchema, ArgSchemaParser 
 from argschema.schemas import DefaultSchema
-from argschema.fields import Nested, InputDir, String, Float, Dict, Int
+from argschema.fields import Nested, InputDir, String, Float, Dict, Int, NumpyArray
 from ...common.schemas import EphysParams, Directories, CommonFiles
 
 class KilosortParameters(DefaultSchema):
@@ -72,4 +72,5 @@ class OutputParameters(OutputSchema):
     execution_time = Float()
     kilosort_commit_hash = String()
     kilosort_commit_date = String()
+    mask_channels = NumpyArray()
     
