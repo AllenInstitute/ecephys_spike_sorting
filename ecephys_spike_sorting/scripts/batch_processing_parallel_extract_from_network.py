@@ -54,7 +54,7 @@ def make_constants(session_name):
 
 	default_backup1 = r'T:'
 	default_backup2 = os.path.join(r'\\sd5\sd5', session_name)
-	default_start = 'kilosort_helper'
+	default_start = 'extract_from_npx'
 	default_end = 'primary_backup_processed_data'
 	json_directory = r'C:\Users\svc_neuropix\Documents\json_files'
 
