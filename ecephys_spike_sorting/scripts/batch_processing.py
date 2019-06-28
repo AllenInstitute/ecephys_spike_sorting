@@ -24,9 +24,9 @@ for directory in sorted_directories:
 				#'depth_estimation',
 				##'median_subtraction',
 				#'kilosort_helper',
-				'kilosort_postprocessing',
-				'noise_templates',
-				'mean_waveforms',
+				#'kilosort_postprocessing',
+				#'noise_templates',
+				#'mean_waveforms',
 				'quality_metrics']
 
 	for module in modules:

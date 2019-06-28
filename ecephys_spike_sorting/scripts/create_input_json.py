@@ -174,7 +174,10 @@ def createInputJson(output_file,
             "max_spikes_for_unit" : 500,
             "max_spikes_for_nn" : 10000,
             "n_neighbors" : 4,
-            "quality_metrics_output_file" : os.path.join(kilosort_output_tmp, "new_metrics.csv")
+            'n_silhouette' : 10000,
+            "quality_metrics_output_file" : os.path.join(kilosort_output_tmp, "new_metrics.csv"),
+            "drift_metrics_interval_s" : 51,
+            "drift_metrics_min_spikes_per_interval" : 10
         }
 
     }
