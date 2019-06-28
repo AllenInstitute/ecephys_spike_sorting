@@ -34,8 +34,6 @@ def createInputJson(output_file,
         acq_system = 'PXI'
         reference_channels = [191]
 
-
-        
     if npx_directory is not None:
         settings_xml = os.path.join(npx_directory, 'settings.xml')
         if extracted_data_directory is None:
@@ -95,8 +93,8 @@ def createInputJson(output_file,
         "extract_from_npx_params" : {
             "npx_directory": npx_directory,
             "settings_xml": settings_xml,
-            "npx_extractor_executable": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\npxextractor\\Release\\NpxExtractor.exe",
-            "npx_extractor_repo": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\npxextractor",
+            "npx_extractor_executable": r"C:\Users\svc_neuropix\Documents\GitHub\open-ephys\Tools\NpxExtractor\NpxExtractor.exe",
+            "npx_extractor_repo": r"C:\Users\svc_neuropix\Documents\GitHub\open-ephys"
         },
 
         "depth_estimation_params" : {
@@ -113,8 +111,8 @@ def createInputJson(output_file,
             "n_passes" : 5,
             "air_gap" : 100,
             "time_interval" : 5,
-            "skip_s_per_pass" : 20,
-            "start_time" : 100
+            "skip_s_per_pass" : 5,
+            "start_time" : 0
         }, 
 
         "median_subtraction_params" : {
