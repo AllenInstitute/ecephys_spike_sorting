@@ -108,11 +108,11 @@ def createInputJson(output_file,
             "freq_range" : [0, 10],
             "max_freq" : 150,
             "channel_range" : [374, 384],
-            "n_passes" : 5,
+            "n_passes" : 10,
             "air_gap" : 100,
             "time_interval" : 5,
-            "skip_s_per_pass" : 5,
-            "start_time" : 0
+            "skip_s_per_pass" : 100,
+            "start_time" : 150
         }, 
 
         "median_subtraction_params" : {
@@ -172,7 +172,10 @@ def createInputJson(output_file,
             "max_spikes_for_unit" : 500,
             "max_spikes_for_nn" : 10000,
             "n_neighbors" : 4,
-            "quality_metrics_output_file" : os.path.join(kilosort_output_tmp, "new_metrics.csv")
+            'n_silhouette' : 10000,
+            "quality_metrics_output_file" : os.path.join(kilosort_output_tmp, "new_metrics.csv"),
+            "drift_metrics_interval_s" : 51,
+            "drift_metrics_min_spikes_per_interval" : 10
         }
 
     }
