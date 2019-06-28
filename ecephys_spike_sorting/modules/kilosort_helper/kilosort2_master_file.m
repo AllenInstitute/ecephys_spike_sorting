@@ -9,8 +9,7 @@ run(fullfile(pathToYourConfigFile, 'kilosort2_config_file.m'))
 
 % find the binary file
 rootZ       = ops.rootZ
-fs          = [dir(fullfile(rootZ, '*.bin')) dir(fullfile(rootZ, '*.dat'))];
-ops.fbinary = fullfile(rootZ, fs(1).name);
+ops.fbinary = fullfile(ops.datafile)
 
 % preprocess data to create temp_wh.dat
 rez = preprocessDataSub(ops);

@@ -26,8 +26,8 @@ for directory in sorted_directories:
 				#'kilosort_helper',
 				#'kilosort_postprocessing',
 				#'noise_templates',
-				'mean_waveforms'] #,
-				#'quality_metrics']
+				#'mean_waveforms',
+				'quality_metrics']
 
 	for module in modules:
 

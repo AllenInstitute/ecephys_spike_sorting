@@ -22,7 +22,7 @@ def calculate_mean_waveforms(args):
     rawData = np.memmap(args['ephys_params']['ap_band_file'], dtype='int16', mode='r')
     data = np.reshape(rawData, (int(rawData.size/args['ephys_params']['num_channels']), args['ephys_params']['num_channels']))
 
-    spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
+    spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
             load_kilosort_data(args['directories']['kilosort_output_directory'], \
                 args['ephys_params']['sample_rate'], \
                 convert_to_seconds = False)

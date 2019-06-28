@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 from ...common.utils import printProgressBar
 
-def remove_double_counted_spikes(spike_times, spike_clusters, amplitudes, channel_map, templates, pc_features, pc_feature_ind, sample_rate, params, epochs = None):
+def remove_double_counted_spikes(spike_times, spike_clusters, spike_templates, amplitudes, channel_map, templates, pc_features, pc_feature_ind, sample_rate, params, epochs = None):
 
     """ Remove putative double-counted spikes from Kilosort outputs
 
@@ -14,6 +14,8 @@ def remove_double_counted_spikes(spike_times, spike_clusters, amplitudes, channe
         Spike times in samples 
     spike_clusters : numpy.ndarray (num_spikes x 0)
         Cluster IDs for each spike time
+    spike_templates : numpy.ndarray (num_spikes x 0)
+        Template IDs for each spike time
     amplitudes : numpy.ndarray (num_spikes x 0)
         Amplitude value for each spike time
     channel_map : numpy.ndarray (num_units x 0)
@@ -40,6 +42,8 @@ def remove_double_counted_spikes(spike_times, spike_clusters, amplitudes, channe
         Spike times in seconds (same timebase as epochs)
     spike_clusters : numpy.ndarray (num_spikes x 0)
         Cluster IDs for each spike time
+    spike_templates : numpy.ndarray (num_spikes x 0)
+        Template IDs for each spike time
     amplitudes : numpy.ndarray (num_spikes x 0)
         Amplitude value for each spike time
     pc_features : numpy.ndarray (num_spikes x num_pcs x num_channels)
@@ -76,7 +80,12 @@ def remove_double_counted_spikes(spike_times, spike_clusters, amplitudes, channe
 
         spikes_to_remove = np.concatenate((spikes_to_remove, for_unit1[to_remove]))
 
-    spike_times, spike_clusters, amplitudes, pc_features = remove_spikes(spike_times, spike_clusters, amplitudes, pc_features, spikes_to_remove)
+    spike_times, spike_clusters, spike_templates, amplitudes, pc_features = remove_spikes(spike_times, 
+                                                                        spike_clusters, 
+                                                                        spike_templates, 
+                                                                        amplitudes, 
+                                                                        pc_features, 
+                                                                        spikes_to_remove)
 
     print('Removing between-unit overlapping spikes...')
 
@@ -101,13 +110,14 @@ def remove_double_counted_spikes(spike_times, spike_clusters, amplitudes, channe
                 spikes_to_remove = np.concatenate((spikes_to_remove, for_unit1[to_remove1], for_unit2[to_remove2]))
 
 
-    spike_times, spike_clusters, amplitudes, pc_features = remove_spikes(spike_times, 
-                                                                         spike_clusters, 
+    spike_times, spike_clusters, spike_templates, amplitudes, pc_features = remove_spikes(spike_times, 
+                                                                         spike_clusters,
+                                                                         spike_templates, 
                                                                          amplitudes, 
                                                                          pc_features, 
                                                                          np.unique(spikes_to_remove))
 
-    return spike_times, spike_clusters, amplitudes, pc_features, overlap_matrix
+    return spike_times, spike_clusters, spike_templates, amplitudes, pc_features, overlap_matrix
 
                 
 def find_within_unit_overlap(spike_train, overlap_window = 5):
@@ -176,7 +186,7 @@ def find_between_unit_overlap(spike_train1, spike_train2, overlap_window = 5):
     return spikes_to_remove1, spikes_to_remove2
 
 
-def remove_spikes(spike_times, spike_clusters, amplitudes, pc_features, spikes_to_remove):
+def remove_spikes(spike_times, spike_clusters, spike_templates, amplitudes, pc_features, spikes_to_remove):
 
     """
     Removes spikes from Kilosort outputs
@@ -187,6 +197,8 @@ def remove_spikes(spike_times, spike_clusters, amplitudes, pc_features, spikes_t
         Spike times in samples 
     spike_clusters : numpy.ndarray (num_spikes x 0)
         Cluster IDs for each spike time
+    spike_templates : numpy.ndarray (num_spikes x 0)
+        Template IDs for each spike time
     amplitudes : numpy.ndarray (num_spikes x 0)
         Amplitude value for each spike time
     pc_features : numpy.ndarray (num_spikes x num_pcs x num_channels)
@@ -198,6 +210,7 @@ def remove_spikes(spike_times, spike_clusters, amplitudes, pc_features, spikes_t
     --------
     spike_times : numpy.ndarray (num_spikes - spikes_to_remove x 0)
     spike_clusters : numpy.ndarray (num_spikes - spikes_to_remove x 0)
+    spike_templates : numpy.ndarray (num_spikes - spikes_to_remove x 0)
     amplitudes : numpy.ndarray (num_spikes - spikes_to_remove x 0)
     pc_features : numpy.ndarray (num_spikes - spikes_to_remove x num_pcs x num_channels)
 
@@ -205,8 +218,9 @@ def remove_spikes(spike_times, spike_clusters, amplitudes, pc_features, spikes_t
 
     spike_times = np.delete(spike_times, spikes_to_remove, 0)
     spike_clusters = np.delete(spike_clusters, spikes_to_remove, 0)
+    spike_templates = np.delete(spike_templates, spikes_to_remove, 0)
     amplitudes = np.delete(amplitudes, spikes_to_remove, 0)
     pc_features = np.delete(pc_features, spikes_to_remove, 0)
 
-    return spike_times, spike_clusters, amplitudes, pc_features
+    return spike_times, spike_clusters, spike_templates, amplitudes, pc_features
 

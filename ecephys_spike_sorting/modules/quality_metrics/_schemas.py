@@ -11,6 +11,10 @@ class QualityMetricsParams(DefaultSchema):
     max_spikes_for_unit = Int(required=False, default=500, help='Number of spikes to subsample for computing PC metrics')
     max_spikes_for_nn = Int(required=False, default=10000, help='Further subsampling for NearestNeighbor calculation')
     n_neighbors = Int(required=False, default=4, help='Number of neighbors to use for NearestNeighbor calculation')
+    n_silhouette = Int(required=False, default=10000, help='Number of spikes to use for calculating silhouette score')
+
+    drift_metrics_min_spikes_per_interval = Int(required=False, default=10, help='Minimum number of spikes for computing depth')
+    drift_metrics_interval_s = Float(required=False, default=100, help='Interval length is seconds for computing spike depth')
 
     quality_metrics_output_file = String(required=True, help='CSV file where metrics will be saved')
 

@@ -59,13 +59,14 @@ def make_constants(session_name):
 	json_directory = r'C:\Users\svc_neuropix\Documents\json_files'
 
 	npx_directories = OrderedDict()
-	npx_directories[os.path.join(r'J:', '826765736_430993_20190221_probeB')]=npx_params(default_start,default_end,r'\\sd5\sd5\826765736_430993_20190221\826765736_430993_20190221_probeB',r'\\sd5\sd5\826765736_430993_20190221\826765736_430993_20190221_probeB')
-	npx_directories[os.path.join(r'J:', '796740972_421527_20181217_probeF')]=npx_params(default_start,default_end,r'\\sd4\SD4.2\796740972_421527_20181217\796740972_421527_20181217_probeF',r'\\sd4\SD4.2\796740972_421527_20181217\796740972_421527_20181217_probeF')
-	#npx_directories[os.path.join(r'J:', '814975952_418193_20190129_probeE')]=npx_params(default_start,default_end,r'\\sd5\sd5\814975952_418193_20190129\814975952_418193_20190129_probeE',r'\\sd5\sd5\814975952_418193_20190129\814975952_418193_20190129_probeE')
-	#npx_directories[os.path.join(r'K:', '816200189_425599_20190131_probeB')]=npx_params(default_start,default_end,r'\\sd5\sd5\816200189_425599_20190131\816200189_425599_20190131_probeB',r'\\sd5\sd5\816200189_425599_20190131\816200189_425599_20190131_probeB')
-	#npx_directories[os.path.join(r'K:', '828758609_432512_20190225_probeC')]=npx_params(default_start,default_end,r'\\sd5\sd5\828758609_432512_20190225\828758609_432512_20190225_probeC',r'\\sd5\sd5\828758609_432512_20190225\828758609_432512_20190225_probeC')
-	#npx_directories[os.path.join(r'L:', '831882777_429857_20190304_probeF')]=npx_params(default_start,default_end,r'\\sd5\sd5\831882777_429857_20190304\831882777_429857_20190304_probeF',r'\\sd5\sd5\831882777_429857_20190304\831882777_429857_20190304_probeF')
-	#npx_directories[os.path.join(r'L:', '839557629_437660_20190320_probeC')]=npx_params(default_start,default_end,r'\\sd5\sd5\839557629_437660_20190320\839557629_437660_20190320_probeC',r'\\sd5\sd5\839557629_437660_20190320\839557629_437660_20190320_probeC')
+
+	npx_directories[os.path.join(r'J:', '757970808_412793_20180925_probeB')]=npx_params(default_start,default_end,r'\\sd4\SD4\757970808_412793_20180925\757970808_412793_20180925_probeB',r'\\sd4\SD4\757970808_412793_20180925\757970808_412793_20180925_probeB')
+	npx_directories[os.path.join(r'J:', '763673393_412803_20181015_probeE')]=npx_params(default_start,default_end,r'\\sd4\SD4\763673393_412803_20181015\763673393_412803_20181015_probeE',r'\\sd4\SD4\763673393_412803_20181015\763673393_412803_20181015_probeE')
+	npx_directories[os.path.join(r'J:', '814975952_418193_20190129_probeE')]=npx_params(default_start,default_end,r'\\sd5\sd5\814975952_418193_20190129\814975952_418193_20190129_probeE',r'\\sd5\sd5\814975952_418193_20190129\814975952_418193_20190129_probeE')
+	npx_directories[os.path.join(r'K:', '816200189_425599_20190131_probeB')]=npx_params(default_start,default_end,r'\\sd5\sd5\816200189_425599_20190131\816200189_425599_20190131_probeB',r'\\sd5\sd5\816200189_425599_20190131\816200189_425599_20190131_probeB')
+	npx_directories[os.path.join(r'K:', '828758609_432512_20190225_probeC')]=npx_params(default_start,default_end,r'\\sd5\sd5\828758609_432512_20190225\828758609_432512_20190225_probeC',r'\\sd5\sd5\828758609_432512_20190225\828758609_432512_20190225_probeC')
+	npx_directories[os.path.join(r'L:', '831882777_429857_20190304_probeF')]=npx_params(default_start,default_end,r'\\sd5\sd5\831882777_429857_20190304\831882777_429857_20190304_probeF',r'\\sd5\sd5\831882777_429857_20190304\831882777_429857_20190304_probeF')
+	npx_directories[os.path.join(r'L:', '839557629_437660_20190320_probeC')]=npx_params(default_start,default_end,r'\\sd5\sd5\839557629_437660_20190320\839557629_437660_20190320_probeC',r'\\sd5\sd5\839557629_437660_20190320\839557629_437660_20190320_probeC')
 	#npx_directories[os.path.join(r'L:', '826095427_430994_20190220_probeA')]=npx_params(default_start,default_end,default_backup1,None)
 	#npx_directories[os.path.join(r'L:', '826095427_430994_20190220_probeC')]=npx_params(default_start,default_end,default_backup1,None)
 

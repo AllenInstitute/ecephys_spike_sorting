@@ -36,7 +36,7 @@ def start_processing():
 	session_name = 'multiple'
 	print('checking readiness for '+session_name)
 	try:
-		check_ready_for_processing(session_name)
+		#check_ready_for_processing(session_name)
 		print('Processing npx for '+session_name)
 		p = multiprocessing.Process(target=process_npx, args=(session_name,))
 		#time.sleep(100)
@@ -54,23 +54,26 @@ def make_constants(session_name):
 
 	default_backup1 = r'T:'
 	default_backup2 = os.path.join(r'\\sd5\sd5', session_name)
-	default_start = 'depth_estimation'
-	default_end = 'cleanup'
+	default_start = 'kilosort_helper'
+	default_end = 'primary_backup_processed_data'
 	json_directory = r'C:\Users\svc_neuropix\Documents\json_files'
 
 	npx_directories = OrderedDict()
-	npx_directories[os.path.join(r'J:', '826765736_430993_20190221_probeA')]=npx_params(default_start,default_end,default_backup1,os.path.join(r'\\sd5\sd5', '826765736_430993_20190221'))
-	npx_directories[os.path.join(r'K:', '826765736_430993_20190221_probeB')]=npx_params(default_start,default_end,default_backup1,os.path.join(r'\\sd5\sd5', '826765736_430993_20190221'))
-	npx_directories[os.path.join(r'L:', '826765736_430993_20190221_probeC')]=npx_params(default_start,default_end,default_backup1,os.path.join(r'\\sd5\sd5', '826765736_430993_20190221'))
-	npx_directories[os.path.join(r'J:', '826095427_430994_20190220_probeA')]=npx_params(default_start,default_end,default_backup1,os.path.join(r'\\sd5\sd5', '826095427_430994_20190220'))
-	npx_directories[os.path.join(r'L:', '826095427_430994_20190220_probeC')]=npx_params('extract_from_npx',default_end,default_backup1,os.path.join(r'\\sd5\sd5', '826095427_430994_20190220'))
-
+	npx_directories[os.path.join(r'J:', '757970808_412793_20180925_probeB')]=npx_params(default_start,default_end,r'\\sd4\SD4\757970808_412793_20180925\757970808_412793_20180925_probeB',r'\\sd4\SD4\757970808_412793_20180925\757970808_412793_20180925_probeB')
+	npx_directories[os.path.join(r'J:', '763673393_412803_20181015_probeE')]=npx_params(default_start,default_end,r'\\sd4\SD4\763673393_412803_20181015\763673393_412803_20181015_probeE',r'\\sd4\SD4\763673393_412803_20181015\763673393_412803_20181015_probeE')
+	npx_directories[os.path.join(r'J:', '814975952_418193_20190129_probeE')]=npx_params(default_start,default_end,r'\\sd5\sd5\814975952_418193_20190129\814975952_418193_20190129_probeE',r'\\sd5\sd5\814975952_418193_20190129\814975952_418193_20190129_probeE')
+	npx_directories[os.path.join(r'K:', '816200189_425599_20190131_probeB')]=npx_params(default_start,default_end,r'\\sd5\sd5\816200189_425599_20190131\816200189_425599_20190131_probeB',r'\\sd5\sd5\816200189_425599_20190131\816200189_425599_20190131_probeB')
+	npx_directories[os.path.join(r'K:', '828758609_432512_20190225_probeC')]=npx_params(default_start,default_end,r'\\sd5\sd5\828758609_432512_20190225\828758609_432512_20190225_probeC',r'\\sd5\sd5\828758609_432512_20190225\828758609_432512_20190225_probeC')
+	npx_directories[os.path.join(r'L:', '831882777_429857_20190304_probeF')]=npx_params(default_start,default_end,r'\\sd5\sd5\831882777_429857_20190304\831882777_429857_20190304_probeF',r'\\sd5\sd5\831882777_429857_20190304\831882777_429857_20190304_probeF')
+	npx_directories[os.path.join(r'L:', '839557629_437660_20190320_probeC')]=npx_params(default_start,default_end,r'\\sd5\sd5\839557629_437660_20190320\839557629_437660_20190320_probeC',r'\\sd5\sd5\839557629_437660_20190320\839557629_437660_20190320_probeC')
+	#npx_directories[os.path.join(r'L:', '826095427_430994_20190220_probeA')]=npx_params(default_start,default_end,default_backup1,None)
+	#npx_directories[os.path.join(r'L:', '826095427_430994_20190220_probeC')]=npx_params(default_start,default_end,default_backup1,None)
 
 
 	######################################################################################
 
 	modules = [
-			   'primary_backup_raw_data',
+			   #'primary_backup_raw_data',
 			   'extract_from_npx',
 			   'depth_estimation',
 			   'edit_probe_json',
@@ -82,14 +85,14 @@ def make_constants(session_name):
 			   'copy_logs',
 			   'primary_backup_processed_data',
 			   #'secondary_backup_raw_data',
-			   'secondary_backup_processed_data',
+			   #'secondary_backup_processed_data',
 			   'cleanup'
 			   ]
 
 	copy_while_waiting_modules = [
 				'copy_while_waiting_primary',
 				#'copy_while_waiting_secondary_raw',
-				'copy_while_waiting_secondary_processed'
+				#'copy_while_waiting_secondary_processed'
 				]
 
 	no_process_modules = [
@@ -280,7 +283,12 @@ def process_npx(session_name):
 			session_id = os.path.basename(npx_directory)
 			input_json = os.path.join(json_directory, session_id + '_' + next_module + '-input.json')
 			output_json = os.path.join(json_directory, session_id + '_' + next_module +'-output.json')
-			info = createInputJson(input_json, npx_directory=npx_directory)
+			dir_name, file_name = os.path.split(npx_directory)
+			file_name = file_name+'_sorted'
+
+			extract_from = npx_directories[npx_directory].backup1
+			extract_to = os.path.join(dir_name, file_name)
+			info = createInputJson(input_json, npx_directory=extract_from, extracted_data_directory=extract_to)
 			command_string = ["python", "-m", "ecephys_spike_sorting.modules." + next_module, 
 									"--input_json", input_json,
 									"--output_json", output_json]
@@ -300,7 +308,7 @@ def process_npx(session_name):
 		elif module == 'primary_backup_processed_data' or module == 'copy_while_waiting_primary':
 			extracted_data_location = info['directories']['extracted_data_directory']
 			drive = npx_directories[npx_directory].backup1
-			new_location = os.path.join(drive, os.path.basename(extracted_data_location))
+			new_location = drive#os.path.join(drive, os.path.basename(extracted_data_location))
 			copy_data(extracted_data_location,new_location, npx_directory,module)
 		elif module == 'secondary_backup_raw_data' or module == 'copy_while_waiting_secondary_raw':
 			drive = npx_directories[npx_directory].backup2
@@ -317,16 +325,16 @@ def process_npx(session_name):
 			no_returncode(npx_directory,module,  rcode_in = int(not(dir_sucess)))
 		elif module == 'extract_from_npx':
 			try:
-				recording_size = sum(os.path.getsize(os.path.join(npx_directory,recording)) for recording in os.listdir(npx_directory))
-				backup_location = os.path.join(npx_directories[npx_directory].backup1,os.path.basename(npx_directory))
-				backup_size = sum(os.path.getsize(os.path.join(backup_location,recording)) for recording in os.listdir(npx_directory))
-				if not recording_size == backup_size:
-					raise ValueError('One of the backups failed')
-				else:
-					process_dict[npx_directory].append(subprocess.Popen(command_string, stdout = subprocess.PIPE,stderr = subprocess.PIPE))
+				#recording_size = sum(os.path.getsize(os.path.join(npx_directory,recording)) for recording in os.listdir(npx_directory))
+				#backup_location = os.path.join(npx_directories[npx_directory].backup1,os.path.basename(npx_directory))
+				#backup_size = sum(os.path.getsize(os.path.join(backup_location,recording)) for recording in os.listdir(npx_directory))
+				#if False:#not recording_size == backup_size:
+				#	raise ValueError('One of the backups failed')
+				#else:
+				process_dict[npx_directory].append(subprocess.Popen(command_string, stdout = subprocess.PIPE,stderr = subprocess.PIPE))
 			except Exception as E:
 				logger_dict[npx_directory].exception("Unable to verify raw backup of "+ npx_directory+" before extracting. If verification is not needed comment out this portion of the script")
-				raise(E)
+				#raise(E)
 		elif module == 'edit_probe_json':
 			serial_number = edit_probe_json(npx_directory)
 			if serial_number == None:

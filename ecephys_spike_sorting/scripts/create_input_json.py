@@ -16,6 +16,7 @@ def create_samba_directory(samba_server, samba_share):
 
 def createInputJson(output_file, 
                     npx_directory=None, 
+                    continuous_file = None,
                     extracted_data_directory=None,
                     kilosort_output_directory=None, 
                     kilosort_output_tmp=None, 
@@ -32,7 +33,7 @@ def createInputJson(output_file,
     else:
         acq_system = 'PXI'
         reference_channels = [191]
-        
+
     if npx_directory is not None:
         settings_xml = os.path.join(npx_directory, 'settings.xml')
         if extracted_data_directory is None:
@@ -40,10 +41,14 @@ def createInputJson(output_file,
         probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
         settings_json = os.path.join(extracted_data_directory, 'open-ephys.json')
     else:
-        settings_xml = None
-        settings_json = None
-        probe_json = None
-        if extracted_data_directory is None:
+        if extracted_data_directory is not None:
+            probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
+            settings_json = os.path.join(extracted_data_directory, 'open-ephys.json')
+            settings_xml = None
+        else:
+            settings_xml = None
+            settings_json = None
+            probe_json = None
             extracted_data_directory = kilosort_output_directory
 
     if kilosort_output_directory is None:
@@ -51,6 +56,9 @@ def createInputJson(output_file,
 
     if kilosort_output_tmp is None:
         kilosort_output_tmp = kilosort_output_directory
+
+    if continuous_file is None:
+        continuous_file = os.path.join(kilosort_output_directory, 'continuous.dat')
 
     dictionary = \
     {
@@ -77,15 +85,16 @@ def createInputJson(output_file,
             "num_channels" : 384,
             "reference_channels" : reference_channels,
             "vertical_site_spacing" : 10e-6,
-            "ap_band_file" : os.path.join(kilosort_output_directory, 'continuous.dat'),
-            "lfp_band_file" : os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.1', 'continuous.dat')
+            "ap_band_file" : continuous_file,
+            "lfp_band_file" : os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.1', 'continuous.dat'),
+            "reorder_lfp_channels" : probe_type == '3A'
         }, 
 
         "extract_from_npx_params" : {
             "npx_directory": npx_directory,
             "settings_xml": settings_xml,
-            "npx_extractor_executable": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\npxextractor\\Release\\NpxExtractor.exe",
-            "npx_extractor_repo": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\npxextractor",
+            "npx_extractor_executable": r"C:\Users\svc_neuropix\Documents\GitHub\open-ephys\Tools\NpxExtractor\NpxExtractor.exe",
+            "npx_extractor_repo": r"C:\Users\svc_neuropix\Documents\GitHub\open-ephys"
         },
 
         "depth_estimation_params" : {
@@ -98,10 +107,12 @@ def createInputJson(output_file,
             "diff_thresh" : -0.06,
             "freq_range" : [0, 10],
             "max_freq" : 150,
-            "channel_range" : [370, 380],
-            "n_passes" : 1,
+            "channel_range" : [374, 384],
+            "n_passes" : 10,
             "air_gap" : 100,
-            "skip_s_per_pass" : 1000
+            "time_interval" : 5,
+            "skip_s_per_pass" : 100,
+            "start_time" : 150
         }, 
 
         "median_subtraction_params" : {
@@ -161,7 +172,10 @@ def createInputJson(output_file,
             "max_spikes_for_unit" : 500,
             "max_spikes_for_nn" : 10000,
             "n_neighbors" : 4,
-            "quality_metrics_output_file" : os.path.join(kilosort_output_tmp, "new_metrics.csv")
+            'n_silhouette' : 10000,
+            "quality_metrics_output_file" : os.path.join(kilosort_output_tmp, "new_metrics.csv"),
+            "drift_metrics_interval_s" : 51,
+            "drift_metrics_min_spikes_per_interval" : 10
         }
 
     }
