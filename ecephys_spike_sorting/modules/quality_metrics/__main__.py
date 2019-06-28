@@ -21,7 +21,7 @@ def calculate_quality_metrics(args):
     print("Loading data...")
 
     try:
-        spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality, pc_features, pc_feature_ind = \
+        spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, clusterIDs, cluster_quality, pc_features, pc_feature_ind = \
                 load_kilosort_data(args['directories']['kilosort_output_directory'], \
                     args['ephys_params']['sample_rate'], \
                     use_master_clock = False,
@@ -40,8 +40,10 @@ def calculate_quality_metrics(args):
 
     output_file = args['quality_metrics_params']['quality_metrics_output_file']
 
-    #waveform_metrics = np.load(args['waveform_metrics']['waveforms_metrics_file'])
-    # join waveform metrics and quality metrics dataframes
+    if os.path.exists(args['waveform_metrics']['waveform_metrics_file']):
+        metrics = metrics.merge(pd.read_csv(args['waveform_metrics']['waveform_metrics_file'], index_col=0),
+                     on='cluster_id',
+                     suffixes=('_quality_metrics','_waveform_metrics'))
 
     print("Saving data...")
     metrics.to_csv(output_file)
