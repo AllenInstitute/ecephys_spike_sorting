@@ -16,8 +16,8 @@ import os
 matplotlib.use('QT5Agg')
 
 
-categories = ['good', 'noise1', 'noise2', 'noise3', 'noise4','noise5']
-colors = ['black', 'gray', 'red', 'purple', 'orange', 'teal']
+categories = ['good', 'noise1', 'noise2', 'noise3', 'noise4','noise5', 'noise6', 'noise7']
+colors = ['black', 'gray', 'red', 'purple', 'orange', 'teal', 'brown', 'magenta']
 
 
 def get_channel_location(channel, is3b = False):
@@ -137,16 +137,16 @@ class App(QWidget):
             self.change_label(2)
         elif e.key() == Qt.Key_D: # noise3
             self.change_label(3)
-        elif e.key() == Qt.Key_F: # noise4
+        elif e.key() == Qt.Key_Q: # noise4
             self.change_label(4)
         elif e.key() == Qt.Key_M: # noise5
-            self.change_label(5)
+             self.change_label(5)
+        elif e.key() == Qt.Key_V: # noise6
+            self.change_label(6)
+        elif e.key() == Qt.Key_W: # noise7
+            self.change_label(7)
         elif e.key() == Qt.Key_G: # good
             self.change_label(0)
-        elif e.key() == Qt.Key_S:
-            self.save_data()
-        elif e.key() == Qt.Key_O:
-            self.load_data()
 
     def move_forward(self):
         if self.data_loaded:

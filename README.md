@@ -41,7 +41,9 @@ Further documentation can be found in each module's README file. For more inform
 
 ## Installation and Usage
 
-These modules require **Python 3.5+**, and have been tested with Python 3.5, 3.6, and 3.7. 
+These modules require **Python 3.5+**, and have been tested with Python 3.5, 3.6, and 3.7.
+
+Three of the modules (`extract_from_npx`, `median_subtraction`, and `kilosort_helper`) have non-Python dependencies that will need to be installed prior to use.
 
 We recommend using [pipenv](https://github.com/pypa/pipenv) to run these modules. From the `ecephys_spike_sorting` top-level directory, run the following commands from a terminal:
 
@@ -117,7 +119,7 @@ To leave the pipenv virtual environment, simply type:
 
 ## Level of Support
 
-This code is an important part of the internal Allen Institute code base and we are actively using and maintaining it. Issues are encouraged, but because this tool is so central to our mission, pull requests might not be accepted if they conflict with our existing plans.
+This code is an important part of the internal Allen Institute code base and we are actively using and maintaining it. The implementation is not yet finalized, so we welcome feedback about any aspects of the software. If you'd like to submit changes to this repository, we encourage you to create an issue beforehand, so we know what others are working on.
 
 
 ## Terms of Use

@@ -73,7 +73,7 @@ for idx, npx_directory in enumerate(npx_directories):
 
 				info = createInputJson(input_json, npx_directory=npx_directory)
 
-				command_string = ["python", "-m", "ecephys_spike_sorting.modules." + module, 
+				command_string = ["python", "-W", "ignore", "-m", "ecephys_spike_sorting.modules." + module, 
 							"--input_json", input_json,
 				            "--output_json", output_json]
 

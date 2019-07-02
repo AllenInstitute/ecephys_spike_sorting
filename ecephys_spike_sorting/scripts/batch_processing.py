@@ -55,9 +55,10 @@ for directory in sorted_directories:
 				# 'quality_metrics']
 				]
 
+
 	for module in modules:
 
-		command = "python -m ecephys_spike_sorting.modules." + module + " --input_json " + input_json \
+		command = "python -W ignore -m ecephys_spike_sorting.modules." + module + " --input_json " + input_json \
 		          + " --output_json " + output_json
 
 		subprocess.check_call(command.split(' '))

@@ -44,7 +44,7 @@ def calculate_waveform_metrics(waveforms,
     site_range : float
         Number of sites to use for 2D waveform metrics
     site_spacing : float
-        Vertical distance between sites (m)
+        Average vertical distance between sites (m)
     epoch_name : str
         Name of epoch for which these waveforms originated
 
@@ -60,13 +60,13 @@ def calculate_waveform_metrics(waveforms,
     mean_2D_waveform = np.squeeze(np.nanmean(waveforms[:, channel_map, :], 0))
     local_peak = np.argmin(np.abs(channel_map - peak_channel))
 
-    num_samples = mean_2D_waveform.shape[1]
+    num_samples = waveforms.shape[2]
     new_sample_count = int(num_samples * upsampling_factor)
 
     mean_1D_waveform = resample(
-        mean_2D_waveform[peak_channel, :], new_sample_count)
+        mean_2D_waveform[local_peak, :], new_sample_count)
 
-    timestamps = np.linspace(0, len(mean_1D_waveform) / sample_rate, new_sample_count)
+    timestamps = np.linspace(0, num_samples / sample_rate, new_sample_count)
 
     duration = calculate_waveform_duration(mean_1D_waveform, timestamps)
     halfwidth = calculate_waveform_halfwidth(mean_1D_waveform, timestamps)
@@ -142,7 +142,11 @@ def calculate_waveform_duration(waveform, timestamps):
     trough_idx = np.argmin(waveform)
     peak_idx = np.argmax(waveform)
 
-    duration = np.abs(timestamps[peak_idx] - timestamps[trough_idx])
+    # to avoid detecting peak before trough
+    if waveform[peak_idx] > np.abs(waveform[trough_idx]):
+        duration =  timestamps[peak_idx:][np.where(waveform[peak_idx:]==np.min(waveform[peak_idx:]))[0][0]] - timestamps[peak_idx] 
+    else:
+        duration =  timestamps[trough_idx:][np.where(waveform[trough_idx:]==np.max(waveform[trough_idx:]))[0][0]] - timestamps[trough_idx] 
 
     return duration * 1e3
 
@@ -180,13 +184,13 @@ def calculate_waveform_halfwidth(waveform, timestamps):
             thresh_crossing_2 = np.min(
                 np.where(waveform[trough_idx:] > threshold)[0]) + trough_idx
 
-        halfwidth = (timestamps[thresh_crossing_2] - timestamps[thresh_crossing_1]) * 1e3
+        halfwidth = (timestamps[thresh_crossing_2] - timestamps[thresh_crossing_1]) 
 
     except ValueError:
 
         halfwidth = np.nan
 
-    return halfwidth 
+    return halfwidth * 1e3
 
 
 def calculate_waveform_PT_ratio(waveform):
@@ -277,15 +281,15 @@ def calculate_waveform_recovery_slope(waveform, timestamps, window=20):
 # ==========================================================
 
 
-def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold = 0.12, site_range=16, site_spacing=20e-6):
+def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold = 0.12, site_range=16, site_spacing=10e-6):
     
     """ 
     Compute features of 2D waveform (channels x samples)
 
     Inputs:
     ------
-    waveform : numpy.ndarray (N samples x M channels)
-    timestamps : numpy.ndarray (N samples)
+    waveform : numpy.ndarray (N channels x M samples)
+    timestamps : numpy.ndarray (M samples)
     peak_channel : int
     spread_threshold : float
     site_range: int
@@ -295,7 +299,7 @@ def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold =
     --------
     amplitude : uV
     spread : um
-    velocity_above : s / m 
+    velocity_above : s / m
     velocity_below : s / m
 
     """
@@ -304,23 +308,25 @@ def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold =
 
     sites_to_sample = np.arange(-site_range, site_range+1, 2) + peak_channel
 
+    sites_to_sample = sites_to_sample[(sites_to_sample > 0) * (sites_to_sample < waveform.shape[0])]
+
     wv = waveform[sites_to_sample, :]
 
-    smoothed_waveform = np.zeros((wv.shape[0]-1,wv.shape[1]))
+    #smoothed_waveform = np.zeros((wv.shape[0]-1,wv.shape[1]))
+    #for i in range(wv.shape[0]-1):
+    #    smoothed_waveform[i,:] = np.mean(wv[i:i+2,:],0)
 
-    for i in range(site_range-1):
-        smoothed_waveform[i,:] = np.mean(wv[i:i+2,:],0)
+    trough_idx = np.argmin(wv, 1)
+    trough_amplitude = np.min(wv, 1)
 
-    trough_idx = np.argmin(smoothed_waveform,1)
-    trough_amplitude = np.min(smoothed_waveform,1)
-
-    peak_idx = np.argmax(smoothed_waveform,1)
-    peak_amplitude = np.max(smoothed_waveform,1)
+    peak_idx = np.argmax(wv, 1)
+    peak_amplitude = np.max(wv, 1)
 
     duration = np.abs(timestamps[peak_idx] - timestamps[trough_idx])
 
     overall_amplitude = peak_amplitude - trough_amplitude
     amplitude = np.max(overall_amplitude)
+    max_chan = np.argmax(overall_amplitude)
 
     points_above_thresh = np.where(overall_amplitude > (amplitude * spread_threshold))[0]
     
@@ -329,10 +335,10 @@ def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold =
 
     spread = len(points_above_thresh) * site_spacing * 1e6
 
-    channels = sites_to_sample[:-1] - peak_channel
+    channels = sites_to_sample - peak_channel
     channels = channels[points_above_thresh]
 
-    trough_times = timestamps[trough_idx] - timestamps[trough_idx[int(site_range/2)]]
+    trough_times = timestamps[trough_idx] - timestamps[trough_idx[max_chan]]
     trough_times = trough_times[points_above_thresh]
 
     velocity_above, velocity_below = get_velocity(channels, trough_times, site_spacing)
@@ -347,7 +353,7 @@ def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold =
 # ==========================================================
 
 
-def get_velocity(channels, times, distance_between_channels = 20e-6):
+def get_velocity(channels, times, distance_between_channels = 10e-6):
     
     """
     Calculate slope of trough time above and below soma.
@@ -364,9 +370,9 @@ def get_velocity(channels, times, distance_between_channels = 20e-6):
     Outputs:
     --------
     velocity_above : float
-        Velocity of spike propagation above the soma (channels / s)
+        Inverse of velocity of spike propagation above the soma (s / m)
     velocity_below : float
-        Velocity of spike propagation below the soma (channels / s)
+        Inverse of velocity of spike propagation below the soma (s / m)
 
     """
 

@@ -14,7 +14,7 @@ def run_automerging(args):
 
     start = time.time()
     
-    spike_times, spike_clusters, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
+    spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
         load_kilosort_data(args['directories']['kilosort_output_directory'], \
             args['ephys_params']['sample_rate'], \
             convert_to_seconds = True)
@@ -26,8 +26,8 @@ def run_automerging(args):
 
     execution_time = time.time() - start
 
-    print('total time: ' + str(execution_time) + ' seconds')
-    print( )
+    print('total time: ' + str(np.around(execution_time,2)) + ' seconds')
+    print()
     
     return {"execution_time" : execution_time} # output manifest
 
