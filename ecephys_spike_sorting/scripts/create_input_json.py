@@ -35,7 +35,7 @@ def createInputJson(output_file,
     if npx_directory is not None:
         settings_xml = os.path.join(npx_directory, 'settings.xml')
         if extracted_data_directory is None:
-            extracted_data_directory = npx_directory + '_sorted'
+            extracted_data_directory = npx_directory # + '_sorted'
         probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
         settings_json = os.path.join(extracted_data_directory, 'open-ephys.json')
     else:
