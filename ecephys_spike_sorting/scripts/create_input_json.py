@@ -155,7 +155,7 @@ def createInputJson(output_file,
             "samples_per_spike" : 82,
             "pre_samples" : 20,
             "num_epochs" : 1,
-            "spikes_per_epoch" : 500,
+            "spikes_per_epoch" : 1000,
             "spread_threshold" : 0.12,
             "site_range" : 16
         },
