@@ -346,9 +346,10 @@ def get_spike_depths(spike_clusters, pc_features, pc_feature_ind):
 
     """
 
-    pc_features = np.squeeze(pc_features[:,0,:])
-    pc_features[pc_features < 0] = 0
-    pc_power = pow(pc_features,2)
+    pc_features_copy = np.copy(pc_features)
+    pc_features_copy = np.squeeze(pc_features_copy[:,0,:])
+    pc_features_copy[pc_features_copy < 0] = 0
+    pc_power = pow(pc_features_copy, 2)
 
     spike_feat_ind = pc_feature_ind[spike_clusters, :]
     spike_depths = np.sum(spike_feat_ind * pc_power, 1) / np.sum(pc_power,1)
