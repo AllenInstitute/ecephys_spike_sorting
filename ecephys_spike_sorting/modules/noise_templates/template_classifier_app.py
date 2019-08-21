@@ -152,10 +152,7 @@ class App(QWidget):
     def move_forward(self):
         if self.data_loaded:
             self.unit_idx = np.min([self.unit_idx + 1, len(self.unit_list)-1])
-
-            if self.unit_idx == len(self.unit_list) - 1:
-                self.save_data()
-
+            
             self.plot_data()
 
     def move_back(self):
@@ -173,6 +170,8 @@ class App(QWidget):
             
             self.ratings[self.unit_idx] = mapping[self.category_key][1]
             self.colors[self.unit_idx] = mapping[self.category_key][2]
+
+            self.save_data()
             
             self.plot_data()
 
