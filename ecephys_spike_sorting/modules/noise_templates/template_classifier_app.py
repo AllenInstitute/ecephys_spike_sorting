@@ -19,7 +19,7 @@ mapping = {
             Qt.Key_O : (1, 'one channel', 'red'),
             Qt.Key_X : (2, 'symmetric multiple spikes', 'orange'),
             Qt.Key_Z : (3, 'symmetric one spike', 'magenta'),
-            Qt.Key_A : (4, 'asymmetric, non-propagating', 'darkbrown'),
+            Qt.Key_A : (4, 'asymmetric, non-propagating', 'darkgreen'),
             Qt.Key_D : (5, 'divided', 'brown'),
             Qt.Key_M : (6, 'multi-spike', 'teal'),
             Qt.Key_W : (7, 'multiple sharp peaks', 'green'),
