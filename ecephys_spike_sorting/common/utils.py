@@ -143,7 +143,7 @@ def read_probe_json(input_file):
     return mask, offset, scaling, surface_channel, air_channel
 
 
-def write_cluster_group_tsv(IDs, quality, output_directory):
+def write_cluster_group_tsv(IDs, quality, output_directory, filename = 'cluster_group.tsv'):
 
     """
     Writes a tab-separated cluster_group.tsv file
@@ -167,7 +167,7 @@ def write_cluster_group_tsv(IDs, quality, output_directory):
     
     print('Saving data...')
     
-    df.to_csv(os.path.join(output_directory, 'cluster_group.tsv'), sep='\t', index=False)
+    df.to_csv(os.path.join(output_directory, filename), sep='\t', index=False)
 
 
 def read_cluster_group_tsv(filename):

@@ -5,6 +5,7 @@ from ...common.schemas import EphysParams, Directories
 
 class NoiseWaveformParams(DefaultSchema):
 	classifier_path = String(required=True, help='Path to pre-trained waveform classifier')
+    
 
 class InputParameters(ArgSchema):
     

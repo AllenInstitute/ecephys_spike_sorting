@@ -21,13 +21,16 @@ def classify_noise_templates(args):
                 args['ephys_params']['sample_rate'], \
                 convert_to_seconds = True)
 
-    cluster_ids, is_noise = id_noise_templates(cluster_ids, templates, channel_map, \
+    cluster_ids, is_noise = id_noise_templates(cluster_ids, templates, np.squeeze(channel_map), \
         args['noise_waveform_params'])
 
     mapping = {False: 'good', True: 'noise'}
     labels = [mapping[value] for value in is_noise]
 
-    write_cluster_group_tsv(cluster_ids, labels, args['directories']['kilosort_output_directory'])
+    write_cluster_group_tsv(cluster_ids, 
+                            labels, 
+                            args['directories']['kilosort_output_directory'], 
+                            args['ephys_params']['cluster_group_file_name'])
     
     execution_time = time.time() - start
 

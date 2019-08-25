@@ -87,7 +87,8 @@ def createInputJson(output_file,
             "vertical_site_spacing" : 10e-6,
             "ap_band_file" : continuous_file,
             "lfp_band_file" : os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.1', 'continuous.dat'),
-            "reorder_lfp_channels" : probe_type == '3A'
+            "reorder_lfp_channels" : probe_type == '3A',
+            "cluster_group_file_name" : 'cluster_group.tsv.v2'
         }, 
 
         "extract_from_npx_params" : {
