@@ -162,22 +162,8 @@ def write_cluster_group_tsv(IDs, quality, output_directory):
     cluster_group.tsv (written to disk)
 
     """
-
-    cluster_quality = []
-    cluster_index = []
-    
-    for idx, ID in enumerate(IDs):
-        
-        cluster_index.append(ID)
-        
-        if quality[idx] == 0:
-            cluster_quality.append('unsorted')
-        elif quality[idx] == 1:
-            cluster_quality.append('good')
-        else:
-            cluster_quality.append('noise')
        
-    df = pd.DataFrame(data={'cluster_id' : cluster_index, 'group': cluster_quality})
+    df = pd.DataFrame(data={'cluster_id' : IDs, 'group': quality})
     
     print('Saving data...')
     

@@ -66,91 +66,91 @@ def id_noise_templates_rf(spike_times, spike_clusters, cluster_ids, templates, p
     
 
 
-def id_noise_templates(spike_times, spike_clusters, cluster_ids, templates, params):
+def id_noise_templates(cluster_ids, templates, channel_map, params):
 
     """
     Uses a set of heuristics to identify noise units based on waveform shape
 
     Inputs:
     -------
-    spike_times : spike times (in seconds)
-    spike_clusters : cluster IDs for each spike time []
     cluster_ids : all unique cluster ids
     templates : template for each unit output by Kilosort
+    channel_map : mapping between template channels and actual probe channels
 
     Outputs:
     -------
     cluster_ids : same as input
     is_noise : numpy array with -1 for noise, 0 otherwise
 
-    Parameters:
-    ----------
-    std_thresh : 
-    waveform_spread :
-    thresh2 :
+    """
+
+    is_noise = np.zeros((templates.shape[0],),dtype='bool')
+
+    is_noise += check_template_spread(templates, channel_map, params)
+    is_noise += check_template_spatial_peaks(templates, channel_map, params)
+    is_noise += check_template_temporal_peaks(templates, channel_map, params)
+   
+    return cluster_ids, is_noise[cluster_ids]
+    
+
+def check_template_spread(templates, channel_map, params):
 
     """
-    
-    # #############################################
+    Checks templates for abnormally large or small channel spread
 
-    std_thresh = params['std_thresh']
-    waveform_spread = int(params['waveform_spread']/2)
-    thresh2 = params['thresh2']
+    Inputs:
+    -------
+    templates : template for each unit output by Kilosort
+    channel_map : mapping between template channels and actual probe channels
 
-    # #############################################
+    Outputs:
+    -------
+    is_noise : boolean array, True at index of noise templates
 
-    auto_noise = np.zeros(cluster_ids.shape,dtype=bool)
+    Parameters:
+    ----------
+    """
 
-    peak_channels = np.squeeze(np.argmax(np.max(templates,1) - np.min(templates,1),1))
+    return np.zeros((templates.shape[0],),dtype='bool')
 
-    for idx, clusterID in enumerate(cluster_ids):
-    
-        for_this_cluster = (spike_clusters == clusterID)
-    
-        template = templates[clusterID,:,:]
-        
-        times = spike_times[for_this_cluster]
 
-        if times.size > 0:
+def check_template_spatial_peaks(templates, channel_map, params):
 
-            depth = peak_channels[idx]
+    """
+    Checks templates for multiple spatial peaks
 
-            min_chan = np.max([0, depth-waveform_spread])
-            max_chan = np.min([depth+waveform_spread, template.shape[1]])
+    Inputs:
+    -------
+    templates : template for each unit output by Kilosort
+    channel_map : mapping between template channels and actual probe channels
 
-            S = np.std(template[:,min_chan:max_chan],1)
-            
-            wv = template[:,depth]
+    Outputs:
+    -------
+    is_noise : boolean array, True at index of noise templates
 
-            C = correlate(wv,wv,mode='same')
+    Parameters:
+    ----------
+    """
 
-            if np.max(C) > 0:
-                C = C/np.max(C)
-            
-            a = np.where(C > thresh2)[0]
-            d = np.diff(a)
-            b = np.where(d > 1)[0]
+    return np.zeros((templates.shape[0],),dtype='bool')
 
-            b = [ ]
-                
-            h, bins = np.histogram(np.diff(times), bins=np.linspace(0,0.1,100))
 
-            if np.max(h) > 0 and np.max(h) != np.nan:
-                h = h/np.max(h)
-                H = np.mean(h[:3])/np.max(h)
-            else:
-                H = 0
-            
-            if ((np.max(S) < std_thresh or \
-                np.argmax(wv) < params['min_peak_sample'] or \
-                np.argmin(wv) < params['min_trough_sample']) and \
-                 H > params['contamination_ratio']) or \
-                 len(b) > 0 or \
-                 np.min(wv) > params['min_height']:
-                auto_noise[idx] = True;
+def check_template_temporal_peaks(templates, channel_map, params):
 
-    is_noise = np.zeros(auto_noise.shape)
-    is_noise[auto_noise] = -1
-    
-    return cluster_ids, is_noise
-    
+    """
+    Checks templates for multiple or abnormal temporal peaks
+
+    Inputs:
+    -------
+    templates : template for each unit output by Kilosort
+    channel_map : mapping between template channels and actual probe channels
+
+    Outputs:
+    -------
+    is_noise : boolean array, True at index of noise templates
+
+    Parameters:
+    ----------
+    """
+
+    return np.zeros((templates.shape[0],),dtype='bool')

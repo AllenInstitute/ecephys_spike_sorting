@@ -33,6 +33,17 @@ mapping = {
             Qt.Key_G : (0, 'good', 'black')
         }
 
+def get_colors(ratings):
+
+    colors = []
+    for r in ratings:
+        for k in mapping.keys():
+            if mapping[k][1] == r:
+                colors.append(mapping[k][2])
+
+    return colors
+
+
 def get_channel_location(channel, is3b = False):
 
     """
@@ -126,14 +137,14 @@ class App(QWidget):
         save_button.clicked.connect(self.save_data)
 
         load_button = QPushButton('Load', self)
-        load_button.setToolTip('Save ratings as CSV')
+        load_button.setToolTip('Load data directory')
         grid.addWidget(load_button,6,4)
         load_button.clicked.connect(self.load_data)
 
         self.category_key = Qt.Key_G
 
         self.unit_idx = 0
-        self.current_directory = '/mnt/md0/data'
+        self.current_directory = '/mnt/sd5.3/RE-SORT'
 
         self.data_loaded = False
 
@@ -203,8 +214,13 @@ class App(QWidget):
 
                 self.output_file = os.path.join(fname, 'template_ratings_new.csv')
 
-                self.ratings = ['good'] * len(self.unit_list)
-                self.colors = ['black'] * len(self.unit_list)
+                if os.path.exists(self.output_file):
+                    info = pd.read_csv(self.output_file)
+                    self.ratings = info['rating']
+                    self.colors = get_colors(self.ratings)
+                else:
+                    self.ratings = ['good'] * len(self.unit_list)
+                    self.colors = ['black'] * len(self.unit_list)
 
                 self.peak_channels = np.argmin(np.min(self.templates,1),1)
 
