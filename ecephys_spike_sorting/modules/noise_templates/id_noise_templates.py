@@ -8,6 +8,9 @@ from scipy.ndimage.filters import gaussian_filter1d
 
 from ...common.utils import printProgressBar
 
+import multiprocessing
+from functools import partial
+
 import pickle
 
 def id_noise_templates_rf(spike_times, spike_clusters, cluster_ids, templates, params):
@@ -132,15 +135,15 @@ def check_template_spread(templates, channel_map, params):
     for i in range(templates.shape[0]):
         MM = np.max(np.abs(templates[i,:,:]),0)
         MM = MM / np.max(MM)
-        MMF = gaussian_filter1d(MM,2)
+        MMF = gaussian_filter1d(MM, params['smoothed_template_filter_width'])
 
-        spread1 = np.sum(MMF > 0.2)
-        spread2 = np.sum(MM > 0.2)
+        spread1 = np.sum(MMF > params['smoothed_template_amplitude_threshold'])
+        spread2 = np.sum(MM > params['template_amplitude_threshold'])
 
-        if (spread1 <= 20):
-            is_noise.append(spread2 < 2)
-        elif spread1 > 20 and spread1 < 30:
-            is_noise.append(check_template_shape(templates[i,:,:]))
+        if (spread1 <= params['mid_spread_threshold']):
+            is_noise.append(spread2 < params['min_spread_threshold'])
+        elif spread1 > params['mid_spread_threshold'] and spread1 <= params['max_spread_threshold']:
+            is_noise.append(check_template_shape(templates[i,:,:], params))
         else:
             is_noise.append(True)
 
@@ -167,36 +170,39 @@ def check_template_spatial_peaks(templates, channel_map, params):
 
     is_noise = []
 
-    for i in range(templates.shape[0]):
-
-        printProgressBar(i+1, templates.shape[0])
-
-        template = templates[i,:,:]
-        
-        peak_channel = np.argmax((np.max(template,0) - np.min(template,0)))
-        peak_index = np.argmax((np.max(template,1) - np.min(template,1)))
-
-        temp = interpolate_template(template, channel_map)
-        
-        peak_waveform = temp[peak_index,:,1:6]
-        pw = peak_waveform.flatten()
-        si = np.sign(pw[np.argmax(np.abs(pw))])
-
-        peak_locs = []
-        
-        for x in range(5):
-            D = peak_waveform[:,x]
-            if np.max(np.abs(D)) >= np.max(np.abs(peak_waveform)) * 0.25:
-                D = D * si
-                D = D / np.max(np.abs(D))
-                p, _ = find_peaks(D, height = 0.2, prominence = 0.2)
-                peaks_in_range = p[(p > (channel_map[peak_channel] - 24)) * \
-                    (p < (channel_map[peak_channel] + 24))]
-                peak_locs.extend(list(peaks_in_range))
-   
-        is_noise.append(np.std(peak_locs) > 3.5)
+    pool = multiprocessing.Pool(np.min([params['multiprocessing_worker_count'],multiprocessing.cpu_count()]))
+    is_noise = pool.map(partial(template_spatial_peaks, templates, channel_map, params), 
+                        np.arange(templates.shape[0]))
 
     return np.array(is_noise)
+
+
+def template_spatial_peaks(templates, channel_map, params, index):
+
+    template = templates[index,:,:]
+        
+    peak_channel = np.argmax((np.max(template,0) - np.min(template,0)))
+    peak_index = np.argmax((np.max(template,1) - np.min(template,1)))
+
+    temp = interpolate_template(template, channel_map)
+    
+    peak_waveform = temp[peak_index,:,1:6]
+    pw = peak_waveform.flatten()
+    si = np.sign(pw[np.argmax(np.abs(pw))])
+
+    peak_locs = []
+    
+    for x in range(peak_waveform.shape[1]):
+        D = peak_waveform[:,x]
+        if np.max(np.abs(D)) >= np.max(np.abs(peak_waveform)) * params['channel_amplitude_thresh']:
+            D = D * si
+            D = D / np.max(np.abs(D))
+            p, _ = find_peaks(D, height = params['peak_height_thresh'], prominence = params['peak_prominence_thresh'])
+            peaks_in_range = p[(p > (channel_map[peak_channel] - params['peak_channel_range'])) * \
+                (p < (channel_map[peak_channel] + params['peak_channel_range']))]
+            peak_locs.extend(list(peaks_in_range))
+
+    return (np.std(peak_locs) > params['peak_locs_std_thresh'])
 
 
 def check_template_temporal_peaks(templates, channel_map, params):
@@ -219,13 +225,14 @@ def check_template_temporal_peaks(templates, channel_map, params):
 
     peak_indices = np.argmax((np.max(templates,2) - np.min(templates,2)), 1)
 
-    is_noise = (peak_indices < 10) + (peak_indices > 30)
+    is_noise = (peak_indices < params['min_temporal_peak_location']) \
+               + (peak_indices > params['max_temporal_peak_location'])
 
     return is_noise
 
 
 
-def check_template_shape(template):
+def check_template_shape(template, params):
 
     """
     Check shape of templates with large spread
@@ -242,11 +249,16 @@ def check_template_shape(template):
     ----------
     """
 
-    T2 = np.zeros((template.shape[0], 7))
+    channels_to_use = np.arange(-params['template_shape_channel_range'],
+                                params['template_shape_channel_range']+1,
+                                4)
+
+    T2 = np.zeros((template.shape[0], channels_to_use.size))
+    T2[:] = np.nan
 
     peak_channel = np.argmax((np.max(template,0) - np.min(template,0)))
 
-    for ii,i in enumerate(range(-12,13,4)):
+    for ii,i in enumerate(channels_to_use):
         try:
             T = template[:,peak_channel+i]
         except IndexError:
@@ -254,17 +266,23 @@ def check_template_shape(template):
         else:
             T2[:,ii] = T / np.max(np.abs(T))
 
-    T3 = T2 - np.tile(T2[:,3],(7,1)).T
-    T4 = np.mean(T3,1)
-    widths = np.arange(1,61,2)
-    cwtmatr = cwt(T4, ricker, widths)
-    T5 = cwtmatr[2,:]
-    a = np.argmax(T5)
-    b = np.max(T5)
-    if b > 0.0 and ((a > 15) and (a < 25)):
-        return False
+    T3 = T2 - np.tile(T2[:,int(np.floor(channels_to_use.size/2))],
+                      (channels_to_use.size,1)
+                      ).T
+    T4 = np.nanmean(T3,1)
+    cwtmatr = cwt(T4, ricker, np.arange(1,template.shape[0],2))
+    T5 = cwtmatr[params['wavelet_index'],:]
+    wavelet_peak_loc = np.argmax(T5)
+    wavelet_peak_height = np.max(T5)
+
+    if wavelet_peak_height > params['min_wavelet_peak_height'] and \
+       wavelet_peak_loc > params['min_wavelet_peak_loc'] and \
+       wavelet_peak_loc < params['max_wavelet_peak_loc']:
+        is_noise = False
     else:
-        return True
+        is_noise = True
+    
+    return is_noise
 
 
 

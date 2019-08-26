@@ -163,7 +163,7 @@ def createInputJson(output_file,
 
         "noise_waveform_params" : {
             "classifier_path" : os.path.join(os.getcwd(), 'ecephys_spike_sorting', 'modules', 'noise_templates', 'rf_classifier.pkl')
-
+            "multiprocessing_worker_count" : 10
         },
 
         "quality_metrics_params" : {
