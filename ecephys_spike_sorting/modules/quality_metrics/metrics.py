@@ -81,7 +81,7 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
                                                                                                 params['n_neighbors'])
   
         print("Calculating silhouette score")
-        silhouette_score = calculate_silhouette_score(spike_clusters[in_epoch], 
+        the_silhouette_score = calculate_silhouette_score(spike_clusters[in_epoch], 
                                                        total_units,
                                                        pc_features[in_epoch,:,:],
                                                        pc_feature_ind,
@@ -111,7 +111,7 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
                                 ('d_prime' , d_prime),
                                 ('nn_hit_rate' , nn_hit_rate),
                                 ('nn_miss_rate' , nn_miss_rate),
-                                ('silhouette_score', silhouette_score),
+                                ('silhouette_score', the_silhouette_score),
                                 ('max_drift', max_drift),
                                 ('cumulative_drift', cumulative_drift),
                                 ('epoch_name' , epoch_name),
