@@ -37,7 +37,7 @@ def createInputJson(output_file,
     if npx_directory is not None:
         settings_xml = os.path.join(npx_directory, 'settings.xml')
         if extracted_data_directory is None:
-            extracted_data_directory = npx_directory # + '_sorted'
+            extracted_data_directory = npx_directory + '_sorted'
         probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
         settings_json = os.path.join(extracted_data_directory, 'open-ephys.json')
     else:
@@ -55,7 +55,7 @@ def createInputJson(output_file,
         kilosort_output_directory = os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.0')
 
     if kilosort_output_tmp is None:
-        kilosort_output_tmp = kilosort_output_directory
+        kilosort_output_tmp = r"C:\data\kilosort" #kilosort_output_directory
 
     if continuous_file is None:
         continuous_file = os.path.join(kilosort_output_directory, 'continuous.dat')
@@ -93,8 +93,8 @@ def createInputJson(output_file,
         "extract_from_npx_params" : {
             "npx_directory": npx_directory,
             "settings_xml": settings_xml,
-            "npx_extractor_executable": r"C:\Users\svc_neuropix\Documents\GitHub\open-ephys\Tools\NpxExtractor\NpxExtractor.exe",
-            "npx_extractor_repo": r"C:\Users\svc_neuropix\Documents\GitHub\open-ephys"
+            "npx_extractor_executable": r"C:\Users\svc_neuropix\Documents\GitHub\npxextractor\Release\NpxExtractor.exe",
+            "npx_extractor_repo": r"C:\Users\svc_neuropix\Documents\GitHub\npxextractor"
         },
 
         "depth_estimation_params" : {
@@ -109,10 +109,10 @@ def createInputJson(output_file,
             "max_freq" : 150,
             "channel_range" : [374, 384],
             "n_passes" : 10,
-            "air_gap" : 100,
+            "air_gap" : 25,
             "time_interval" : 5,
-            "skip_s_per_pass" : 100,
-            "start_time" : 150
+            "skip_s_per_pass" : 10,
+            "start_time" : 10
         }, 
 
         "median_subtraction_params" : {

@@ -17,7 +17,7 @@ class DepthEstimationParams(DefaultSchema):
     max_freq = Int(required=True, default=150, help='Maximum frequency to plot')
     channel_range = NumpyArray(required=True, default=[370,380], help='Channels assumed to be out of brain, but in saline')
     n_passes = Int(required=True, default=10, help='Number of times to compute offset and surface channel')
-    skip_s_per_pass = Int(required=True, default=100, help='Number of seconds between data chunks used on each pass')
+    skip_s_per_pass = Int(required=True, default=5, help='Number of seconds between data chunks used on each pass') #default=100
     start_time = Float(required=True, default=0, help='First time (in seconds) for computing median offset')
     time_interval = Float(required=True, default=5, help='Number of seconds for computing median offset')
 

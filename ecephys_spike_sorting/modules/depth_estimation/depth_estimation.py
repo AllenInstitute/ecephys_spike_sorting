@@ -188,11 +188,13 @@ def plot_results(chunk,
 
     plt.figure(figsize=(5,10))
     plt.subplot(4,1,1)
-    plt.imshow(np.flipud((chunk).T), aspect='auto',vmin=-1000,vmax=1000)
-    
+    # plt.imshow(np.flipud((chunk).T), aspect='auto',vmin=-1000,vmax=1000)
+    plt.imshow((chunk).T, aspect='auto',vmin=-1000,vmax=1000)
+
     plt.subplot(4,1,2)
-    plt.imshow(np.flipud(np.log10(power[in_range,:]).T), aspect='auto')
-    
+    # plt.imshow(np.flipud(np.log10(power[in_range,:]).T), aspect='auto')
+    plt.imshow(np.log10(power[in_range,:]).T, aspect='auto')
+
     plt.subplot(4,1,3)
     plt.plot(values) 
     plt.plot([0,nchannels],[power_thresh,power_thresh],'--k')

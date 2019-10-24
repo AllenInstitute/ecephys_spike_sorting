@@ -3,28 +3,27 @@ import subprocess
 
 from create_input_json import createInputJson
 
-sorted_directories = [
-						# r'D:\claustrum_pilot\427459\Day1\2019-04-04_13-11-34_probeC',
-						# r'D:\claustrum_pilot\427459\Day1\2019-04-04_13-11-35_probeB',
-						# r'D:\claustrum_pilot\427459\Day2\2019-04-05_10-57-02_probeC',
-						# r"D:\claustrum_pilot\427459\Day2\2019-04-05_10-57-04_probeE",
-						# r"D:\claustrum_pilot\430716\Day1\2019-05-16_12-49-54_probeC",
-						# r"D:\claustrum_pilot\430716\Day1\2019-05-16_12-49-56_probeB",
-						# r"D:\claustrum_pilot\430716\Day2\2019-05-17_11-10-44_probeC",
-						
-						#r"D:\claustrum_pilot\433926\Day1\2019-04-18_12-27-11_probeC",
-						#r"D:\claustrum_pilot\433926\Day1\2019-04-18_12-27-14_probeB",
-						#r"D:\claustrum_pilot\433926\Day1\2019-04-18_12-27-16_probeE",
-						#r"D:\claustrum_pilot\433926\Day2\2019-04-19_10-24-57_probeC",
-						#r"D:\claustrum_pilot\433926\Day2\2019-04-19_10-24-58_probeB",
+sorted_directories = [						
+						# r"J:\m449779\2019-10-08_11-52-16_probeB",
+						# r"J:\m449779\2019-10-08_13-01-56_probeB",
+						# r"K:\m449779\2019-10-08_11-52-14_probeC",
+						# r"K:\m449779\2019-10-08_13-01-54_probeC",
 
-						# r"D:\claustrum_pilot\433921\Day2\2019-06-20_09-16-51_probeC",
-						# r"D:\claustrum_pilot\433921\Day2\2019-06-20_09-16-53_probeB",
+						# r"J:\m449779\2019-10-09_09-59-40_probeB",
+						# r"J:\m449779\2019-10-09_11-17-22_probeB",
+						# # r"J:\m449779\2019-10-09_12-29-20_probeB",
+						# r"K:\m449779\2019-10-09_09-59-38_probeC",
+						# r"K:\m449779\2019-10-09_11-17-20_probeC",
+						# # r"K:\m449779\2019-10-09_12-29-18_probeC",
+						# r"L:\m449779\2019-10-09_09-59-41_probeE",
+						# r"L:\m449779\2019-10-09_11-17-24_probeE",
+						# r"L:\m449779\2019-10-09_12-29-22_probeE",
 
-						r"D:\claustrum_pilot\451749\Day2\2019-06-27_10-17-44_probeC",
-						r"D:\claustrum_pilot\451749\Day2\2019-06-27_10-17-46_probeB",
+						# r"K:\m449772\Day2\2019-09-20_12-46-33_probeC",
 
-
+						r"E:\estim_pilot\mouse481937\probeB",
+						r"E:\estim_pilot\mouse481937\probeC",
+						r"E:\estim_pilot\mouse481937\probeE"
 
 ]
 
@@ -45,14 +44,14 @@ for directory in sorted_directories:
 
 	info = createInputJson(input_json, npx_directory=directory)
 
-	modules = [ 'extract_from_npx',
-				'depth_estimation',
-				'median_subtraction',
-				'kilosort_helper',
-				'kilosort_postprocessing'
-				# 'noise_templates',
-				# 'mean_waveforms',
-				# 'quality_metrics']
+	modules = [ #'extract_from_npx',
+				#'depth_estimation'
+				#'median_subtraction',
+				#'kilosort_helper',
+				#'kilosort_postprocessing'
+				#'noise_templates',
+				'mean_waveforms',
+				'quality_metrics'
 				]
 
 
