@@ -87,7 +87,8 @@ def createInputJson(output_file,
             "vertical_site_spacing" : 10e-6,
             "ap_band_file" : continuous_file,
             "lfp_band_file" : os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.1', 'continuous.dat'),
-            "reorder_lfp_channels" : probe_type == '3A'
+            "reorder_lfp_channels" : probe_type == '3A',
+            "cluster_group_file_name" : 'cluster_group.tsv.v2'
         }, 
 
         "extract_from_npx_params" : {
@@ -155,14 +156,14 @@ def createInputJson(output_file,
             "samples_per_spike" : 82,
             "pre_samples" : 20,
             "num_epochs" : 1,
-            "spikes_per_epoch" : 500,
+            "spikes_per_epoch" : 1000,
             "spread_threshold" : 0.12,
             "site_range" : 16
         },
 
         "noise_waveform_params" : {
-            "classifier_path" : os.path.join(os.getcwd(), 'ecephys_spike_sorting', 'modules', 'noise_templates', 'rf_classifier.pkl')
-
+            "classifier_path" : os.path.join(os.getcwd(), 'ecephys_spike_sorting', 'modules', 'noise_templates', 'rf_classifier.pkl'),
+            "multiprocessing_worker_count" : 10
         },
 
         "quality_metrics_params" : {
@@ -173,7 +174,7 @@ def createInputJson(output_file,
             "max_spikes_for_nn" : 10000,
             "n_neighbors" : 4,
             'n_silhouette' : 10000,
-            "quality_metrics_output_file" : os.path.join(kilosort_output_tmp, "new_metrics.csv"),
+            "quality_metrics_output_file" : os.path.join(kilosort_output_tmp, "metrics.csv"),
             "drift_metrics_interval_s" : 51,
             "drift_metrics_min_spikes_per_interval" : 10
         }

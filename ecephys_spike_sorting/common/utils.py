@@ -143,7 +143,7 @@ def read_probe_json(input_file):
     return mask, offset, scaling, surface_channel, air_channel
 
 
-def write_cluster_group_tsv(IDs, quality, output_directory):
+def write_cluster_group_tsv(IDs, quality, output_directory, filename = 'cluster_group.tsv'):
 
     """
     Writes a tab-separated cluster_group.tsv file
@@ -162,26 +162,12 @@ def write_cluster_group_tsv(IDs, quality, output_directory):
     cluster_group.tsv (written to disk)
 
     """
-
-    cluster_quality = []
-    cluster_index = []
-    
-    for idx, ID in enumerate(IDs):
-        
-        cluster_index.append(ID)
-        
-        if quality[idx] == 0:
-            cluster_quality.append('unsorted')
-        elif quality[idx] == 1:
-            cluster_quality.append('good')
-        else:
-            cluster_quality.append('noise')
        
-    df = pd.DataFrame(data={'cluster_id' : cluster_index, 'group': cluster_quality})
+    df = pd.DataFrame(data={'cluster_id' : IDs, 'group': quality})
     
     print('Saving data...')
     
-    df.to_csv(os.path.join(output_directory, 'cluster_group.tsv'), sep='\t', index=False)
+    df.to_csv(os.path.join(output_directory, filename), sep='\t', index=False)
 
 
 def read_cluster_group_tsv(filename):
@@ -346,9 +332,10 @@ def get_spike_depths(spike_clusters, pc_features, pc_feature_ind):
 
     """
 
-    pc_features = np.squeeze(pc_features[:,0,:])
-    pc_features[pc_features < 0] = 0
-    pc_power = pow(pc_features,2)
+    pc_features_copy = np.copy(pc_features)
+    pc_features_copy = np.squeeze(pc_features_copy[:,0,:])
+    pc_features_copy[pc_features_copy < 0] = 0
+    pc_power = pow(pc_features_copy, 2)
 
     spike_feat_ind = pc_feature_ind[spike_clusters, :]
     spike_depths = np.sum(spike_feat_ind * pc_power, 1) / np.sum(pc_power,1)

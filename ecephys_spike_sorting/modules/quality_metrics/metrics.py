@@ -72,17 +72,16 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
         
         print("Calculating PC-based metrics")
         isolation_distance, l_ratio, d_prime, nn_hit_rate, nn_miss_rate = calculate_pc_metrics(spike_clusters[in_epoch], 
-                                                                                               total_units,
-                                                                                               channel_map,
-                                                                                               pc_features[in_epoch,:,:],
-                                                                                               pc_feature_ind,
-                                                                                               params['num_channels_to_compare'],
-                                                                                               params['max_spikes_for_unit'],
-                                                                                               params['max_spikes_for_nn'],
-                                                                                               params['n_neighbors'])
+                                                                                                total_units,
+                                                                                                pc_features[in_epoch,:,:],
+                                                                                                pc_feature_ind,
+                                                                                                params['num_channels_to_compare'],
+                                                                                                params['max_spikes_for_unit'],
+                                                                                                params['max_spikes_for_nn'],
+                                                                                                params['n_neighbors'])
   
         print("Calculating silhouette score")
-        silhouette_score = calculate_silhouette_score(spike_clusters[in_epoch], 
+        the_silhouette_score = calculate_silhouette_score(spike_clusters[in_epoch], 
                                                        total_units,
                                                        pc_features[in_epoch,:,:],
                                                        pc_feature_ind,
@@ -112,7 +111,7 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
                                 ('d_prime' , d_prime),
                                 ('nn_hit_rate' , nn_hit_rate),
                                 ('nn_miss_rate' , nn_miss_rate),
-                                ('silhouette_score', silhouette_score),
+                                ('silhouette_score', the_silhouette_score),
                                 ('max_drift', max_drift),
                                 ('cumulative_drift', cumulative_drift),
                                 ('epoch_name' , epoch_name),
@@ -134,7 +133,7 @@ def calculate_isi_violations(spike_times, spike_clusters, total_units, isi_thres
 
     for idx, cluster_id in enumerate(cluster_ids):
 
-        printProgressBar(idx+1, total_units)
+        printProgressBar(cluster_id + 1, total_units)
 
         for_this_cluster = (spike_clusters == cluster_id)
         viol_rates[cluster_id], num_violations = isi_violations(spike_times[for_this_cluster], 
@@ -153,7 +152,7 @@ def calculate_presence_ratio(spike_times, spike_clusters, total_units):
 
     for idx, cluster_id in enumerate(cluster_ids):
 
-        printProgressBar(idx+1, total_units)
+        printProgressBar(cluster_id + 1, total_units)
 
         for_this_cluster = (spike_clusters == cluster_id)
         ratios[cluster_id] = presence_ratio(spike_times[for_this_cluster], 
@@ -175,7 +174,7 @@ def calculate_firing_rate(spike_times, spike_clusters, total_units):
 
     for idx, cluster_id in enumerate(cluster_ids):
 
-        printProgressBar(idx+1, total_units)
+        printProgressBar(cluster_id + 1, total_units)
 
         for_this_cluster = (spike_clusters == cluster_id)
         firing_rates[cluster_id] = firing_rate(spike_times[for_this_cluster], 
@@ -193,7 +192,7 @@ def calculate_amplitude_cutoff(spike_clusters, amplitudes, total_units):
 
     for idx, cluster_id in enumerate(cluster_ids):
 
-        printProgressBar(idx+1, total_units)
+        printProgressBar(cluster_id + 1, total_units)
 
 
         for_this_cluster = (spike_clusters == cluster_id)
@@ -204,7 +203,6 @@ def calculate_amplitude_cutoff(spike_clusters, amplitudes, total_units):
 
 def calculate_pc_metrics(spike_clusters, 
                          total_units,
-                         channel_map, 
                          pc_features, 
                          pc_feature_ind, 
                          num_channels_to_compare, 
@@ -212,13 +210,12 @@ def calculate_pc_metrics(spike_clusters,
                          max_spikes_for_nn, 
                          n_neighbors):
 
-
     assert(num_channels_to_compare % 2 == 1)
     half_spread = int((num_channels_to_compare - 1) / 2)
 
     cluster_ids = np.unique(spike_clusters)
-    peak_channels = np.zeros((total_units,))
-    actual_channels = np.zeros((total_units,))
+
+    peak_channels = np.zeros((total_units,), dtype='uint16')
     isolation_distances = np.zeros((total_units,))
     l_ratios = np.zeros((total_units,))
     d_primes = np.zeros((total_units,))
@@ -226,45 +223,37 @@ def calculate_pc_metrics(spike_clusters,
     nn_miss_rates = np.zeros((total_units,))
 
     for idx, cluster_id in enumerate(cluster_ids):
-
-        feature_inds = pc_feature_ind[idx,:]
         for_unit = np.squeeze(spike_clusters == cluster_id)
-        
         pc_max = np.argmax(np.mean(pc_features[for_unit, 0, :],0))
-        
-        peak_channels[cluster_id] = feature_inds[pc_max]
-        actual_channels[cluster_id] = channel_map[int(peak_channels[idx])]
+        peak_channels[cluster_id] = pc_feature_ind[cluster_id, pc_max]
 
     for idx, cluster_id in enumerate(cluster_ids):
 
-        printProgressBar(idx+1, total_units)
+        printProgressBar(cluster_id + 1, total_units)
 
-        peak_channel = peak_channels[idx]
+        peak_channel = peak_channels[cluster_id]
 
-        if peak_channel < half_spread:
-            half_spread_down = int(peak_channel)
-        else:
-            half_spread_down = half_spread
+        half_spread_down = peak_channel \
+            if peak_channel < half_spread \
+            else half_spread
 
-        if peak_channel + half_spread > np.max(pc_feature_ind):
-            half_spread_up = int(np.max(pc_feature_ind) - peak_channel)
-        else:
-            half_spread_up = half_spread
-            
-        total_channels = half_spread_up + half_spread_down + 1
+        half_spread_up = np.max(pc_feature_ind) - peak_channel \
+            if peak_channel + half_spread > np.max(pc_feature_ind) \
+            else half_spread
 
         units_for_channel, channel_index = np.unravel_index(np.where(pc_feature_ind.flatten() == peak_channel)[0], pc_feature_ind.shape)
+        
+        units_in_range = (peak_channels[units_for_channel] >= peak_channel - half_spread_down) * \
+                         (peak_channels[units_for_channel] <= peak_channel + half_spread_up)
+        
+        units_for_channel = units_for_channel[units_in_range]
+        channel_index = channel_index[units_in_range]
 
-        channels_in_range = (channel_index >= half_spread_down) * (channel_index < 32 - half_spread_up)
-
-        units_for_channel = units_for_channel[channels_in_range]
-
-        channel_index = channel_index[channels_in_range]
+        channels_to_use = np.arange(peak_channel - half_spread_down, peak_channel + half_spread_up + 1)
 
         spike_counts = np.zeros(units_for_channel.shape)
 
         for idx2, cluster_id2 in enumerate(units_for_channel):
-            
             spike_counts[idx2] = np.sum(spike_clusters == cluster_id2)
             
         this_unit_idx = np.where(units_for_channel == cluster_id)[0]
@@ -274,23 +263,27 @@ def calculate_pc_metrics(spike_clusters,
         else:
             relative_counts = spike_counts
             
-        all_pcs = np.zeros((0, pc_features.shape[1], total_channels))
+        all_pcs = np.zeros((0, pc_features.shape[1], channels_to_use.size))
         all_labels = np.zeros((0,))
             
         for idx2, cluster_id2 in enumerate(units_for_channel):
-            
-            subsample = int(relative_counts[idx2])
 
-            index_mask = make_index_mask(spike_clusters, cluster_id2, min_num = 0, max_num = subsample)
-
-            channel_mask = make_channel_mask(cluster_id2, units_for_channel, channel_index, pc_features.shape[2], half_spread_down, half_spread_up)
-            pcs = get_unit_pcs(pc_features, index_mask, channel_mask)
-            labels = np.ones((pcs.shape[0],)) * cluster_id2
+            try:
+                channel_mask = make_channel_mask(cluster_id2, pc_feature_ind, channels_to_use)
+            except IndexError:
+                # Occurs when pc_feature_ind does not contain all channels of interest
+                # In that case, we will exclude this unit for the calculation
+                pass
+            else:
+                subsample = int(relative_counts[idx2])
+                index_mask = make_index_mask(spike_clusters, cluster_id2, min_num = 0, max_num = subsample)
+                pcs = get_unit_pcs(pc_features, index_mask, channel_mask)
+                labels = np.ones((pcs.shape[0],)) * cluster_id2
+                
+                all_pcs = np.concatenate((all_pcs, pcs),0)
+                all_labels = np.concatenate((all_labels, labels),0)
             
-            all_pcs = np.concatenate((all_pcs, pcs),0)
-            all_labels = np.concatenate((all_labels, labels),0)
-            
-        all_pcs = np.reshape(all_pcs, (all_pcs.shape[0], pc_features.shape[1]*total_channels))
+        all_pcs = np.reshape(all_pcs, (all_pcs.shape[0], pc_features.shape[1]*channels_to_use.size))
 
         if all_pcs.shape[0] > 10:
 
@@ -735,7 +728,8 @@ def make_index_mask(spike_clusters, unit_id, min_num, max_num):
         
     return index_mask
 
-def make_channel_mask(unit_id, units_for_channel, channel_index, total_pc_channels, half_spread_down, half_spread_up):
+
+def make_channel_mask(unit_id, pc_feature_ind, channels_to_use):
 
     """ Create a mask for the channel dimension of the pc_features array  
 
@@ -743,29 +737,22 @@ def make_channel_mask(unit_id, units_for_channel, channel_index, total_pc_channe
     -------
     unit_id : Int
         ID for this unit
-    units_for_channel : numpy.ndarray
-        List of units with overlapping PC channels
-    channel_index : numpy.ndarray
-        List of channel indices for these units
-    total_pc_channels : Int
-        Max number of PCs available
-    half_spread_down : Int
-        Number of channels below peak to keep
-    half_spread_up : Int
-        Number of channels above peak to keep
+    pc_feature_ind : np.ndarray
+        Channels used for PC calculation for each unit
+    channels_to_use : np.ndarray
+        Channels to use for calculating metrics
 
     Output:
     -------
-    channel_mask : numpy.ndarray (boolean)
-        Mask of channel indices for pc_features array
+    channel_mask : numpy.ndarray
+        Channel indices to extract from pc_features array
     
     """
     
-    channel_mask = np.zeros((total_pc_channels,), dtype='bool')
-    ch = channel_index[units_for_channel == unit_id][0]
-    channel_mask[ch-half_spread_down:ch+half_spread_up+1] = True
-    
-    return channel_mask
+    these_inds = pc_feature_ind[unit_id, :]
+    channel_mask = [np.argwhere(these_inds == i)[0][0] for i in channels_to_use]
+
+    return np.array(channel_mask)
 
 
 def get_unit_pcs(these_pc_features, index_mask, channel_mask):

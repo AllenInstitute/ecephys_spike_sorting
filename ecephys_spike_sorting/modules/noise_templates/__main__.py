@@ -5,7 +5,7 @@ import time
 
 import numpy as np
 
-from .id_noise_templates import id_noise_templates_rf
+from .id_noise_templates import id_noise_templates
 
 from ...common.utils import write_cluster_group_tsv, load_kilosort_data
 
@@ -21,11 +21,16 @@ def classify_noise_templates(args):
                 args['ephys_params']['sample_rate'], \
                 convert_to_seconds = True)
 
-    cluster_ids, is_noise = id_noise_templates_rf(spike_times, spike_clusters, \
-        cluster_ids, templates, \
+    cluster_ids, is_noise = id_noise_templates(cluster_ids, templates, np.squeeze(channel_map), \
         args['noise_waveform_params'])
 
-    write_cluster_group_tsv(cluster_ids, is_noise, args['directories']['kilosort_output_directory'])
+    mapping = {False: 'good', True: 'noise'}
+    labels = [mapping[value] for value in is_noise]
+
+    write_cluster_group_tsv(cluster_ids, 
+                            labels, 
+                            args['directories']['kilosort_output_directory'], 
+                            args['ephys_params']['cluster_group_file_name'])
     
     execution_time = time.time() - start
 

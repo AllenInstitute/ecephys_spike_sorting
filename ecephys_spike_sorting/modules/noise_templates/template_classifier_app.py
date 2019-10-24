@@ -15,9 +15,33 @@ import os
 
 matplotlib.use('QT5Agg')
 
+mapping = {
+            Qt.Key_O : (1, 'one channel', 'red'),
+            Qt.Key_X : (2, 'symmetric multiple spikes', 'orange'),
+            Qt.Key_Z : (3, 'symmetric one spike', 'magenta'),
+            Qt.Key_A : (4, 'asymmetric, non-propagating', 'darkgreen'),
+            Qt.Key_D : (5, 'divided', 'brown'),
+            Qt.Key_M : (6, 'multi-spike', 'teal'),
+            Qt.Key_W : (7, 'multiple sharp peaks', 'green'),
+            Qt.Key_S : (8, 'single channel spike', 'turquoise'),
+            Qt.Key_U : (9, 'upward spike', 'pink'),
+            Qt.Key_C : (10, 'trough in corner', 'maroon'),
+            Qt.Key_P : (11, 'propagating', 'tan'),
+            Qt.Key_F : (12, 'weird spike', 'aqua'),
+            Qt.Key_Q : (13, 'other', 'gray'),
+            Qt.Key_V : (14, 'vertical', 'purple'),
+            Qt.Key_G : (0, 'good', 'black')
+        }
 
-categories = ['good', 'noise1', 'noise2', 'noise3', 'noise4','noise5', 'noise6', 'noise7']
-colors = ['black', 'gray', 'red', 'purple', 'orange', 'teal', 'brown', 'magenta']
+def get_colors(ratings):
+
+    colors = []
+    for r in ratings:
+        for k in mapping.keys():
+            if mapping[k][1] == r:
+                colors.append(mapping[k][2])
+
+    return colors
 
 
 def get_channel_location(channel, is3b = False):
@@ -102,10 +126,10 @@ class App(QWidget):
         grid.addWidget(back_button,6,7)
         back_button.clicked.connect(self.move_back)
 
-        label_button = QPushButton('Change label', self)
-        label_button.setToolTip('Switch from good to noise or vice versa')
-        grid.addWidget(label_button,6,6)
-        label_button.clicked.connect(self.change_label)
+        #label_button = QPushButton('Change label', self)
+        #label_button.setToolTip('Switch from good to noise or vice versa')
+        #grid.addWidget(label_button,6,6)
+        #label_button.clicked.connect(self.change_label)
 
         save_button = QPushButton('Save', self)
         save_button.setToolTip('Save ratings as CSV')
@@ -113,12 +137,14 @@ class App(QWidget):
         save_button.clicked.connect(self.save_data)
 
         load_button = QPushButton('Load', self)
-        load_button.setToolTip('Save ratings as CSV')
+        load_button.setToolTip('Load data directory')
         grid.addWidget(load_button,6,4)
         load_button.clicked.connect(self.load_data)
 
+        self.category_key = Qt.Key_G
+
         self.unit_idx = 0
-        self.current_directory = '/mnt/md0/data'
+        self.current_directory = '/mnt/sd5.3/RE-SORT'
 
         self.data_loaded = False
 
@@ -126,37 +152,18 @@ class App(QWidget):
         self.show()
 
     def keyPressEvent(self, e):
-        
+
         if e.key() == Qt.Key_Comma:
             self.move_back()
         elif e.key() == Qt.Key_Period:
             self.move_forward()
-        elif e.key() == Qt.Key_A: # noise1
-            self.change_label(1)
-        elif e.key() == Qt.Key_S: # noise2
-            self.change_label(2)
-        elif e.key() == Qt.Key_D: # noise3
-            self.change_label(3)
-        elif e.key() == Qt.Key_Q: # noise4
-            self.change_label(4)
-        elif e.key() == Qt.Key_M: # noise5
-             self.change_label(5)
-        elif e.key() == Qt.Key_V: # noise6
-            self.change_label(6)
-        elif e.key() == Qt.Key_W: # noise7
-            self.change_label(7)
-        elif e.key() == Qt.Key_G: # good
-            self.change_label(0)
+        elif e.key() in mapping:
+            self.change_label(e.key())
 
     def move_forward(self):
         if self.data_loaded:
             self.unit_idx = np.min([self.unit_idx + 1, len(self.unit_list)-1])
-
-            if self.unit_idx == len(self.unit_list) - 1:
-                self.save_data()
-
-            self.category_index = categories.index(self.ratings[self.unit_idx])
-
+            
             self.plot_data()
 
     def move_back(self):
@@ -164,22 +171,18 @@ class App(QWidget):
             
             self.unit_idx = np.max([self.unit_idx - 1, 0])
             
-            self.category_index = categories.index(self.ratings[self.unit_idx])
-            
             self.plot_data()
      
     def change_label(self, category=None):
         
         if self.data_loaded:
             
-            if category is None:
-                self.category_index = categories.index(self.ratings[self.unit_idx])
-                self.category_index += 1
-                self.category_index %= len(categories)
-            else:
-                self.category_index = category
+            self.category_key = category
             
-            self.ratings[self.unit_idx] = categories[self.category_index]
+            self.ratings[self.unit_idx] = mapping[self.category_key][1]
+            self.colors[self.unit_idx] = mapping[self.category_key][2]
+
+            self.save_data()
             
             self.plot_data()
 
@@ -211,7 +214,13 @@ class App(QWidget):
 
                 self.output_file = os.path.join(fname, 'template_ratings_new.csv')
 
-                self.ratings = ['good'] * len(self.unit_list)
+                if os.path.exists(self.output_file):
+                    info = pd.read_csv(self.output_file)
+                    self.ratings = info['rating']
+                    self.colors = get_colors(self.ratings)
+                else:
+                    self.ratings = ['good'] * len(self.unit_list)
+                    self.colors = ['black'] * len(self.unit_list)
 
                 self.peak_channels = np.argmin(np.min(self.templates,1),1)
 
@@ -220,8 +229,6 @@ class App(QWidget):
 
                 self.setWindowTitle(fname)
                 self.current_directory = fname
-                
-                self.category_index = 0
                 
                 if self.current_directory.find('PXI') > -1:
                     self.phase3b = True
@@ -257,9 +264,7 @@ class App(QWidget):
             x_values = np.linspace(0,10,len(data)) + loc[0]
             y_values = data * 2.5 + loc[1]
             
-            color = colors[categories.index(self.ratings[self.unit_idx])]
-
-            self.canvas.ax2.plot(x_values, y_values, color=color)
+            self.canvas.ax2.plot(x_values, y_values, color=self.colors[self.unit_idx])
 
         self.canvas.ax2.set_axis_off()
         if self.unit_idx == len(self.unit_list) - 1:

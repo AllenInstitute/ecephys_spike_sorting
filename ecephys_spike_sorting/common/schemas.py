@@ -13,6 +13,7 @@ class EphysParams(DefaultSchema):
     lfp_band_file = String(required=False, help='Location of LFP band binary file')
     ap_band_file = String(required=False, help='Location of AP band binary file')
     reorder_lfp_channels = Bool(required=False, default=True, help='Should we fix the ordering of LFP channels (necessary for 3a probes following extract_from_npx modules)')
+    cluster_group_file_name = String(required=False, default='cluster_group.tsv')
 
 class Directories(DefaultSchema):
 
