@@ -75,7 +75,7 @@ def createInputJson(output_file,
         },
 
         "waveform_metrics" : {
-            "waveform_metrics_file" : os.path.join(kilosort_output_tmp, 'waveform_metrics.csv')
+            "waveform_metrics_file" : os.path.join(kilosort_output_directory, 'waveform_metrics.csv')
         },
 
         "ephys_params": {
@@ -151,7 +151,7 @@ def createInputJson(output_file,
 
         "mean_waveform_params" : {
         
-            "mean_waveforms_file" : os.path.join(kilosort_output_tmp, 'mean_waveforms.npy'),
+            "mean_waveforms_file" : os.path.join(kilosort_output_directory, 'mean_waveforms.npy'),
 
             "samples_per_spike" : 82,
             "pre_samples" : 20,
@@ -174,7 +174,7 @@ def createInputJson(output_file,
             "max_spikes_for_nn" : 10000,
             "n_neighbors" : 4,
             'n_silhouette' : 10000,
-            "quality_metrics_output_file" : os.path.join(kilosort_output_tmp, "metrics.csv"),
+            "quality_metrics_output_file" : os.path.join(kilosort_output_directory, "metrics.csv"),
             "drift_metrics_interval_s" : 51,
             "drift_metrics_min_spikes_per_interval" : 10
         }
