@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 from collections import OrderedDict
 
+import warnings
+
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.neighbors import NearestNeighbors
 from sklearn.metrics import silhouette_score
@@ -12,6 +14,7 @@ from scipy.ndimage.filters import gaussian_filter1d
 
 from ...common.epoch import Epoch
 from ...common.utils import printProgressBar, get_spike_depths
+
 
 
 def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_features, pc_feature_ind, params, epochs = None):
