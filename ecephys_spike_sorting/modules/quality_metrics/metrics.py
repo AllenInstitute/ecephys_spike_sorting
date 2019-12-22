@@ -14,7 +14,7 @@ from ...common.epoch import Epoch
 from ...common.utils import printProgressBar, get_spike_depths
 
 
-def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_features, pc_feature_ind, params, epochs = None):
+def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, channel_pos, pc_features, pc_feature_ind, params, epochs = None):
 
     """ Calculate metrics for all units on one probe
 
@@ -26,8 +26,10 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
         Cluster IDs for each spike time
     amplitudes : numpy.ndarray (num_spikes x 0)
         Amplitude value for each spike time
-    channel_map : numpy.ndarray (num_units x 0)
+    channel_map : numpy.ndarray (num_channels x 0)
         Original data channel for pc_feature_ind array
+    channel_pos : numpy.ndarray (num_channels x 2)
+        Original data channel positions in um
     pc_features : numpy.ndarray (num_spikes x num_pcs x num_channels)
         Pre-computed PCs for blocks of channels around each spike
     pc_feature_ind : numpy.ndarray (num_units x num_channels)
@@ -50,6 +52,9 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
 
     if epochs is None:
         epochs = [Epoch('complete_session', 0, np.inf)]
+    
+#   define a short epoch for testing
+#    epochs = [Epoch('test',0,10)]
 
     total_units = np.max(spike_clusters) + 1
     total_epochs = len(epochs)
@@ -94,6 +99,7 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
                                                        total_units,
                                                        pc_features[in_epoch,:,:],
                                                        pc_feature_ind,
+                                                       channel_pos,
                                                        params['drift_metrics_interval_s'],
                                                        params['drift_metrics_min_spikes_per_interval'])
 
@@ -353,13 +359,14 @@ def calculate_drift_metrics(spike_times,
                             total_units,
                             pc_features, 
                             pc_feature_ind,
+                            channel_pos,
                             interval_length,
                             min_spikes_per_interval):
 
     max_drift = np.zeros((total_units,))
     cumulative_drift = np.zeros((total_units,))
 
-    depths = get_spike_depths(spike_clusters, pc_features, pc_feature_ind)
+    depths = get_spike_depths(spike_clusters, pc_features, pc_feature_ind, channel_pos)
     
     interval_starts = np.arange(np.min(spike_times), np.max(spike_times), interval_length)
     interval_ends = interval_starts + interval_length

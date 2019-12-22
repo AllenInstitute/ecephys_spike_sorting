@@ -343,12 +343,15 @@ def load_kilosort_data(folder,
         
 
     if not include_pcs:
-        return spike_times, spike_clusters, spike_templates, amplitudes, unwhitened_temps, channel_map, channel_pos, cluster_ids, cluster_quality, cluster_amplitude
+        return spike_times, spike_clusters, spike_templates, amplitudes, unwhitened_temps, \
+               channel_map, channel_pos, cluster_ids, cluster_quality, cluster_amplitude
     else:
-        return spike_times, spike_clusters, spike_templates, amplitudes, unwhitened_temps, channel_map, channel_pos, cluster_ids, cluster_quality, cluster_amplitude, pc_features, pc_feature_ind, template_features
+        return spike_times, spike_clusters, spike_templates, amplitudes, unwhitened_temps, \
+               channel_map, channel_pos, cluster_ids, cluster_quality, cluster_amplitude, \
+               pc_features, pc_feature_ind, template_features
 
 
-def get_spike_depths(spike_clusters, pc_features, pc_feature_ind):
+def get_spike_depths(spike_clusters, pc_features, pc_feature_ind, channel_pos):
 
     """
     Calculates the distance (in microns) of individual spikes from the probe tip
@@ -363,6 +366,8 @@ def get_spike_depths(spike_clusters, pc_features, pc_feature_ind):
         PC features for each spike
     pc_feature_ind  : numpy.ndarray (M x channels)
         Channels used for PC calculation for each unit
+    channel_pos : (channels x 2)
+        X and Y/depth position of each channel, in um
 
     Output:
     ------
@@ -375,11 +380,13 @@ def get_spike_depths(spike_clusters, pc_features, pc_feature_ind):
     pc_features_copy = np.squeeze(pc_features_copy[:,0,:])
     pc_features_copy[pc_features_copy < 0] = 0
     pc_power = pow(pc_features_copy, 2)
+    
 
     spike_feat_ind = pc_feature_ind[spike_clusters, :]
-    spike_depths = np.sum(spike_feat_ind * pc_power, 1) / np.sum(pc_power,1)
+    spike_feat_ycoord = channel_pos[spike_feat_ind, 1]
+    spike_depths = np.sum(spike_feat_ycoord * pc_power, 1) / np.sum(pc_power,1)
 
-    return spike_depths * 10
+    return spike_depths
 
 
 def get_spike_amplitudes(spike_templates, templates, amplitudes):

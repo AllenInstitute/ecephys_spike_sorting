@@ -2,6 +2,7 @@ from argschema import ArgSchemaParser
 import os
 import logging
 import time
+import numpy as np
 
 from .automerging import automerging
 
@@ -14,7 +15,8 @@ def run_automerging(args):
 
     start = time.time()
     
-    spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
+    spike_times, spike_clusters, spike_templates, amplitudes, templates, \
+    channel_map, channel_pos, clusterIDs, cluster_quality, cluster_amplitude, template_features = \
         load_kilosort_data(args['directories']['kilosort_output_directory'], \
             args['ephys_params']['sample_rate'], \
             convert_to_seconds = True)

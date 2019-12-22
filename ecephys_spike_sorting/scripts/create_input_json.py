@@ -30,10 +30,15 @@ def createInputJson(output_file,
     if probe_type == '3A':
         acq_system = '3a'
         reference_channels = [36, 75, 112, 151, 188, 227, 264, 303, 340, 379]
-    else:
+    elif (probe_type =='NP1' or probe_type =='3B2'):
         acq_system = 'PXI'
         reference_channels = [191]
-
+    elif (probe_type == 'NP21' or probe_type == 'NP24'):
+        acq_system = 'PXI'
+        reference_channels = [127]
+    else:
+        raise Exception('Unknown probe type')
+        
     if npx_directory is not None:
         settings_xml = os.path.join(npx_directory, 'settings.xml')
         if extracted_data_directory is None:
@@ -146,7 +151,8 @@ def createInputJson(output_file,
         "ks_postprocessing_params" : {
             "within_unit_overlap_window" : 0.000333,
             "between_unit_overlap_window" : 0.000333,
-            "between_unit_dist_um" : 42
+            "between_unit_dist_um" : 42,
+            "deletion_mode" : 'lowAmpCluster'
         },
 
         "mean_waveform_params" : {

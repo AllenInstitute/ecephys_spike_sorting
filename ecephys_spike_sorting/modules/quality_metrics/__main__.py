@@ -21,13 +21,14 @@ def calculate_quality_metrics(args):
     print("Loading data...")
 
     try:
-        spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, clusterIDs, cluster_quality, pc_features, pc_feature_ind = \
+        spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, \
+        channel_pos, clusterIDs, cluster_quality, cluster_amplitude, pc_features, pc_feature_ind, template_features = \
                 load_kilosort_data(args['directories']['kilosort_output_directory'], \
                     args['ephys_params']['sample_rate'], \
                     use_master_clock = False,
                     include_pcs = True)
 
-        metrics = calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_features, pc_feature_ind, args['quality_metrics_params'])
+        metrics = calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, channel_pos, pc_features, pc_feature_ind, args['quality_metrics_params'])
     
     except FileNotFoundError:
         

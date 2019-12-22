@@ -39,7 +39,8 @@ def plotKsTemplates(ks_directory, raw_data_file, sample_rate = 30000, bit_volts 
 
     """
 
-    spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, clusterIDs, cluster_quality, pc_features, pc_feature_ind = \
+    spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, \
+    channel_pos, clusterIDs, cluster_quality, cluster_amplitude, pc_features, pc_feature_ind, template_features= \
                 load_kilosort_data(ks_directory, 
                     sample_rate, 
                     convert_to_seconds = False,
@@ -140,13 +141,14 @@ def plotDriftmap(ks_directory, sample_rate = 30000, time_range = [0, np.inf], ex
 
     """
 
-    spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, clusterIDs, cluster_quality, pc_features, pc_feature_ind = \
+    spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, \
+    channel_pos, clusterIDs, cluster_quality, cluster_amplitude, pc_features, pc_feature_ind, template_features = \
                 load_kilosort_data(ks_directory, 
                     sample_rate, 
                     use_master_clock = False,
                     include_pcs = True)
 
-    spike_depths = get_spike_depths(spike_clusters, pc_features, pc_feature_ind)
+    spike_depths = get_spike_depths(spike_clusters, pc_features, pc_feature_ind, channel_pos)
     spike_amplitudes = get_spike_amplitudes(spike_templates, templates, amplitudes)
 
     if exclude_noise:
@@ -351,7 +353,8 @@ def plotFullProbeTSNE(ks_directory, total_spikes=150000, exclude_noise = True, f
 
     from matplotlib.cm import get_cmap
 
-    spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, clusterIDs, cluster_quality, pc_features, pc_feature_ind = \
+    spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, channel_pos, \
+    clusterIDs, cluster_quality, cluster_amplitude, pc_features, pc_feature_ind, template_features = \
                 load_kilosort_data(ks_directory, 
                     30000., 
                     convert_to_seconds = False,

@@ -113,8 +113,6 @@ def remove_double_counted_spikes(spike_times, spike_clusters, spike_templates,
             deltaZ = np.squeeze(channel_pos[peak_chan_idx[unit_id2],1] - channel_pos[peak_chan_idx[unit_id1],1])
             
             dist = pow( (pow(deltaX,2) + pow(deltaZ,2)), 0.5 )
-#            if( unit_id1 == 251 ):
-#                print(f'unit_id2: {unit_id2}, unit_id1: {unit_id1}, dist {dist:.3f}')
             
             if idx2 > idx1 and dist < params['between_unit_dist_um']:
                 
@@ -123,7 +121,7 @@ def remove_double_counted_spikes(spike_times, spike_clusters, spike_templates,
                 
                 for_unit2 = np.where(spike_clusters == unit_id2)[0]
 
-                to_remove1, to_remove2 = find_between_unit_overlap(spike_times[for_unit1], spike_times[for_unit2], amp1, amp2, between_unit_overlap_samples )
+                to_remove1, to_remove2 = find_between_unit_overlap(spike_times[for_unit1], spike_times[for_unit2], amp1, amp2, between_unit_overlap_samples, params['deletion_mode'] )
 
                 overlap_matrix[idx1, idx2] = len(to_remove1) + len(to_remove2)
 
@@ -166,7 +164,7 @@ def find_within_unit_overlap(spike_train, overlap_window = 5):
     return spikes_to_remove
 
 
-def find_between_unit_overlap(spike_train1, spike_train2, amp1, amp2, overlap_window = 5):
+def find_between_unit_overlap(spike_train1, spike_train2, amp1, amp2, overlap_window = 5, deletionMode = 'lowAmpCluster'):
 
     """
     Finds overlapping spikes between two spike trains
@@ -179,6 +177,9 @@ def find_between_unit_overlap(spike_train1, spike_train2, amp1, amp2, overlap_wi
         Spike times (in samples)
     overlap_window : int
         Number of samples to search for overlapping spikes
+    deletionMode : 'lowAmpCluster' or 'deleteFirst'
+        For between unit overlap, option to always delete the earlier spike, or
+        delete all duplicates from the cluster with lower average amplitude.
 
 
     Outputs
@@ -190,7 +191,6 @@ def find_between_unit_overlap(spike_train1, spike_train2, amp1, amp2, overlap_wi
 
     """
 
-    bKeepLater = False
 
     spike_train = np.concatenate( (spike_train1, spike_train2) )
     original_inds = np.concatenate( (np.arange(len(spike_train1)), np.arange(len(spike_train2)) ) )
@@ -203,7 +203,7 @@ def find_between_unit_overlap(spike_train1, spike_train2, amp1, amp2, overlap_wi
 
     spikes_to_remove = np.diff(sorted_train) < overlap_window
 
-    if bKeepLater:
+    if deletionMode == 'deleteFirst':
 #   trim off the first member of the array of sorted inds; means the later spike will be picked for any pair
         sorted_inds = original_inds[order][1:] 
         spikes_to_remove1 = sorted_inds[spikes_to_remove * (sorted_cluster_ids == 0)]

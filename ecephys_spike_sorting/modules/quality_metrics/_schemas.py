@@ -17,6 +17,7 @@ class QualityMetricsParams(DefaultSchema):
     drift_metrics_interval_s = Float(required=False, default=100, help='Interval length is seconds for computing spike depth')
 
     quality_metrics_output_file = String(required=True, help='CSV file where metrics will be saved')
+    
 
 class InputParameters(ArgSchema):
     
