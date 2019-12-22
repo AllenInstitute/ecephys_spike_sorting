@@ -195,6 +195,30 @@ def read_cluster_group_tsv(filename):
 
     return cluster_ids, cluster_quality
 
+def read_cluster_amplitude_tsv(filename):
+    
+    """
+    Reads a tab-separated cluster_Amplitude.tsv file from disk
+
+    Inputs:
+    -------
+    filename : String
+        Full path of file
+
+    Outputs:
+    --------
+    amplitudes : array
+        array of average cluster amplitudes calculated by KS2
+
+    """
+    info = np.genfromtxt(filename, dtype='str')
+    # don't return cluster_ids because those are already read in or 
+    # derived from the spike_clusters.npy file
+    # cluster_ids = info[1:,0].astype('int')
+    cluster_amplitude = info[1:,1].astype('float')
+
+
+    return cluster_amplitude
 
 def load(folder, filename):
 
@@ -257,14 +281,20 @@ def load_kilosort_data(folder,
         Templates for M units
     channel_map : numpy.ndarray
         Channels from original data file used for sorting
+    channel_pos : numpy.ndarray (channels x 2)
+        X and Z coordinates for each channel used in the sort
     cluster_ids : Python list
         Cluster IDs for M units
     cluster_quality : Python list
         Quality ratings from cluster_group.tsv file
+    cluster_amplitude : Python list
+        Average amplitude for each cluster from cluster_Amplitude.tsv file
     pc_features (optinal) : numpy.ndarray (N x channels x num_PCs)
         PC features for each spike
     pc_feature_ind (optional) : numpy.ndarray (M x channels)
         Channels used for PC calculation for each unit
+    template_features (optional) : numpy.ndarray (N x number of features)
+        projections onto template features for each spike
 
     """
 
@@ -279,10 +309,14 @@ def load_kilosort_data(folder,
     templates = load(folder,'templates.npy')
     unwhitening_mat = load(folder,'whitening_mat_inv.npy')
     channel_map = load(folder, 'channel_map.npy')
+    channel_pos = load(folder, 'channel_positions.npy')
 
     if include_pcs:
         pc_features = load(folder, 'pc_features.npy')
-        pc_feature_ind = load(folder, 'pc_feature_ind.npy') 
+        pc_feature_ind = load(folder, 'pc_feature_ind.npy')
+        print("loading template_features")
+        template_features = load(folder, 'template_features.npy') 
+
                 
     templates = templates[:,template_zero_padding:,:] # remove zeros
     spike_clusters = np.squeeze(spike_clusters) # fix dimensions
@@ -302,11 +336,16 @@ def load_kilosort_data(folder,
     except OSError:
         cluster_ids = np.unique(spike_clusters)
         cluster_quality = ['unsorted'] * cluster_ids.size
+        
+    cluster_amplitude = read_cluster_amplitude_tsv(os.path.join(folder, 'cluster_Amplitude.tsv'))
+    
+        
+        
 
     if not include_pcs:
-        return spike_times, spike_clusters, spike_templates, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality
+        return spike_times, spike_clusters, spike_templates, amplitudes, unwhitened_temps, channel_map, channel_pos, cluster_ids, cluster_quality, cluster_amplitude
     else:
-        return spike_times, spike_clusters, spike_templates, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality, pc_features, pc_feature_ind
+        return spike_times, spike_clusters, spike_templates, amplitudes, unwhitened_temps, channel_map, channel_pos, cluster_ids, cluster_quality, cluster_amplitude, pc_features, pc_feature_ind, template_features
 
 
 def get_spike_depths(spike_clusters, pc_features, pc_feature_ind):

@@ -82,7 +82,7 @@ def createInputJson(output_file,
             "sample_rate" : 30000,
             "lfp_sample_rate" : 2500,
             "bit_volts" : 0.195,
-            "num_channels" : 384,
+            "num_channels" : 385,
             "reference_channels" : reference_channels,
             "vertical_site_spacing" : 10e-6,
             "ap_band_file" : continuous_file,
@@ -144,9 +144,9 @@ def createInputJson(output_file,
         },
 
         "ks_postprocessing_params" : {
-            "within_unit_overlap_window" : 0.000166,
-            "between_unit_overlap_window" : 0.000166,
-            "between_unit_overlap_distance" : 5
+            "within_unit_overlap_window" : 0.000333,
+            "between_unit_overlap_window" : 0.000333,
+            "between_unit_dist_um" : 42
         },
 
         "mean_waveform_params" : {
