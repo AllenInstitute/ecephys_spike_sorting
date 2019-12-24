@@ -26,7 +26,8 @@ def run_postprocessing(args):
                     use_master_clock = False,
                     include_pcs = True)
 
-    spike_times, spike_clusters, spike_templates, amplitudes, pc_features, template_features, overlap_matrix = \
+    spike_times, spike_clusters, spike_templates, amplitudes, pc_features, \
+    template_features, overlap_matrix, overlap_summary = \
         remove_double_counted_spikes(spike_times, 
                                      spike_clusters,
                                      spike_templates, 
@@ -51,6 +52,10 @@ def run_postprocessing(args):
     np.save(os.path.join(args['directories']['kilosort_output_directory'], 'pc_features.npy'), pc_features)
     np.save(os.path.join(args['directories']['kilosort_output_directory'], 'template_features.npy'), template_features)
     np.save(os.path.join(args['directories']['kilosort_output_directory'], 'overlap_matrix.npy'), overlap_matrix)
+    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'overlap_summary.npy'), overlap_summary)
+    
+    # save the overlap_summary as a text file -- allows user to easily understand what happened
+    np.savetxt(os.path.join(args['directories']['kilosort_output_directory'], 'overlap_summary.csv'), overlap_summary, fmt = '%d', delimiter = ',')
 
     execution_time = time.time() - start
 

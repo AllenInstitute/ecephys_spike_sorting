@@ -148,6 +148,7 @@ def createInputJson(output_file,
             }
         },
 
+# as implemented, "within_unit_overlap window" must be >= "between unit overlap window"
         "ks_postprocessing_params" : {
             "within_unit_overlap_window" : 0.000333,
             "between_unit_overlap_window" : 0.000333,
