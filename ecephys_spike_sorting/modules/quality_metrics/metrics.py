@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 from collections import OrderedDict
 
+import warnings
+
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.neighbors import NearestNeighbors
 from sklearn.metrics import silhouette_score
@@ -351,7 +353,12 @@ def calculate_silhouette_score(spike_clusters,
                 if len(labels) > 2:
                     SS[i,j] = silhouette_score(X, labels)
 
-    return np.nanmin(SS,0)
+    with warnings.catch_warnings():
+      warnings.simplefilter("ignore")
+      a = np.nanmin(SS, 0)
+      b = np.nanmin(SS, 1)
+
+    return np.array([np.nanmin([a,b]) for a, b in zip(a,b)])
 
 
 def calculate_drift_metrics(spike_times,
