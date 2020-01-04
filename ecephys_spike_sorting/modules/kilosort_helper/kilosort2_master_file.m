@@ -1,8 +1,8 @@
 
-addpath(genpath('C:\Users\svc_neuropix\Documents\GitHub\kilosort2')) % path to kilosort folder
-addpath(genpath('C:\Users\svc_neuropix\Documents\GitHub\npy-matlab')) % path to npy-matlab scripts
+addpath(genpath('Z:\workstation_backup\full_080119\Documents\KS2_current')) % path to kilosort folder
+addpath(genpath('Z:\workstation_backup\full_080119\Documents\npy-matlab-master')) % path to npy-matlab scripts
 
-pathToYourConfigFile = 'C:\Users\svc_neuropix\Documents\MATLAB'; % take from Github folder and put it somewhere else (together with the master_file)
+pathToYourConfigFile = 'D:\kilosort_datatemp'; % take from Github folder and put it somewhere else (together with the master_file)
 run(fullfile(pathToYourConfigFile, 'kilosort2_config_file.m'))
 
 %%

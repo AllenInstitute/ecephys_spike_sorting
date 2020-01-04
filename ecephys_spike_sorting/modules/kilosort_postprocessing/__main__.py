@@ -15,6 +15,9 @@ def run_postprocessing(args):
     print('ecephys spike sorting: kilosort postprocessing module')
 
     print("Loading data...")
+    
+    #print(args.keys()) 
+    #print(args['directories'].keys())
 
     start = time.time()
 

@@ -9,9 +9,12 @@ import numpy as np
 
 import matlab.engine
 
+from pathlib import Path
+
 from scipy.signal import butter, filtfilt, medfilt
 
 from . import matlab_file_generator
+from .SGLXMetaToCoords import MetaToCoords
 from ...common.utils import read_probe_json, get_repo_commit_date_and_hash, rms
 
 def run_kilosort(args):
@@ -25,29 +28,49 @@ def run_kilosort(args):
 
     output_dir = args['directories']['kilosort_output_directory']
     output_dir_forward_slash = output_dir.replace('\\','/')
+    
 
-    mask = get_noise_channels(args['ephys_params']['ap_band_file'], 
+    mask = get_noise_channels(args['ephys_params']['ap_band_file'],
+                              args['ephys_params']['num_channels'],
                               args['ephys_params']['sample_rate'],
                               args['ephys_params']['bit_volts'])
-
-    _, offset, scaling, surface_channel, air_channel = read_probe_json(args['common_files']['probe_json'])
     
-    mask[args['ephys_params']['reference_channels']] = False
+    if args['kilosort_helper_params']['spikeGLX_data']:
+       # SpikeGLX data, will build KS chanMap based on the metadata file plus 
+       # exclusion of noise channels found in get_noise_channels
+       # metadata file must be in the same directory as the ap_band_file
+       # resulting chanmap is copied to the matlab home directory, and will 
+       # overwrite any existing 'chanMap.mat'
+       metaName, binExt = os.path.splitext(args['ephys_params']['ap_band_file'])
+       metaFullPath = Path(metaName + '.meta')
 
-    top_channel = np.min([args['ephys_params']['num_channels'], int(surface_channel) + args['kilosort_helper_params']['surface_channel_buffer']])
-
-    shutil.copyfile(os.path.join('ecephys_spike_sorting','modules','kilosort_helper','kilosort2_master_file.m'),
-        os.path.join(args['kilosort_helper_params']['matlab_home_directory'],'kilosort2_master_file.m'))
-
-    matlab_file_generator.create_chanmap(args['kilosort_helper_params']['matlab_home_directory'], \
-                                        EndChan = top_channel, \
-                                        probe_type = args['ephys_params']['probe_type'],
-                                        MaskChannels = np.where(mask == False)[0])
-
+       destFullPath = os.path.join(args['kilosort_helper_params']['matlab_home_directory'], 'chanMap.mat')
+       MaskChannels = np.where(mask == False)[0]      
+       MetaToCoords( metaFullPath=metaFullPath, outType=1, badChan=MaskChannels, destFullPath=destFullPath)
+       # end of SpikeGLX block
+       
+    else:
+        # Open Ephys data, specifically finding the tissue surface and creating a chanMap to 
+        # exclude those channels. Assumes 3A/NP1.0 site geometry, all sites in bank 0.
+        _, offset, scaling, surface_channel, air_channel = read_probe_json(args['common_files']['probe_json'])
+        
+        mask[args['ephys_params']['reference_channels']] = False
+    
+        top_channel = np.min([args['ephys_params']['num_channels'], int(surface_channel) + args['kilosort_helper_params']['surface_channel_buffer']])
+        
+        matlab_file_generator.create_chanmap(args['kilosort_helper_params']['matlab_home_directory'], \
+                                            EndChan = top_channel, \
+                                            probe_type = args['ephys_params']['probe_type'],
+                                            MaskChannels = np.where(mask == False)[0])
+        # end of Open Ephys block    
+    
+     
+    shutil.copyfile(os.path.join(args['directories']['ecephys_directory'],'modules','kilosort_helper','kilosort2_master_file.m'),
+            os.path.join(args['kilosort_helper_params']['matlab_home_directory'],'kilosort2_master_file.m'))
     if args['kilosort_helper_params']['kilosort_version'] == 1:
     
         matlab_file_generator.create_config(args['kilosort_helper_params']['matlab_home_directory'], 
-                                            spike_dir_forward_slash, 
+                                            input_file_forward_slash, 
                                             os.path.basename(args['ephys_params']['ap_band_file']), 
                                             args['kilosort_helper_params']['kilosort_params'])
     
@@ -59,13 +82,17 @@ def run_kilosort(args):
                                              args['ephys_params'], 
                                              args['kilosort_helper_params']['kilosort2_params'])
     else:
+        print('unknown kilosort version')
         return
 
     start = time.time()
     
     eng = matlab.engine.start_matlab()
-    eng.createChannelMapFile(nargout=0)
-
+    
+#    if ~args['kilosort_helper_params']['spikeGLX_data']:
+#        # Create channel map from Open Ephys parameters through a matlab call
+#        eng.createChannelMapFile(nargout=0)
+    
     if args['kilosort_helper_params']['kilosort_version'] == 1:
         eng.kilosort_config_file(nargout=0)
         eng.kilosort_master_file(nargout=0)
@@ -83,17 +110,28 @@ def run_kilosort(args):
             "kilosort_commit_hash" : commit_time,
             'mask_channels' : np.where(mask == False)[0]} # output manifest
 
-def get_noise_channels(raw_data_file, sample_rate, bit_volts, noise_threshold=20):
+def get_noise_channels(raw_data_file, num_channels, sample_rate, bit_volts, noise_threshold=20):
 
+    noise_delay = 5            #in seconds
+    noise_interval = 10         #in seconds
+    
     raw_data = np.memmap(raw_data_file, dtype='int16')
-    data = np.reshape(raw_data, (int(raw_data.size / 384), 384))
-
-    start_index = int(1000 * sample_rate)
-    end_index = int(1025 * sample_rate)
-
+    
+    num_samples = int(raw_data.size/num_channels)
+      
+    data = np.reshape(raw_data, (num_samples, num_channels))
+   
+    start_index = int(noise_delay * sample_rate)
+    end_index = int((noise_delay + noise_interval) * sample_rate)
+    
+    if end_index > num_samples:
+        print('noise interval larger than total number of samples')
+        end_index = num_samples
+    
     b, a = butter(3, [10/(sample_rate/2), 10000/(sample_rate/2)], btype='band')
 
     D = data[start_index:end_index, :] * bit_volts
+    
     D_filt = np.zeros(D.shape)
 
     for i in range(D.shape[1]):
@@ -102,6 +140,8 @@ def get_noise_channels(raw_data_file, sample_rate, bit_volts, noise_threshold=20
     rms_values = np.apply_along_axis(rms, axis=0, arr=D_filt)
 
     above_median = rms_values - medfilt(rms_values,11)
+    
+    print('number of noise channels: ' + repr(sum(above_median > noise_threshold)))
 
     return above_median < noise_threshold
 

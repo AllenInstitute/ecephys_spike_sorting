@@ -1,6 +1,6 @@
 from argschema import ArgSchema, ArgSchemaParser 
 from argschema.schemas import DefaultSchema
-from argschema.fields import Nested, InputDir, String, Float, Dict, Int, NumpyArray
+from argschema.fields import Nested, InputDir, String, Float, Dict, Int, Boolean, NumpyArray
 from ...common.schemas import EphysParams, Directories, CommonFiles
 
 class KilosortParameters(DefaultSchema):
@@ -14,7 +14,7 @@ class KilosortParameters(DefaultSchema):
 class Kilosort2Parameters(DefaultSchema):
 
     trange = String(required=False, default='[0 Inf]', help='Time range in seconds to process')
-    fproc = String(required=False, default="fullfile('C:/data/kilosort', 'temp_wh.dat')", help='Processed data file on a fast ssd')
+    fproc = String(required=False, default="fullfile('D:\kilosort_datatemp', 'temp_wh.dat')", help='Processed data file on a fast ssd')
   
     chanMap = String(required=False, default="'chanMap.mat'", help='path to channel map .mat file')
     fshigh = Int(required=False, default=150, help='frequency for high pass filtering')
@@ -43,6 +43,8 @@ class Kilosort2Parameters(DefaultSchema):
 class KilosortHelperParameters(DefaultSchema):
 
     kilosort_version = Int(required=True, default=2, help='Kilosort version to use (1 or 2)')
+    
+    spikeGLX_data = Boolean(required=True, default=False, help='If true, use SpikeGLX metafile to build chanMap')
 
     surface_channel_buffer = Int(required=False, default=15, help='Number of channels above brain surface to include in spike sorting')
 

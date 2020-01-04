@@ -17,9 +17,12 @@ class EphysParams(DefaultSchema):
 
 class Directories(DefaultSchema):
 
+    ecephys_directory = InputDir(help='Location of the ecephys_spike_sorting directory containing modules directory')
+    npx_directory = InputDir(help='Location of raw neuropixels binary files')
     kilosort_output_directory = OutputDir(help='Location of Kilosort output files')
-    extracted_data_directory = OutputDir(help='Location for NPX file extraction')
-
+    extracted_data_directory = OutputDir(help='Location for NPX/CatGT processed files')
+    kilosort_output_tmp = OutputDir(help='Location for temporary KS output')
+    
 class CommonFiles(DefaultSchema):
 
     probe_json = String(help='Location of probe JSON file')

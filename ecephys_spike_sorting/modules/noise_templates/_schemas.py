@@ -1,6 +1,6 @@
 from argschema import ArgSchema, ArgSchemaParser 
 from argschema.schemas import DefaultSchema
-from argschema.fields import Nested, InputDir, String, Float, Dict, Int, NumpyArray
+from argschema.fields import Nested, InputDir, String, Float, Dict, Int, Boolean, NumpyArray
 from ...common.schemas import EphysParams, Directories
 
 class NoiseWaveformParams(DefaultSchema):
@@ -29,6 +29,7 @@ class NoiseWaveformParams(DefaultSchema):
     max_wavelet_peak_loc = Int(default=25, help='Maximum wavelet peak location for good units')
 
     multiprocessing_worker_count = Int(default=4, help='Number of workers to use for spatial peak calculation')
+    use_random_forest = Boolean(default=False, help='set to false to use heuristic  noise id')
 
 class InputParameters(ArgSchema):
     

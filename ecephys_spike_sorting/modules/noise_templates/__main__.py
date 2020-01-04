@@ -5,7 +5,7 @@ import time
 
 import numpy as np
 
-from .id_noise_templates import id_noise_templates
+from .id_noise_templates import id_noise_templates, id_noise_templates_rf
 
 from ...common.utils import write_cluster_group_tsv, load_kilosort_data
 
@@ -22,8 +22,14 @@ def classify_noise_templates(args):
                 args['ephys_params']['sample_rate'], \
                 convert_to_seconds = True)
 
-    cluster_ids, is_noise = id_noise_templates(cluster_ids, templates, np.squeeze(channel_map), \
-        args['noise_waveform_params'])
+    if args['noise_waveform_params']['use_random_forest']:
+        # use random forest classifier
+        cluster_ids, is_noise = id_noise_templates_rf(spike_times, spike_clusters, \
+                    cluster_ids, templates, args['noise_waveform_params'])
+    else:
+        # use heuristics to identify templates that look like noise
+        cluster_ids, is_noise = id_noise_templates(cluster_ids, templates, np.squeeze(channel_map), \
+            args['noise_waveform_params'])
 
     mapping = {False: 'good', True: 'noise'}
     labels = [mapping[value] for value in is_noise]

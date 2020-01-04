@@ -28,12 +28,12 @@ from create_input_json import createInputJson
 
  
 sorted_directories = [												
-						r"Z:\Susu_datasets\NP24_midbrain\catgt_NPtype24_shank0_botRow0_ref0_g0\NPtype24_shank0_botRow0_ref0_g0_tcat.imec1_phy_dupRem"
+						r"D:\ecephys_fork\test_data\t20"
 
 ]
 
 
-probe_type = 'NP21'
+probe_type = 'NP1'
 
 json_directory = r'D:\ecephys_fork\json_files'
 

@@ -17,11 +17,21 @@ def create_samba_directory(samba_server, samba_share):
 def createInputJson(output_file, 
                     npx_directory=None, 
                     continuous_file = None,
+                    spikeGLX_data=True,
                     extracted_data_directory=None,
                     kilosort_output_directory=None, 
                     kilosort_output_tmp=None, 
-                    probe_type='3A'):
+                    probe_type='3A',
+                    catGT_run_name=None,
+                    gate_string='0',
+                    trigger_string='0,0',
+                    probe_string='0',
+                    noise_template_use_rf = True
+                    ):
 
+    # hard coded path to the modules directory
+    modules_directory = r'D:\ecephys_fork\ecephys_spike_sorting\ecephys_spike_sorting\modules'
+    
     if kilosort_output_directory is None \
          and extracted_data_directory is None \
          and npx_directory is None:
@@ -30,45 +40,71 @@ def createInputJson(output_file,
     if probe_type == '3A':
         acq_system = '3a'
         reference_channels = [36, 75, 112, 151, 188, 227, 264, 303, 340, 379]
+        uVPerBit = 2.34375      # for AP gain = 500
     elif (probe_type =='NP1' or probe_type =='3B2'):
         acq_system = 'PXI'
-        reference_channels = [191]
+        reference_channels = [191] 
+        uVPerBit = 2.34375      # for AP gain = 500
     elif (probe_type == 'NP21' or probe_type == 'NP24'):
         acq_system = 'PXI'
         reference_channels = [127]
+        uVPerBit = 0.763      # for AP gain = 80, fixed in 2.0
     else:
         raise Exception('Unknown probe type')
         
-    if npx_directory is not None:
-        settings_xml = os.path.join(npx_directory, 'settings.xml')
-        if extracted_data_directory is None:
-            extracted_data_directory = npx_directory + '_sorted'
-        probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
-        settings_json = os.path.join(extracted_data_directory, 'open-ephys.json')
+    if spikeGLX_data:
+        # location of the raw data is the continuous file passed from script
+        # metadata file should be located in same directory
+        # 
+        # kilosort output will be put in the same directory as the input raw data,
+        # set in kilosort_output_directory passed from script
+        # kilososrt postprocessing (duplicate removal) and identification of noise
+        # clusters will act on phy output in the kilosort output directory
+        #
+        # 
+        print('SpikeGLX params set from meta')
+        print('kilosort output directory: ' + kilosort_output_directory )
+        # set Open Ephys specific dictionary keys; can't be null and still 
+        # pass argshema parser, even when unused
+        settings_json = npx_directory
+        probe_json = npx_directory
+        settings_xml = npx_directory
+        
     else:
-        if extracted_data_directory is not None:
+    # Data from Open Ephys
+        if npx_directory is not None:
+            settings_xml = os.path.join(npx_directory, 'settings.xml')
+            if extracted_data_directory is None:
+                extracted_data_directory = npx_directory + '_sorted'
             probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
             settings_json = os.path.join(extracted_data_directory, 'open-ephys.json')
-            settings_xml = None
         else:
-            settings_xml = None
-            settings_json = None
-            probe_json = None
-            extracted_data_directory = kilosort_output_directory
+            if extracted_data_directory is not None:
+                probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
+                settings_json = os.path.join(extracted_data_directory, 'open-ephys.json')
+                settings_xml = None
+            else:
+                settings_xml = None
+                settings_json = None
+                probe_json = None
+                extracted_data_directory = kilosort_output_directory
+    
+        if kilosort_output_directory is None:
+            kilosort_output_directory = os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.0')
+    
+        if continuous_file is None:
+            continuous_file = os.path.join(kilosort_output_directory, 'continuous.dat')
 
-    if kilosort_output_directory is None:
-        kilosort_output_directory = os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.0')
-
+    # Directory to hold the whitened data, also the current chanMap.mat and KS config files
     if kilosort_output_tmp is None:
-        kilosort_output_tmp = r"C:\data\kilosort" #kilosort_output_directory
-
-    if continuous_file is None:
-        continuous_file = os.path.join(kilosort_output_directory, 'continuous.dat')
-
+        kilosort_output_tmp = r"D:\kilosort_datatemp" #kilosort_output_directory
+        
     dictionary = \
     {
 
         "directories": {
+            "ecephys_directory":'D:\ecephys_fork\ecephys_spike_sorting\ecephys_spike_sorting',
+            "npx_directory": npx_directory,
             "extracted_data_directory": extracted_data_directory,
             "kilosort_output_directory": kilosort_output_directory,
             "kilosort_output_tmp": kilosort_output_tmp
@@ -86,7 +122,7 @@ def createInputJson(output_file,
         "ephys_params": {
             "sample_rate" : 30000,
             "lfp_sample_rate" : 2500,
-            "bit_volts" : 0.195,
+            "bit_volts" : uVPerBit,
             "num_channels" : 385,
             "reference_channels" : reference_channels,
             "vertical_site_spacing" : 10e-6,
@@ -128,9 +164,10 @@ def createInputJson(output_file,
 
         "kilosort_helper_params" : {
 
-            "matlab_home_directory": "C:\\Users\\svc_neuropix\\Documents\\MATLAB",
-            "kilosort_repository": "C:\\Users\\svc_neuropix\\Documents\\GitHub\\kilosort2",
+            "matlab_home_directory": kilosort_output_tmp,
+            "kilosort_repository": r"Z:\workstation_backup\full_080119\Documents\KS2_current",
             "kilosort_version" : 2,
+            "spikeGLX_data" : True,
             "surface_channel_buffer" : 15,
 
             "kilosort2_params" :
@@ -169,8 +206,9 @@ def createInputJson(output_file,
         },
 
         "noise_waveform_params" : {
-            "classifier_path" : os.path.join(os.getcwd(), 'ecephys_spike_sorting', 'modules', 'noise_templates', 'rf_classifier.pkl'),
-            "multiprocessing_worker_count" : 10
+            "classifier_path" : os.path.join(modules_directory, 'noise_templates', 'rf_classifier.pkl'),
+            "multiprocessing_worker_count" : 10,
+            "use_random_forest" : noise_template_use_rf
         },
 
         "quality_metrics_params" : {
@@ -184,6 +222,16 @@ def createInputJson(output_file,
             "quality_metrics_output_file" : os.path.join(kilosort_output_directory, "metrics.csv"),
             "drift_metrics_interval_s" : 51,
             "drift_metrics_min_spikes_per_interval" : 10
+        },
+        
+        "catGT_helper_params" : {
+            "run_name" : catGT_run_name,
+            "gate_string" : gate_string,
+            "probe_string" : probe_string,
+            "trigger_string": trigger_string,
+            "stream_string" : '-ap',
+            "cmdStr" : '-prb_fld -out_prb_fld -aphipass=300 -gbldmx -gfix=0.40,0.10,0.02',
+            "catGTPath" : 'Z:\CatGT'
         }
 
     }
