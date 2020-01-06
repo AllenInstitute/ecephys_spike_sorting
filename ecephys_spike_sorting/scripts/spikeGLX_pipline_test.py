@@ -51,7 +51,6 @@ for spec in run_specs:
 	                                   continuous_file = None,
                                        spikeGLX_data = 'True',
 									   kilosort_output_directory=catGT_dest,
-									   kilosort_output_tmp=None,
                                        catGT_run_name = session_id,
                                        gate_string = spec[1],
                                        trigger_string = spec[2],
@@ -106,12 +105,8 @@ for spec in run_specs:
         info = createInputJson(input_json, npx_directory=npx_directory, 
 	                                   continuous_file = continuous_file,
                                        spikeGLX_data = 'True',
-									   kilosort_output_directory=data_directory,
-									   kilosort_output_tmp=None,
-                                       catGT_run_name = session_id,
-                                       gate_string = spec[1],
-                                       trigger_string = spec[2],
-                                       probe_string = spec[3],
+									   kilosort_output_directory=data_directory,									   
+                                       noise_template_use_rf = False,
                                        extracted_data_directory = catGT_dest
                                        )    
         for module in modules:

@@ -30,8 +30,17 @@ def createInputJson(output_file,
                     noise_template_use_rf = True
                     ):
 
-    # hard coded path to the modules directory
+    # hard coded pathes to directories on this system
     ecephys_directory = r'D:\ecephys_fork\ecephys_spike_sorting\ecephys_spike_sorting'
+    kilosort_repository = r'Z:\workstation_backup\full_080119\Documents\KS2_current'
+    catGTPath = r'Z:\CatGT'
+    
+    if kilosort_output_tmp is None:
+        kilosort_output_tmp = r"D:\kilosort_datatemp" #kilosort_output_directory
+    
+    
+    # derived directory names
+    
     modules_directory = os.path.join(ecephys_directory,'modules')
     
     if kilosort_output_directory is None \
@@ -114,10 +123,7 @@ def createInputJson(output_file,
 
         
 
-    # Directory to hold the whitened data, also the current chanMap.mat and KS config files
-    if kilosort_output_tmp is None:
-        kilosort_output_tmp = r"D:\kilosort_datatemp" #kilosort_output_directory
-     
+    # Create string designating temporary output file for KS2 (gets inserted into KS2 config.m file)
     fproc = os.path.join(kilosort_output_tmp,'temp_wh.dat') # full path for temp whitened data file
     fproc_forward_slash = fproc.replace('\\','/')
     fproc_str = "'" + fproc_forward_slash + "'"
@@ -188,7 +194,7 @@ def createInputJson(output_file,
         "kilosort_helper_params" : {
 
             "matlab_home_directory": kilosort_output_tmp,
-            "kilosort_repository": r"Z:\workstation_backup\full_080119\Documents\KS2_current",
+            "kilosort_repository" : kilosort_repository,
             "kilosort_version" : 2,
             "spikeGLX_data" : True,
             "surface_channel_buffer" : 15,
@@ -255,7 +261,7 @@ def createInputJson(output_file,
             "trigger_string": trigger_string,
             "stream_string" : '-ap',
             "cmdStr" : '-prb_fld -out_prb_fld -aphipass=300 -gbldmx -gfix=0.40,0.10,0.02',
-            "catGTPath" : 'Z:\CatGT'
+            "catGTPath" : catGTPath
         }
 
     }
