@@ -16,7 +16,7 @@ def run_CatGT(args):
 
     catGTPath = args['catGT_helper_params']['catGTPath']
     catGTexe_fullpath = catGTPath.replace('\\','/') + "/CatGT"
-    print('path to CatGT exe: ' + catGTexe_fullpath )
+    # print('path to CatGT exe: ' + catGTexe_fullpath )
     
     cmd_parts = list()
     
@@ -30,7 +30,7 @@ def run_CatGT(args):
     cmd_parts.append(args['catGT_helper_params']['cmdStr'])
     cmd_parts.append('-dest=' + args['directories']['extracted_data_directory'])
     
-    print('cmd_parts')
+    # print('cmd_parts')
 
     catGT_cmd = ' '        # use space as the separator for the command parts
     catGT_cmd = catGT_cmd.join(cmd_parts)
@@ -41,14 +41,8 @@ def run_CatGT(args):
     subprocess.call(catGT_cmd)
 
     execution_time = time.time() - start
-#
-#    print('total time: ' + str(np.around(execution_time,2)) + ' seconds')
-#    print()
-#    
-#    return {"execution_time" : execution_time,
-#            "kilosort_commit_date" : commit_date,
-#            "kilosort_commit_hash" : commit_time,
-#            'mask_channels' : np.where(mask == False)[0]} # output manifest
+
+    print('total time: ' + str(np.around(execution_time,2)) + ' seconds')
     
     return {"execution_time" : execution_time} # output manifest
 

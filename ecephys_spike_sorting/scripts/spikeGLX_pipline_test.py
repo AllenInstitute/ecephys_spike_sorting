@@ -4,7 +4,7 @@ import subprocess
 from helpers import SpikeGLX_utils
 from create_input_json import createInputJson
 
-run_preprocess = False   # set to False to rerun KS2 or processing on previously processed data.
+run_preprocess = True   # set to False to rerun KS2 or processing on previously processed data.
 
 # batch file catGT_helper module for a set of runs in the 
 # directory npx_directory. Gate, trigger, probes to process are set
@@ -18,7 +18,6 @@ npx_directory = r'D:\ecephys_fork\test_data\SC_artifact_test_data'
 
 catGT_dest = r'D:\ecephys_fork\test_data\SC_artifact_test_data\CatGT_out'
 
-
 # Each run_spec is a list of 4 strings:
 #   undecorated run name (no g/t specifier, the run field in CatGT)
 #   gate index, as a string (e.g. '0')
@@ -31,7 +30,6 @@ run_specs = [
 ]
 
 
-probe_type = 'NP1'
 
 json_directory = r'D:\ecephys_fork\json_files'
 
@@ -46,7 +44,6 @@ for spec in run_specs:
 
     session_id = spec[0]
     
-
     input_json = os.path.join(json_directory, session_id + '-input.json')
     output_json = os.path.join(json_directory, session_id + '-output.json')
     print( 'Creating json file for preprocessing')
@@ -55,7 +52,6 @@ for spec in run_specs:
                                        spikeGLX_data = 'True',
 									   kilosort_output_directory=catGT_dest,
 									   kilosort_output_tmp=None,
-									   probe_type=probe_type,
                                        catGT_run_name = session_id,
                                        gate_string = spec[1],
                                        trigger_string = spec[2],
@@ -112,7 +108,6 @@ for spec in run_specs:
                                        spikeGLX_data = 'True',
 									   kilosort_output_directory=data_directory,
 									   kilosort_output_tmp=None,
-									   probe_type=probe_type,
                                        catGT_run_name = session_id,
                                        gate_string = spec[1],
                                        trigger_string = spec[2],

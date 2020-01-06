@@ -426,7 +426,7 @@ def MetaToCoords(metaFullPath, outType, badChan= np.zeros((0), dtype = 'int'), d
     meta = readMeta(metaFullPath)
     
     if 'imDatPrb_type' in meta:
-        pType = int(meta['imDatPrb_type']);
+        pType = int(meta['imDatPrb_type'])
     else:
         pType = 0    #3A probe
         
@@ -436,7 +436,7 @@ def MetaToCoords(metaFullPath, outType, badChan= np.zeros((0), dtype = 'int'), d
         # Neuropixels 1.0 or 3A probe
         
         # Get indices of electrodes
-        [elecInd, connected] = NP10_ElecInd(meta);
+        [elecInd, connected] = NP10_ElecInd(meta)
         
         # Get saved channels
         chans = OriginalChans(meta)     #inludes SY channel
@@ -454,7 +454,7 @@ def MetaToCoords(metaFullPath, outType, badChan= np.zeros((0), dtype = 'int'), d
         # Neuropixels type 21 (single shank) or 24 (four shank)
         
         # Get indices of electrodes
-        [elecInd, shankInd, bankMask, connected] = NP20_ElecInd(meta);
+        [elecInd, shankInd, bankMask, connected] = NP20_ElecInd(meta)
         
         # Get saved channels
         chans = OriginalChans(meta)     #inludes SY channel

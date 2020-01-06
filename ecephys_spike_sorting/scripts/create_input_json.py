@@ -2,6 +2,7 @@ import os, io, json, glob, sys
 
 if sys.platform == 'linux':
     import pwd
+from helpers import SpikeGLX_utils
 
 def create_samba_directory(samba_server, samba_share):
 
@@ -30,28 +31,23 @@ def createInputJson(output_file,
                     ):
 
     # hard coded path to the modules directory
-    modules_directory = r'D:\ecephys_fork\ecephys_spike_sorting\ecephys_spike_sorting\modules'
+    ecephys_directory = r'D:\ecephys_fork\ecephys_spike_sorting\ecephys_spike_sorting'
+    modules_directory = os.path.join(ecephys_directory,'modules')
     
     if kilosort_output_directory is None \
          and extracted_data_directory is None \
          and npx_directory is None:
         raise Exception('Must specify at least one output directory')
 
-    if probe_type == '3A':
-        acq_system = '3a'
-        reference_channels = [36, 75, 112, 151, 188, 227, 264, 303, 340, 379]
-        uVPerBit = 2.34375      # for AP gain = 500
-    elif (probe_type =='NP1' or probe_type =='3B2'):
-        acq_system = 'PXI'
-        reference_channels = [191] 
-        uVPerBit = 2.34375      # for AP gain = 500
-    elif (probe_type == 'NP21' or probe_type == 'NP24'):
-        acq_system = 'PXI'
-        reference_channels = [127]
-        uVPerBit = 0.763      # for AP gain = 80, fixed in 2.0
-    else:
-        raise Exception('Unknown probe type')
-        
+
+    #default ephys params. For spikeGLX, these get replaced by values read from metadata
+    sample_rate = 30000
+    num_channels = 384    
+    reference_channels = [191]
+    uVPerBit = 2.34375
+    acq_system = 'PXI'
+    
+    
     if spikeGLX_data:
         # location of the raw data is the continuous file passed from script
         # metadata file should be located in same directory
@@ -62,7 +58,11 @@ def createInputJson(output_file,
         # clusters will act on phy output in the kilosort output directory
         #
         # 
-        print('SpikeGLX params set from meta')
+        if continuous_file is not None:
+            probe_type, sample_rate, num_channels, uVPerBit = SpikeGLX_utils.EphysParams(continuous_file)  
+            print('SpikeGLX params read from meta')
+            print('probe type: {:s}, sample_rage: {:.5f}, num_channels: {:d}, uVPerBit: {:.4f}'.format\
+                  (probe_type, sample_rate, num_channels, uVPerBit))
         print('kilosort output directory: ' + kilosort_output_directory )
         # set Open Ephys specific dictionary keys; can't be null and still 
         # pass argshema parser, even when unused
@@ -71,7 +71,23 @@ def createInputJson(output_file,
         settings_xml = npx_directory
         
     else:
-    # Data from Open Ephys
+    # Data from Open Ephys; these params are sent manually from script
+    
+        if probe_type == '3A':
+            acq_system = '3a'
+            reference_channels = [36, 75, 112, 151, 188, 227, 264, 303, 340, 379]
+            uVPerBit = 2.34375      # for AP gain = 500
+        elif (probe_type =='NP1' or probe_type =='3B2'):
+            acq_system = 'PXI'
+            reference_channels = [191] 
+            uVPerBit = 2.34375      # for AP gain = 500
+        elif (probe_type == 'NP21' or probe_type == 'NP24'):
+            acq_system = 'PXI'
+            reference_channels = [127]
+            uVPerBit = 0.763      # for AP gain = 80, fixed in 2.0
+        else:
+            raise Exception('Unknown probe type')
+        
         if npx_directory is not None:
             settings_xml = os.path.join(npx_directory, 'settings.xml')
             if extracted_data_directory is None:
@@ -94,16 +110,23 @@ def createInputJson(output_file,
     
         if continuous_file is None:
             continuous_file = os.path.join(kilosort_output_directory, 'continuous.dat')
+            
+
+        
 
     # Directory to hold the whitened data, also the current chanMap.mat and KS config files
     if kilosort_output_tmp is None:
         kilosort_output_tmp = r"D:\kilosort_datatemp" #kilosort_output_directory
-        
+     
+    fproc = os.path.join(kilosort_output_tmp,'temp_wh.dat') # full path for temp whitened data file
+    fproc_forward_slash = fproc.replace('\\','/')
+    fproc_str = "'" + fproc_forward_slash + "'"
+    
     dictionary = \
     {
 
         "directories": {
-            "ecephys_directory":'D:\ecephys_fork\ecephys_spike_sorting\ecephys_spike_sorting',
+            "ecephys_directory":ecephys_directory,
             "npx_directory": npx_directory,
             "extracted_data_directory": extracted_data_directory,
             "kilosort_output_directory": kilosort_output_directory,
@@ -120,10 +143,10 @@ def createInputJson(output_file,
         },
 
         "ephys_params": {
-            "sample_rate" : 30000,
+            "sample_rate" : sample_rate,
             "lfp_sample_rate" : 2500,
             "bit_volts" : uVPerBit,
-            "num_channels" : 385,
+            "num_channels" : num_channels,
             "reference_channels" : reference_channels,
             "vertical_site_spacing" : 10e-6,
             "ap_band_file" : continuous_file,
@@ -172,6 +195,7 @@ def createInputJson(output_file,
 
             "kilosort2_params" :
             {
+                "fproc" : fproc_str,
                 "chanMap" : "'chanMap.mat'",
                 "fshigh" : 150,
                 "minfr_goodchannels" : 0.1,
