@@ -1,9 +1,10 @@
+%paths will be addded to the matlab path using calls in python
+%addpath(genpath('Z:\workstation_backup\full_080119\Documents\KS2_current')) % path to kilosort folder
+%addpath(genpath('Z:\workstation_backup\full_080119\Documents\npy-matlab-master')) % path to npy-matlab scripts
 
-addpath(genpath('Z:\workstation_backup\full_080119\Documents\KS2_current')) % path to kilosort folder
-addpath(genpath('Z:\workstation_backup\full_080119\Documents\npy-matlab-master')) % path to npy-matlab scripts
-
-pathToYourConfigFile = 'D:\kilosort_datatemp'; % take from Github folder and put it somewhere else (together with the master_file)
-run(fullfile(pathToYourConfigFile, 'kilosort2_config_file.m'))
+%path to the config file will also be added to the matlab path using call in python
+%pathToYourConfigFile = 'D:\kilosort_datatemp'; % take from Github folder and put it somewhere else (together with the master_file)
+run('kilosort2_config_file.m')
 
 %%
 

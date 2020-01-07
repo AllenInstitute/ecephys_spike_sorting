@@ -92,12 +92,24 @@ def run_kilosort(args):
 #    if ~args['kilosort_helper_params']['spikeGLX_data']:
 #        # Create channel map from Open Ephys parameters through a matlab call
 #        eng.createChannelMapFile(nargout=0)
-    
-    if args['kilosort_helper_params']['kilosort_version'] == 1:
-        eng.kilosort_config_file(nargout=0)
+
+# jic -- remove call to config file, should be called from kilsort_master
+# jic -- add paths to kilosort repo and matlab home directory
+#
+#  
+    KS_dir = args['kilosort_helper_params']['kilosort_repository'].replace('\\','/')
+    NPY_dir = args['kilosort_helper_params']['npy_matlab_repository'].replace('\\','/')
+    home_dir = args['kilosort_helper_params']['matlab_home_directory'].replace('\\','/')
+            
+    if args['kilosort_helper_params']['kilosort_version'] == 1:    
+        eng.addpath(eng.genpath(KS_dir))
+        eng.addpath(eng.genpath(NPY_dir))
+        eng.addpath(home_dir)
         eng.kilosort_master_file(nargout=0)
     else:
-        eng.kilosort2_config_file(nargout=0)
+        eng.addpath(eng.genpath(KS_dir))
+        eng.addpath(eng.genpath(NPY_dir))
+        eng.addpath(home_dir)
         eng.kilosort2_master_file(nargout=0)
 
     execution_time = time.time() - start

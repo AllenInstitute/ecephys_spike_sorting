@@ -20,8 +20,7 @@ def createInputJson(output_file,
                     continuous_file = None,
                     spikeGLX_data=True,
                     extracted_data_directory=None,
-                    kilosort_output_directory=None, 
-                    kilosort_output_tmp=None, 
+                    kilosort_output_directory=None,                    
                     probe_type='3A',
                     catGT_run_name=None,
                     gate_string='0',
@@ -30,13 +29,14 @@ def createInputJson(output_file,
                     noise_template_use_rf = True
                     ):
 
-    # hard coded pathes to directories on this system
+    # hard coded pathes to code on your computer
     ecephys_directory = r'D:\ecephys_fork\ecephys_spike_sorting\ecephys_spike_sorting'
     kilosort_repository = r'Z:\workstation_backup\full_080119\Documents\KS2_current'
+    npy_matlab_repository = r'Z:\workstation_backup\full_080119\Documents\npy-matlab-master'
     catGTPath = r'Z:\CatGT'
     
-    if kilosort_output_tmp is None:
-        kilosort_output_tmp = r"D:\kilosort_datatemp" #kilosort_output_directory
+    # for config files and kilosort working space
+    kilosort_output_tmp = r'D:\kilosort_datatemp' 
     
     
     # derived directory names
@@ -195,6 +195,7 @@ def createInputJson(output_file,
 
             "matlab_home_directory": kilosort_output_tmp,
             "kilosort_repository" : kilosort_repository,
+            "npy_matlab_repository" : npy_matlab_repository,
             "kilosort_version" : 2,
             "spikeGLX_data" : True,
             "surface_channel_buffer" : 15,
