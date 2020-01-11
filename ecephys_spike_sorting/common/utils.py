@@ -189,9 +189,9 @@ def read_cluster_group_tsv(filename):
 
     """
 
-    info = np.genfromtxt(filename, dtype='str')
-    cluster_ids = info[1:,0].astype('int')
-    cluster_quality = info[1:,1]
+    info = pd.read_csv(filename, sep='\t')
+    cluster_ids = info['cluster_id'].values.astype('int')
+    cluster_quality = info['group'].values
 
     return cluster_ids, cluster_quality
 
