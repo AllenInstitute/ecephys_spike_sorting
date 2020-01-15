@@ -111,7 +111,24 @@ def run_kilosort(args):
         eng.addpath(eng.genpath(NPY_dir))
         eng.addpath(home_dir)
         eng.kilosort2_master_file(nargout=0)
+        
+    # if the phy output directory is different from the data directory, change 
+    # the default dat_path in params.py to be the relative path from the phy
+    # output to the binary file
+    dat_dir, dat_name = os.path.split(input_file) 
+    if not os.path.samefile(dat_dir, output_dir):
+        fix_phy_params_path(output_dir, dat_dir)
 
+    if args['kilosort_helper_params']['ks_make_copy']:
+        # get the kilsort output directory name and build a new name
+        pPath, phyName = os.path.split(output_dir)
+        copy_dir = os.path.join(pPath, phyName + '_orig')
+        # check for whether the directory is already there; if so, delete it
+        if os.path.exists(copy_dir):
+            shutil.rmtree(copy_dir)
+        # make a copy of output_dir
+        shutil.copytree(output_dir, copy_dir)
+        
     execution_time = time.time() - start
 
     print('total time: ' + str(np.around(execution_time,2)) + ' seconds')
@@ -157,7 +174,33 @@ def get_noise_channels(raw_data_file, num_channels, sample_rate, bit_volts, nois
 
     return above_median < noise_threshold
 
-
+def fix_phy_params_path(output_dir, dat_path):
+    # write a new params.py file with the relative path to the binary file
+    # first make a copy of the original
+    shutil.copy(os.path.join(output_dir,'params.py'), os.path.join(output_dir,'old_params.py'))
+    
+    relPath = os.path.relpath(dat_path, output_dir)
+    paramLines = list()
+    
+    with open(os.path.join(output_dir,'old_params.py'), 'r') as f:
+        currLine = f.readline()
+        
+        while currLine != '':  # The EOF char is an empty string
+            if 'dat_path' in currLine:
+                dat_path = currLine.split()[2]
+                lp = int(len(dat_path))
+                dat_path = dat_path[1:lp-1]     #trim off quotes
+                new_path = os.path.join(relPath,dat_path)
+                new_path = new_path.replace('\\','/')
+                currLine = "dat_path = '" + new_path + "'\n"
+            paramLines.append(currLine)           
+            currLine = f.readline()
+            
+    with open(os.path.join(output_dir,'params.py'), 'w') as fout:
+        for line in paramLines:
+            fout.write(line)
+    
+    
 def main():
 
     from ._schemas import InputParameters, OutputParameters

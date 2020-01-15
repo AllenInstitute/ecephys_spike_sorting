@@ -39,12 +39,14 @@ class Kilosort2Parameters(DefaultSchema):
     scaleproc = Int(required=False, default=200, help='int16 scaling of whitenend data')
     nPCs = Int(required=False, default=3, help='how many PCs to project the spikes into')
     useRAM = Int(required=False, default=0, help='must be 0')
+    gain = Float(required=False, default=1, help='uV/bit to report amplitudes in uV')
 
 class KilosortHelperParameters(DefaultSchema):
 
     kilosort_version = Int(required=True, default=2, help='Kilosort version to use (1 or 2)')
     
     spikeGLX_data = Boolean(required=True, default=False, help='If true, use SpikeGLX metafile to build chanMap')
+    ks_make_copy = Boolean(required=False, default=False, help='If true, make a copy of the original KS output')
 
     surface_channel_buffer = Int(required=False, default=15, help='Number of channels above brain surface to include in spike sorting')
 

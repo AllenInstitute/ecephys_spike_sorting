@@ -20,12 +20,15 @@ def createInputJson(output_file,
                     continuous_file = None,
                     spikeGLX_data=True,
                     extracted_data_directory=None,
-                    kilosort_output_directory=None,                    
+                    kilosort_output_directory=None,
+                    ks_make_copy=False,
                     probe_type='3A',
                     catGT_run_name=None,
                     gate_string='0',
                     trigger_string='0,0',
                     probe_string='0',
+                    catGT_stream_string = '-ap',
+                    catGT_cmd_string = '-prb_fld -out_prb_fld -aphipass=300 -gbldmx -gfix=0.40,0.10,0.02',
                     noise_template_use_rf = True
                     ):
 
@@ -55,7 +58,7 @@ def createInputJson(output_file,
     reference_channels = [191]
     uVPerBit = 2.34375
     acq_system = 'PXI'
-    
+     
     
     if spikeGLX_data:
         # location of the raw data is the continuous file passed from script
@@ -158,7 +161,7 @@ def createInputJson(output_file,
             "ap_band_file" : continuous_file,
             "lfp_band_file" : os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.1', 'continuous.dat'),
             "reorder_lfp_channels" : probe_type == '3A',
-            "cluster_group_file_name" : 'cluster_group.tsv.v2'
+            "cluster_group_file_name" : 'cluster_group.tsv'
         }, 
 
         "extract_from_npx_params" : {
@@ -198,6 +201,7 @@ def createInputJson(output_file,
             "npy_matlab_repository" : npy_matlab_repository,
             "kilosort_version" : 2,
             "spikeGLX_data" : True,
+            "ks_make_copy": ks_make_copy,
             "surface_channel_buffer" : 15,
 
             "kilosort2_params" :
@@ -212,7 +216,8 @@ def createInputJson(output_file,
                 "minFR" : 1/50.,
                 "momentum" : '[20 400]',
                 "sigmaMask" : 30,
-                "ThPre" : 8
+                "ThPre" : 8,
+                "gain" : uVPerBit
             }
         },
 
@@ -260,8 +265,8 @@ def createInputJson(output_file,
             "gate_string" : gate_string,
             "probe_string" : probe_string,
             "trigger_string": trigger_string,
-            "stream_string" : '-ap',
-            "cmdStr" : '-prb_fld -out_prb_fld -aphipass=300 -gbldmx -gfix=0.40,0.10,0.02',
+            "stream_string" : catGT_stream_string,
+            "cmdStr" : catGT_cmd_string,
             "catGTPath" : catGTPath
         }
 

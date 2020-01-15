@@ -51,11 +51,20 @@ for name in run_names:
     input_json = os.path.join(json_directory, session_id + '-input.json')
     output_json = os.path.join(json_directory, session_id + '-output.json')
     
+    # kilosort_postprocessing and noise_templates moduules alter the files
+    # that are input to phy. If using these modules, keep a copy of the
+    # original phy output
+    if ('kilosort_postprocessing' in modules) or ('noise_templates' in modules):
+        ks_make_copy = True
+    else:
+        ks_make_copy = False
+    
     print( 'Creating json file for KS2 and postprocessing')
     info = createInputJson(input_json, npx_directory=npx_directory, 
 	                                   continuous_file = os.path.join(npx_directory,name),
                                        spikeGLX_data = 'True',
-									   kilosort_output_directory=kilosort_output_dir,     
+									   kilosort_output_directory=kilosort_output_dir, 
+                                       ks_make_copy = ks_make_copy,
                                        extracted_data_directory = npx_directory,
                                        noise_template_use_rf = False
                                        )
