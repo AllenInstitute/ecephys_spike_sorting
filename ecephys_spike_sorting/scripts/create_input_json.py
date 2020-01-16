@@ -169,7 +169,7 @@ def createInputJson(output_file,
         "quality_metrics_params" : {
             "isi_threshold" : 0.0015,
             "min_isi" : 0.000166,
-            "num_channels_to_compare" : 13,
+            "num_channels_to_compare" : 7,
             "max_spikes_for_unit" : 500,
             "max_spikes_for_nn" : 10000,
             "n_neighbors" : 4,

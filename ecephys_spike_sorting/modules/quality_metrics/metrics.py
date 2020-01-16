@@ -276,13 +276,11 @@ def calculate_pc_metrics(spike_clusters,
             
         for idx2, cluster_id2 in enumerate(units_in_range):
 
-            ### this will fail when spike_templates != spike_clusters
-            channel_mask = make_channel_mask(cluster_id2, pc_feature_ind, channels_to_use)
-
             subsample = int(relative_counts[idx2])
-            index_mask = make_index_mask(spike_clusters, cluster_id2, min_num = 0, max_num = subsample)
-            
-            pcs = get_unit_pcs(pc_features, index_mask, channel_mask)
+
+            pcs = get_unit_pcs(cluster_id2, spike_clusters, spike_templates, 
+                               pc_feature_ind, pc_features, channels_to_use,
+                               subsample)
             
             labels = np.ones((pcs.shape[0],)) * cluster_id2
             
@@ -704,80 +702,32 @@ def nearest_neighbors_metrics(all_pcs, all_labels, this_unit_id, max_spikes_for_
 
 # ==========================================================
 
-def make_index_mask(spike_clusters, unit_id, min_num, max_num):
+def get_unit_pcs(unit_id, 
+                 spike_clusters, 
+                 spike_templates, 
+                 pc_feature_ind, 
+                 pc_features, 
+                 channels_to_use,
+                 subsample):
 
-    """ Create a mask for the spike index dimensions of the pc_features array  
-
-    Inputs:
-    -------
-    spike_clusters : numpy.ndarray (num_spikes x 0)
-        Contains cluster IDs for all spikes in pc_features array
-    unit_id : Int
-        ID for this unit
-    min_num : Int
-        Minimum number of spikes to return; if there are not enough spikes for this unit, return all False
-    max_num : Int
-        Maximum number of spikes to return; if too many spikes for this unit, return a random subsample
-
-    Output:
-    -------
-    index_mask : numpy.ndarray (boolean)
-        Mask of spike indices for pc_features array
-
-    """
-    
-    index_mask = spike_clusters == unit_id
-        
-    inds = np.where(index_mask)[0]
-    
-    if len(inds) < min_num:
-        index_mask = np.zeros((spike_clusters.size,), dtype='bool')
-    else:
-        index_mask = np.zeros((spike_clusters.size,), dtype='bool')
-        order = np.random.permutation(inds.size)
-        index_mask[inds[order[:max_num]]] = True
-        
-    return index_mask
-
-
-def make_channel_mask(unit_id, pc_feature_ind, channels_to_use):
-
-    """ Create a mask for the channel dimension of the pc_features array  
+    """ Return PC features for one unit 
 
     Inputs:
     -------
     unit_id : Int
         ID for this unit
+    spike_clusters : np.ndarray
+        Cluster labels for each spike
+    spike_templates : np.ndarry
+        Template labels for each spike
     pc_feature_ind : np.ndarray
         Channels used for PC calculation for each unit
+    pc_features : np.ndarray
+        Array of all PC features
     channels_to_use : np.ndarray
         Channels to use for calculating metrics
-
-    Output:
-    -------
-    channel_mask : numpy.ndarray
-        Channel indices to extract from pc_features array
-    
-    """
-    
-    these_inds = pc_feature_ind[unit_id, :]
-    channel_mask = [np.argwhere(these_inds == i)[0][0] for i in channels_to_use]
-
-    return np.array(channel_mask)
-
-
-def get_unit_pcs(these_pc_features, index_mask, channel_mask):
-
-    """ Use the index_mask and channel_mask to return PC features for one unit 
-
-    Inputs:
-    -------
-    these_pc_features : numpy.ndarray (float)
-        Array of pre-computed PC features (num_spikes x num_PCs x num_channels)
-    index_mask : numpy.ndarray (boolean)
-        Mask for spike index dimension of pc_features array
-    channel_mask : numpy.ndarray (boolean)
-        Mask for channel index dimension of pc_features array
+    subsample : Int
+        maximum number of spikes to return
 
     Output:
     -------
@@ -786,8 +736,27 @@ def get_unit_pcs(these_pc_features, index_mask, channel_mask):
 
     """
 
-    unit_PCs = these_pc_features[index_mask,:,:]
+    inds_for_unit = np.where(spike_clusters == unit_id)[0]
 
-    unit_PCs = unit_PCs[:,:,channel_mask]
+    spikes_to_use = np.random.permutation(inds_for_unit)[:subsample]
+
+    unique_template_ids = np.unique(spike_templates[spikes_to_use])
+
+    unit_PCs = []
+
+    for template_id in unique_template_ids:
+
+        index_mask = spikes_to_use[np.squeeze(spike_templates[spikes_to_use]) == template_id]
+
+        print(len(index_mask))
+
+        these_inds = pc_feature_ind[template_id, :]
+        print(these_inds)
+        print(channels_to_use)
+        channel_mask = [np.argwhere(these_inds == channel)[0][0] for i in channels_to_use]
+
+        print(channel_mask)
+
+        unit_PCs.append(pc_features[index_mask, :, channel_mask])
     
-    return unit_PCs
+    return np.concatenate(unit_PCs)
