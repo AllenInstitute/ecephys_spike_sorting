@@ -499,6 +499,12 @@ def catGT_ex_params_from_str(ex_str):
     # <run name>_g<gate index>_tcat.nidq.<ex_name_str>.txt
     # for imec SY channels, the file of of extracted edges will be named:
     # <run name>_g<gate index>_tcat.imec<probe index>.txt
+    
+    # CatGT does not allow any spaces wihtin options, but there can be 
+    # spaces between options in the command string, and these are
+    # appended to the comma delimited string parsed here. 
+    # Remove spaces before parsing
+    ex_str = ex_str.replace(' ','')
 
     ex_type = ex_str[0:2]    # stream type
 

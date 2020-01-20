@@ -79,7 +79,7 @@ def createInputJson(output_file,
         if continuous_file is not None:
             probe_type, sample_rate, num_channels, uVPerBit = SpikeGLX_utils.EphysParams(continuous_file)  
             print('SpikeGLX params read from meta')
-            print('probe type: {:s}, sample_rage: {:.5f}, num_channels: {:d}, uVPerBit: {:.4f}'.format\
+            print('probe type: {:s}, sample_rate: {:.5f}, num_channels: {:d}, uVPerBit: {:.4f}'.format\
                   (probe_type, sample_rate, num_channels, uVPerBit))
         print('kilosort output directory: ' + kilosort_output_directory )
         # set Open Ephys specific dictionary keys; can't be null and still 

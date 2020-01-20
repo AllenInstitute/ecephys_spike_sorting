@@ -36,6 +36,9 @@ def create_TPrime_bat(args):
     ni_sync_params = args['tPrime_helper_params']['ni_sync_params']
     catGTcmd = args['catGT_helper_params']['cmdStr']
 
+    exe_path = os.path.join(args['tPrime_helper_params']['tPrime_path'], 'TPrime.exe')
+    sync_period = args['tPrime_helper_params']['sync_period']
+
     catGTcmd_parts = catGTcmd.split('-')
     # remove empty strings
     catGTcmd_parts = [idx for idx in catGTcmd_parts if len(idx) > 0]
@@ -60,18 +63,23 @@ def create_TPrime_bat(args):
         c_name = run_name + '_tcat.imec' + str(toStream_prb) + '.' + toStream_ex_name + '.txt'
         toStream_path = os.path.join(run_directory, prb_dir, c_name)
         
+        # convert events in the toStream to sec; they will not be adjusted
+        ks_outdir = 'imec' + str(toStream_prb) + '_ks2'
+        st_file = os.path.join(run_directory, prb_dir, ks_outdir, 'spike_times.npy')
+        toStream_events_sec = spike_times_npy_to_txt(st_file, 0)
+
         # remove the toStream the list of im extraction params
         matchI = [i for i, value in enumerate(im_ex_list) if toStream_params in value]
         del im_ex_list[matchI[0]]
-        
+
         # fromStreams will include all other SY + NI if present
-        
-        # loop over SY, add the sync file to the fromList 
-        # get extraction parameters, build name for output file     
+
+        # loop over SY, add the sync file to the fromList
+        # get extraction parameters, build name for output file
 
         for ex_str in im_ex_list:
             # get params
-            c_type, c_prb, c_ex_name = catGT_ex_params_from_str(ex_str)               
+            c_type, c_prb, c_ex_name = catGT_ex_params_from_str(ex_str)          
             # build file name for this fromStream
             prb_dir = prb_dir_prefix + str(c_prb)
             c_name = run_name + '_tcat.imec' + str(c_prb) + '.' + c_ex_name + '.txt'
@@ -80,10 +88,11 @@ def create_TPrime_bat(args):
             # build path to spike times npy file
             ks_outdir = 'imec' + str(c_prb) + '_ks2'
             st_file = os.path.join(run_directory, prb_dir, ks_outdir, 'spike_times.npy')
-            events_list.append(st_file)
+            st_file_sec = spike_times_npy_to_txt(st_file, 0)
+            events_list.append(st_file_sec)
             from_stream_index.append(str(c_index))
             # build path for output spike times npy file
-            out_file = os.path.join(run_directory, prb_dir,ks_outdir, 'spike_times_adj.npy')
+            out_file = os.path.join(run_directory, prb_dir,ks_outdir, 'spike_times_sec_adj.txt')
             out_list.append(out_file)
     
         # get index for sync channel in NI. If none or not found, no ni
@@ -93,7 +102,7 @@ def create_TPrime_bat(args):
         if len(matchI) == 1:
             # get params
             c_type, c_prb, c_ex_name = catGT_ex_params_from_str(ni_sync_params)
-            c_name = run_name + '_tcat.ni.' + c_ex_name + '.txt'
+            c_name = run_name + '_tcat.nidq.' + c_ex_name + '.txt'
             from_list.append(os.path.join(run_directory, c_name))
             c_index = len(from_stream_index)
             #remove from list
@@ -103,10 +112,10 @@ def create_TPrime_bat(args):
             for ex_str in ni_ex_list:
                 # get params
                 c_type, c_prb, c_ex_name = catGT_ex_params_from_str(ex_str) 
-                c_name = run_name + '_tcat.ni.' + c_ex_name + '.txt'
+                c_name = run_name + '_tcat.nidq.' + c_ex_name + '.txt'
                 events_list.append(os.path.join(run_directory, c_name))
                 from_stream_index.append(str(c_index))
-                c_output_name = run_name + '_tcat.ni.' + c_ex_name + '.adj.txt'
+                c_output_name = run_name + '_tcat.nidq.' + c_ex_name + '.adj.txt'
                 out_file = os.path.join(run_directory, c_output_name)
                 out_list.append(out_file) 
         else:
@@ -116,30 +125,110 @@ def create_TPrime_bat(args):
     else:
         # toStream is NI
         # build path to the the sync file
-        c_name = run_name + '_tcat.ni.' + toStream_ex_name + '.txt'
+        c_name = run_name + '_tcat.nidq.' + toStream_ex_name + '.txt'
         toStream_path = os.path.join(run_directory, c_name)
-        
-        
-        
-    
-    # build list of event files, include:
-    #   all edge files extracted from the NI stream except the one specified by ni_sync_params
-    #   all files of spike times, except for those in a to stream
-    
+
+        # build list of event files, include: 
+        #   all files of spike times, except for those in a to stream
+        #   no NI files, because they are already in the "toStream"
+
+        # loop over all SY files
+        for ex_str in im_ex_list:
+            # get params
+            c_type, c_prb, c_ex_name = catGT_ex_params_from_str(ex_str)          
+            # build file name for this fromStream
+            prb_dir = prb_dir_prefix + str(c_prb)
+            c_name = run_name + '_tcat.imec' + str(c_prb) + '.' + c_ex_name + '.txt'
+            from_list.append(os.path.join(run_directory, prb_dir, c_name))
+            c_index = len(from_stream_index)
+            # build path to spike times npy file
+            ks_outdir = 'imec' + str(c_prb) + '_ks2'
+            st_file = os.path.join(run_directory, prb_dir, ks_outdir, 'spike_times.npy')
+            st_file_sec = spike_times_npy_to_txt(st_file, 0)
+            events_list.append(st_file_sec)
+            from_stream_index.append(str(c_index))
+            # build path for output spike times npy file
+            out_file = os.path.join(run_directory, prb_dir, ks_outdir, 'spike_times_sec_adj.txt')
+            out_list.append(out_file)
+
+
     print('toStream:')
     print(toStream_path)
     print('fromStream')
     for fp in from_list:
         print(fp)
     print('event files')
-    for ep in events_list:
-        print(ep)
-        
+    for i, ep in enumerate(events_list):
+        print('index: ' + repr(from_stream_index[i]) + ',' + ep)
+    print('output files')
+    for op in out_list:
+        print(op)
+
+
+
+    tcmd = exe_path + ' -syncperiod=' + repr(sync_period) + \
+        ' -tostream=' + toStream_path
+
+    for i, fp in enumerate(from_list):
+        tcmd = tcmd + ' -fromstream=' + repr(i) + ',' + fp
+
+    for i, ep in enumerate(events_list):
+        tcmd = tcmd + ' -events=' + repr(from_stream_index[i]) + ',' + ep + ',' + out_list[i]
+
+    # write out batch file to call TPrime
+#    bat_path = os.path.join(run_directory, run_name + '_TPrime.bat')
+#    with open(bat_path, 'w') as batfile:
+#        batfile.write(tcmd)
+
+    # make the TPrime call
+    subprocess.call(tcmd)
+
     execution_time = time.time() - start
 
     print('total time: ' + str(np.around(execution_time, 2)) + ' seconds')
 
     return {"execution_time": execution_time}  # output manifest
+
+
+def spike_times_npy_to_txt(sp_fullPath, sample_rate):
+    # convert spike_times.npy to text of times in sec
+    # return path to the new file. Can take sample_rate as a
+    # parameter, or set to 0 to read from param file
+
+    # get file name and create path to new file
+    sp_path, sp_fileName = os.path.split(sp_fullPath)
+    baseName, bExt = os.path.splitext(sp_fileName)
+    new_fileName = baseName + '_sec.txt'
+    new_fullPath = os.path.join(sp_path, new_fileName)
+
+    # load spike_times.npy; returns numpy array (Nspike,) as uint64
+    spike_times = np.load(sp_fullPath)
+
+    if sample_rate == 0:
+        # get sample rate from params.py file, assuming sp_path is a full set
+        # of phy output
+        with open(os.path.join(sp_path, 'params.py'), 'r') as f:
+            currLine = f.readline()
+            while currLine != '':  # The EOF char is an empty string
+                if 'sample_rate' in currLine:
+                    sample_rate = float(currLine.split('=')[1])
+                    print(f'sample_rate read from params.py: {sample_rate:.10f}')
+                currLine = f.readline()
+
+            if sample_rate == 0:
+                print('failed to read in sample rate\n')
+                sample_rate = 30000
+
+    spike_times_sec = spike_times/sample_rate   # spike_times_sec dtype = float
+
+    # write out single column text file
+    nSpike = len(spike_times_sec)
+    with open(new_fullPath, 'w') as outfile:
+        for i in range(0, nSpike-1):
+            outfile.write(f'{spike_times_sec[i]:.6f}\n')
+        outfile.write(f'{spike_times_sec[nSpike-1]:.6f}')
+
+    return new_fullPath
 
 
 def main():

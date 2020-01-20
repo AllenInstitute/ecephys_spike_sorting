@@ -65,9 +65,9 @@ def get_psth_events(args):
     event_path = os.path.join(phy_dir, 'events.csv')
     nEvent = len(edgeTimes)
     with open(event_path, 'w') as outfile:
-        for i in range(0, len(edgeTimes)-1):
+        for i in range(0, nEvent-1):
             outfile.write(f'{edgeTimes[i]:.6f},')
-        outfile.write(f'{edgeTimes[nEvent-1]}')
+        outfile.write(f'{edgeTimes[nEvent-1]:.6f}')
 
     execution_time = time.time() - start
 

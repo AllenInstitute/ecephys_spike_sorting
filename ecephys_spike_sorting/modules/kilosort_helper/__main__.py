@@ -111,21 +111,21 @@ def run_kilosort(args):
         eng.addpath(eng.genpath(NPY_dir))
         eng.addpath(home_dir)
         eng.kilosort2_master_file(nargout=0)
-        
-    # if the phy output directory is different from the data directory, change 
+
+    # if the phy output directory is different from the data directory, change
     # the default dat_path in params.py to be the relative path from the phy
     # output to the binary file
-    dat_dir, dat_name = os.path.split(input_file) 
-    if not os.path.samefile(dat_dir, output_dir):
-        fix_phy_params_path(output_dir, dat_dir)
-  
+    dat_dir, dat_name = os.path.split(input_file)
+
+    fix_phy_params(output_dir, dat_dir, args['ephys_params']['sample_rate'])
+
     # make a copy of the channel map to the data directory
     # see above: destFullPath specifiee destination for chanMap.mat
-    shutil.copy(destFullPath, os.path.joint(dat_dir,'chanMap.mat'))
+    shutil.copy(destFullPath, os.path.join(dat_dir, 'chanMap.mat'))
 
     if args['kilosort_helper_params']['ks_make_copy']:
         # get the kilsort output directory name
-        pPath, phyName = os.path.split(output_dir)  
+        pPath, phyName = os.path.split(output_dir)
         # build a name for the copy
         copy_dir = os.path.join(pPath, phyName + '_orig')
         # check for whether the directory is already there; if so, delete it
@@ -133,12 +133,12 @@ def run_kilosort(args):
             shutil.rmtree(copy_dir)
         # make a copy of output_dir
         shutil.copytree(output_dir, copy_dir)
-        
+
     execution_time = time.time() - start
 
-    print('total time: ' + str(np.around(execution_time,2)) + ' seconds')
+    print('total time: ' + str(np.around(execution_time, 2)) + ' seconds')
     print()
-    
+
     return {"execution_time" : execution_time,
             "kilosort_commit_date" : commit_date,
             "kilosort_commit_hash" : commit_time,
@@ -179,7 +179,7 @@ def get_noise_channels(raw_data_file, num_channels, sample_rate, bit_volts, nois
 
     return above_median < noise_threshold
 
-def fix_phy_params_path(output_dir, dat_path):
+def fix_phy_params(output_dir, dat_path, sample_rate):
     # write a new params.py file with the relative path to the binary file
     # first make a copy of the original
     shutil.copy(os.path.join(output_dir,'params.py'), os.path.join(output_dir,'old_params.py'))
@@ -198,6 +198,8 @@ def fix_phy_params_path(output_dir, dat_path):
                 new_path = os.path.join(relPath,dat_path)
                 new_path = new_path.replace('\\','/')
                 currLine = "dat_path = '" + new_path + "'\n"
+            elif 'sample_rate' in currLine:
+                currLine = (f'sample_rate = {sample_rate:.12f}\n')
             paramLines.append(currLine)           
             currLine = f.readline()
             
