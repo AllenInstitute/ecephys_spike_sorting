@@ -490,3 +490,38 @@ def printProgressBar(iteration, total, prefix = '', suffix = '', decimals = 0, l
 
     if iteration == total: 
         print()
+  
+def catGT_ex_params_from_str(ex_str):
+    # starting from the comma delimeted CatGT string, return extraction
+    # parameters.
+    # Note that CatGT does  not allow the option string to contain spaces
+    # For NI aux channels the file of extracted edges will be named:
+    # <run name>_g<gate index>_tcat.nidq.<ex_name_str>.txt
+    # for imec SY channels, the file of of extracted edges will be named:
+    # <run name>_g<gate index>_tcat.imec<probe index>.txt
+
+    ex_type = ex_str[0:2]    # stream type
+
+    eq_pos = ex_str.find('=')
+    ex_parts = ex_str[eq_pos+1:].split(',')
+
+    prb_index = -1      # for NI
+    if ex_type == 'SY':
+        prb_index = int(ex_parts[0])
+
+    if ex_type == 'SY':
+        # name string = SY_<word>_<bit>_<pulse length>
+        # if the pulse length includes a decimal, reformat
+        ex_parts[3] = ex_parts[3].replace('.', 'p')
+        ex_name_str = ex_type + '_' + ex_parts[1] + '_' + ex_parts[2] + '_' + ex_parts[3]
+    elif ex_type == 'XD':
+        # name string = XD_<word>_<bit>_<pulse length>
+        # if the pulse length includes a decimal, reformat
+        ex_parts[2] = ex_parts[2].replace('.', 'p')
+        ex_name_str = ex_type + '_' + ex_parts[0] + '_' + ex_parts[1] + '_' + ex_parts[2]
+    else:
+        # name string = XA_<word>_<pulse length>
+        # if the pulse length includes a decimal, reformat)
+        ex_name_str = ex_type + '_' + ex_parts[0] + '_' + ex_parts[3]
+
+    return ex_type, prb_index, ex_name_str

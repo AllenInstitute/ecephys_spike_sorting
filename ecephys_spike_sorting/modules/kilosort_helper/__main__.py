@@ -118,10 +118,15 @@ def run_kilosort(args):
     dat_dir, dat_name = os.path.split(input_file) 
     if not os.path.samefile(dat_dir, output_dir):
         fix_phy_params_path(output_dir, dat_dir)
+  
+    # make a copy of the channel map to the data directory
+    # see above: destFullPath specifiee destination for chanMap.mat
+    shutil.copy(destFullPath, os.path.joint(dat_dir,'chanMap.mat'))
 
     if args['kilosort_helper_params']['ks_make_copy']:
-        # get the kilsort output directory name and build a new name
-        pPath, phyName = os.path.split(output_dir)
+        # get the kilsort output directory name
+        pPath, phyName = os.path.split(output_dir)  
+        # build a name for the copy
         copy_dir = os.path.join(pPath, phyName + '_orig')
         # check for whether the directory is already there; if so, delete it
         if os.path.exists(copy_dir):

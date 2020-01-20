@@ -135,7 +135,5 @@ def ParseCatGTLog( logPath, run_name, gate_string, prb_list ):
     for i in range(0,len(prb_list)):
         gfix_edits[i] = gfound[pfound.index(prb_list[i])]
      
-    return gfix_edits    
-
-
+    return gfix_edits
 

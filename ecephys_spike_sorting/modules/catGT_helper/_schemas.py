@@ -11,7 +11,7 @@ class CatGTParams(DefaultSchema):
     probe_string = String(required=True, default='0', help='string specifying probes, e.g. 0:3')
     stream_string = String(required=True, default='-ap', help='string specifying which streams to process')
     cmdStr = String(required=True, default='-prbfld -aphipass=300 -gbldmx -gfix=0.40,0.10,0.02', help='input stream filter, error correct settings for CatGT')
-    catGTPath = InputDir(help='Local directory for the Kilosort source code repository.')
+    catGTPath = InputDir(help='directory containing the CatGT executable.')
 
 class InputParameters(ArgSchema):
     

@@ -15,7 +15,7 @@ def run_CatGT(args):
     print('ecephys spike sorting: CatGT helper module')
 
     catGTPath = args['catGT_helper_params']['catGTPath']
-    catGTexe_fullpath = catGTPath.replace('\\','/') + "/CatGT"
+    catGTexe_fullpath = catGTPath.replace('\\', '/') + "/CatGT"
     # print('path to CatGT exe: ' + catGTexe_fullpath )
     
     cmd_parts = list()

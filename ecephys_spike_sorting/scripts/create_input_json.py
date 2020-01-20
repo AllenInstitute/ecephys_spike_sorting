@@ -29,14 +29,20 @@ def createInputJson(output_file,
                     probe_string='0',
                     catGT_stream_string = '-ap',
                     catGT_cmd_string = '-prb_fld -out_prb_fld -aphipass=300 -gbldmx -gfix=0.40,0.10,0.02',
-                    noise_template_use_rf = True
+                    catGT_gfix_edits = 0,
+                    noise_template_use_rf = True,
+                    event_ex_param_str = 'XD=4,1,50',
+                    sync_period = 1.0,
+                    toStream_sync_params = 'SY=0,384,6,500',
+                    niStream_sync_params = 'XA=0,1,3,500'
                     ):
 
-    # hard coded pathes to code on your computer
+    # hard coded paths to code on your computer and system
     ecephys_directory = r'D:\ecephys_fork\ecephys_spike_sorting\ecephys_spike_sorting'
     kilosort_repository = r'Z:\workstation_backup\full_080119\Documents\KS2_current'
     npy_matlab_repository = r'Z:\workstation_backup\full_080119\Documents\npy-matlab-master'
     catGTPath = r'Z:\CatGT'
+    tPrime_path=r'Z:\TPrimeApp\TPrime'
     
     # for config files and kilosort working space
     kilosort_output_tmp = r'D:\kilosort_datatemp' 
@@ -267,9 +273,21 @@ def createInputJson(output_file,
             "trigger_string": trigger_string,
             "stream_string" : catGT_stream_string,
             "cmdStr" : catGT_cmd_string,
-            "catGTPath" : catGTPath
-        }
+            "catGTPath" : catGTPath,
+            "gfix_edits": catGT_gfix_edits
+        },
 
+        "tPrime_helper_params" : {
+                "tPrime_path" : tPrime_path,
+                "sync_period" : sync_period,
+                "toStream_sync_params" : toStream_sync_params,
+                "niStream_sync_params" : niStream_sync_params
+                },  
+                
+        "psth_events": {
+                "event_ex_param_str": event_ex_param_str
+                }
+        
     }
 
     with io.open(output_file, 'w', encoding='utf-8') as f:

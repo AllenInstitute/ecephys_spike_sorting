@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 
 from helpers import SpikeGLX_utils
@@ -93,7 +94,7 @@ for spec in run_specs:
                 'noise_templates'
 				]
 
-    for prb in prb_list:
+    for i, prb in enumerate(prb_list):
         #create json files specific to this probe
         session_id = spec[0] + '_imec' + prb
         input_json = os.path.join(json_directory, session_id + '-input.json')
@@ -132,8 +133,15 @@ for spec in run_specs:
                                        gate_string = spec[1],
                                        trigger_string = spec[2],
                                        probe_string = spec[3],
+                                       catGT_stream_string = catGT_stream_string,
+                                       catGT_cmd_string = catGT_cmd_string,
+                                       catGT_gfix_edits = gfix_edits[i],
                                        extracted_data_directory = catGT_dest
-                                       )    
+                                       )
+        
+        # copy json file to data directory as record of the input parameters (and gfix edit rates)  
+        shutil.copy(input_json, os.path.join(data_directory, session_id + '-input.json'))
+        
         for module in modules:
             command = "python -W ignore -m ecephys_spike_sorting.modules." + module + " --input_json " + input_json \
 		          + " --output_json " + output_json
