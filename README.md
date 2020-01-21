@@ -1,26 +1,34 @@
-# ecephys spike sorting
+# ecephys spike sorting -- for SpikeGLX data
 
 ![ecephys_spike_sorting_icon](icon.png)
 
-https://github.com/AllenInstitute/ecephys_spike_sorting
+Modules for processing **e**xtra**c**ellular **e**lectro**phys**iology data from Neuropixels probes, originally developed at the Allen Institute for Brain Science. This fork includes additions for running with SpikeGLX data, including integration of CatGT (preprocessing) and TPrime (synchronization across data streams).
 
-Modules for processing **e**xtra**c**ellular **e**lectro**phys**iology data from Neuropixels probes.
+Code including modifications for SpikeGLX
+https://github.com/jenniferColonell/ecephys_spike_sorting
+
+Original repo from the Allen Institue
+https://github.com/AllenInstitute/ecephys_spike_sorting
 
 ![python versions](https://img.shields.io/badge/python-3.5%20%7C%203.6%20%7C%203.7-blue.svg)
 
 
 ## Overview
 
-The first three modules take data saved by the [Open Ephys GUI](https://github.com/open-ephys/plugin-gui) and prepare it for spike sorting by [Kilosort2](https://github.com/MouseLand/Kilosort2). Following the spike-sorting step (using the [kilosort_helper](ecephys_spike_sorting/modules/kilosort_helper/README.md) module), we clean up the outputs and calculate mean waveforms and quality metrics for each unit.
+The general outline of the pipeline is preprocssing, spike sorting by [Kilosort2](https://github.com/MouseLand/Kilosort2) , followed by cleanup and calculation of QC metrics. The original version from the Allen used preprocessing specifically for data saved using the [Open Ephys GUI](https://github.com/open-ephys/plugin-gui). This version is designed to run with data collected using [SpikeGLX](http://billkarsh.github.io/SpikeGLX), and its associated tools (CatGT and TPrime). The removal of noise clusters and calculation of QC metrics is unchanged from the original code.
+
+The spikeGLX_pipeline.py script implements this series of steps: 
+
+![ece_pipeline_cartoon](ece_pipeline_cartoon.png)
 
 This code is still under development, and we welcome feedback about any step in the pipeline.
 
 Further documentation can be found in each module's README file. For more information on Kilosort2, please read through the [GitHub wiki](https://github.com/MouseLand/Kilosort2/wiki).
 
 
-## Modules
+## Modules for the Open Ephys Pipeline
 
-1. [extract_from_npx](ecephys_spike_sorting/modules/extract_from_npx/README.md): Calls a binary executable that converts data from compressed NPX format into .dat files (continuous data) and .npy files (event data)
+1. [extract_from_npx] (ecephys_spike_sorting/modules/extract_from_npx/README.md): Calls a binary executable that converts data from compressed NPX format into .dat files (continuous data) and .npy files (event data)
 
 2. [depth_estimation](ecephys_spike_sorting/modules/depth_estimation/README.md): Uses the LFP data to identify the surface channel, which is required by the median subtraction and kilosort modules.
 

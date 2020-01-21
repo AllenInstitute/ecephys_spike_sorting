@@ -67,6 +67,8 @@ def create_TPrime_bat(args):
         ks_outdir = 'imec' + str(toStream_prb) + '_ks2'
         st_file = os.path.join(run_directory, prb_dir, ks_outdir, 'spike_times.npy')
         toStream_events_sec = spike_times_npy_to_txt(st_file, 0)
+        # for later data analysis with spike times as sec, also save as npy
+        spike_times_sec_to_npy(toStream_events_sec)
 
         # remove the toStream the list of im extraction params
         matchI = [i for i, value in enumerate(im_ex_list) if toStream_params in value]
@@ -165,7 +167,7 @@ def create_TPrime_bat(args):
         print(op)
 
 
-
+    # Print out paths for help with debugging
     tcmd = exe_path + ' -syncperiod=' + repr(sync_period) + \
         ' -tostream=' + toStream_path
 
@@ -182,6 +184,10 @@ def create_TPrime_bat(args):
 
     # make the TPrime call
     subprocess.call(tcmd)
+
+    # convert output files to npy
+    for op in out_list:
+        spike_times_sec_to_npy(op)
 
     execution_time = time.time() - start
 
@@ -229,6 +235,28 @@ def spike_times_npy_to_txt(sp_fullPath, sample_rate):
         outfile.write(f'{spike_times_sec[nSpike-1]:.6f}')
 
     return new_fullPath
+
+
+def spike_times_sec_to_npy(spa_fullPath):
+    # convert a text file of spike times in seconds to an npy file of
+    # python floats, with shape (Nspike,)
+    # spa => spikes, adjusted
+
+    # get file name and create path to new file
+    spa_path, spa_fileName = os.path.split(spa_fullPath)
+    baseName, bExt = os.path.splitext(spa_fileName)
+    new_fileName = baseName + '.npy'
+    new_fullPath = os.path.join(spa_path, new_fileName)
+
+    times = np.zeros((0), dtype='float')
+    # read in text file, single column of floats
+    with open(os.path.join(spa_fullPath), 'r') as f:
+        currLine = f.readline()
+        while currLine != '':  # The EOF char is an empty string
+            times = np.append(times, float(currLine))
+            currLine = f.readline()
+
+    np.save(new_fullPath, times)
 
 
 def main():
