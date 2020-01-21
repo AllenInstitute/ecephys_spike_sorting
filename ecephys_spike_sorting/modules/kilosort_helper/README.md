@@ -2,7 +2,7 @@ Kilosort Helper
 ==============
 Python wrapper for Matlab-based spike sorting with Kilosort.
 
-This module auto-generates the channel map, configuration file, and master file for Kilosort, and runs everything via the Matlab engine.
+This module auto-generates the channel map (reading from teh SpikeGLX metadata file) configuration file (reading parameters from the schema; these can be edited in create_input_json.py), and master file for Kilosort, and runs everything via the Matlab engine.
 
 Dependencies
 ------------

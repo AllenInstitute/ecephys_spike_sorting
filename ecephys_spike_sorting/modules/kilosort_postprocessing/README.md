@@ -6,7 +6,18 @@ Kilosort occasionally fits a spike template to the residual of another spike. Se
 
 This module aims to correct for this by removing spikes from the same unit or neighboring units that occur within 5 samples (0.16 ms) of one another. This is not ideal, since it can potentially remove legitimate spike times, but on the whole it seems worth it to avoid having spurious zero-time-lag correlation between units.
 
-We are not currently taking into account spike amplitude when removing spikes; the module just deletes one spike from an overlapping pair that occurs later in time.
+Note that the data in the phy directory will be overwritten, and can’t be fully recovered without re-running KS2. To compare data with and without duplicate removal, make a copy of the phy output, and run the kilosort_postprocessing module on the copy. Make sure to delete the .phy directory and phy.log file before opening the edited output in phy. If running in the pipeline, a copy of the phy output is made automatically.
+
+The module takes the paramters:
+
+-overlap_window: Maximum time window for counting two spikes as duplicates
+-between_unit_distance_um: Maximum radius in um for counting two spikes as duplicates
+-deletion_mode: Delete all duplicates from the lower amplitude cluster or delete the spike of each pair that occurs later in time.
+
+With the default parameters, between cluster duplicate are removed from the cluster with lower amplitude.
+
+The summary text files (cluster_Amplitude.tsv, cluster_ContamPct.tsv and cluster_KSLaberl.tsv) are NOT updated after removing the duplicate spikes. The npy files used to generate these are updated.
+
 
 Running
 -------
@@ -25,4 +36,12 @@ Input data
 
 Output data
 -----------
-- **Updated Kilosort output files** : overwrites .npy files for spike times, cluster labels, amplitudes, and PC features. The original outputs can be extracted from the `rez.mat` file if necessary.
+- **Updated Kilosort output files** : overwrites .npy files for spike times, cluster labels, amplitudes, and PC features. 
+
+- **output_summary.csv** : describing the changes made to the data. The five columns are:
+
+Cluster label
+Spikes in cluster after removing duplicates
+“within cluster” spikes removed
+“between cluster” spikes removed, summed over all
+Cluster label of the partner containing the most duplicates
