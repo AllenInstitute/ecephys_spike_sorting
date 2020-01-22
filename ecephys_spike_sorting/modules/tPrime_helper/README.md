@@ -25,13 +25,13 @@ spike_times.npy files for all probes for which there are sync edge files are rea
 
 The CatGT command line is parsed to find all extracted edge files:
 
--All SY extracted (except toStream) are designated fromstreams
+- All SY extracted (except toStream) are designated fromstreams
 
--For all probes not specified as the toStream, the file <probe_folder>\imecN_ks2\spike_times_sec.txt are designated events files
+- For all probes not specified as the toStream, the file <probe_folder>\imecN_ks2\spike_times_sec.txt are designated events files
 
--If tostream is not XA or XD, niStream_sync is designated a fromstream
+- If tostream is not XA or XD, niStream_sync is designated a fromstream
 
--All XA and XD extracted which are not specified as the the toStream or the niStream_sync are designated events files
+- All XA and XD extracted which are not specified as the the toStream or the niStream_sync are designated events files
 
 These parameters are used to build the TPrime command line.
 

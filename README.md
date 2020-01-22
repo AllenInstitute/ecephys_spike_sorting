@@ -138,25 +138,25 @@ Parameters are set in two files. Values that are constant across runs—like paths
 
 In the create_input_json.py file, be sure to set these paths for your system:
 
--ecephys_directory: parent directory that contains the modules directory)
+- ecephys_directory: parent directory that contains the modules directory)
 
--kilosort_repository
+- kilosort_repository
 
--npy_matlab_repository
+- npy_matlab_repository
 
--catGTPath: contains the CatGT.exe file
+- catGTPath: contains the CatGT.exe file
 
--tPrimePath: contains the TPrime.exe file
+- tPrimePath: contains the TPrime.exe file
 
--kilosort_output_temp: for the KS2 residual file, also temporary copies of the config and master file
+- kilosort_output_temp: for the KS2 residual file, also temporary copies of the config and master file
 
 Other “mostly constant” parameters in create_input_json:
 
--Kilosort2 parameters
+- Kilosort2 parameters
 
--kilosort post processing params
+- kilosort post processing params
 
--quality metrics params
+- quality metrics params
 
 ### Running scripts
 
