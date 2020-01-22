@@ -114,8 +114,8 @@ The MATLAB engine for python must be installed in the local instance of python r
 
 ```shell
 $ pipenv shell
-$ cd <matlabroot>\extern\engines\python
-$ python setup.py install
+(.venv) $ cd <matlabroot>\extern\engines\python
+(.venv) $ python setup.py install
 ```
 
 Replace <matlabroot> with the root directory of your MATLAB 2019b installation, for example: 
@@ -138,16 +138,18 @@ Parameters are set in two files. Values that are constant across runs—like paths
 
 In the create_input_json.py file, be sure to set these paths for your system:
 
-ecephys_directory (parent directory that contains the modules directory)
-kilosort_repository
-npy_matlab_repository
-catGTPath (should contain the CatGT.exe file)
-tPrimePath (contains the TPrime.exe file)
-kilosort_output_temp
+-ecephys_directory: parent directory that contains the modules directory)
+-kilosort_repository
+-npy_matlab_repository
+-catGTPath: contains the CatGT.exe file
+-tPrimePath: contains the TPrime.exe file
+-kilosort_output_temp: for the KS2 residual file, also temporary copies of the config and master file
 
-Other “mostly constant” parameters in create_input_json
+Other “mostly constant” parameters in create_input_json:
 
-Kilosort2 parameters, in kilosort_helper_params
+-Kilosort2 parameters
+-kilosort post processing params
+-quality metrics params
 
 ### Running scripts
 
