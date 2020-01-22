@@ -17,9 +17,9 @@ Two arguments must be included:
 
 See the `_schemas.py` file for detailed information about the contents of the input JSON.
 
-TPrime Helper parses toStream_sync_params to find the SYNC file, assuming the data has been saved and processed through CatGT using probe folders. So, a file of sync edges from a probe is expected to be in the probe folder:
+TPrime Helper parses toStream_sync_params to find the SYNC file, assuming the data has been saved and processed through CatGT using probe folders. So, a file of sync edges from a probe is expected to be in the probe folder, for example
 
-\catgt_<run name>_g<gate>\<run name>_g<gate>_imec<probe index>
+\catgt_MyRun_g0\MyRun_g0_imec1
 
 spike_times.npy files for all probes for which there are sync edge files are read in and translated to seconds using the sample rate stored in params.py. (Note: the sample rate written out by rezToPhy is replaced by a value with more significant figures in the kilosort_helper module).
 
@@ -40,7 +40,7 @@ TPrime outputs the corrected times in text files. After it is run, these output 
 Notes:
 - Since auxiliary data is usually collected at lower sample rates, a probe should be selected as the reference tostream
 
-- Stated above, but worth repeating: this helper module assumes data stored in the probe folder format, with phy output written to <probe_folder>\imecN_ks2
+- Stated above, but worth repeating: this helper module assumes data stored in the probe folder format, with phy output written to <probe_folder>\imecN_ks2, sync edge files for each probe stored in the probe folder, etc. Any other file organization will cause errors.
 
 Parameters
 ----------
