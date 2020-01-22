@@ -236,7 +236,6 @@ def spike_times_npy_to_txt(sp_fullPath, sample_rate):
 
     return new_fullPath
 
-
 def spike_times_sec_to_npy(spa_fullPath):
     # convert a text file of spike times in seconds to an npy file of
     # python floats, with shape (Nspike,)
@@ -248,13 +247,19 @@ def spike_times_sec_to_npy(spa_fullPath):
     new_fileName = baseName + '.npy'
     new_fullPath = os.path.join(spa_path, new_fileName)
 
-    times = np.zeros((0), dtype='float')
-    # read in text file, single column of floats
+    # count lines in file to size array
+    lineCount = 0
     with open(os.path.join(spa_fullPath), 'r') as f:
-        currLine = f.readline()
-        while currLine != '':  # The EOF char is an empty string
-            times = np.append(times, float(currLine))
-            currLine = f.readline()
+        for line in f:
+            lineCount = lineCount + 1
+
+    times = np.zeros((lineCount,), dtype='float')
+    # read in text file, single column of floats
+    i = 0
+    with open(os.path.join(spa_fullPath), 'r') as f:
+        for line in f:
+            times[i] = float(line)
+            i = i + 1
 
     np.save(new_fullPath, times)
 
