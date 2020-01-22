@@ -2,7 +2,7 @@ Kilosort Helper
 ==============
 Python wrapper for Matlab-based spike sorting with Kilosort.
 
-This module auto-generates the channel map (reading from teh SpikeGLX metadata file) configuration file (reading parameters from the schema; these can be edited in create_input_json.py), and master file for Kilosort, and runs everything via the Matlab engine.
+This module auto-generates the channel map (reading from the SpikeGLX metadata file), configuration file (reading parameters from the schema; these can be edited in create_input_json.py), and master file for Kilosort, and runs everything via the Matlab engine.
 
 Dependencies
 ------------
@@ -26,4 +26,4 @@ Input data
 
 Output data
 -----------
-- **Kilosort output files** : .npy files containing spike times, cluster labels, templates, etc.
+- **Kilosort output files** : .npy files containing spike times, cluster labels, templates, etc. These are the input for phy.

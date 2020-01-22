@@ -23,6 +23,8 @@ The spikeGLX_pipeline.py script implements this pipeline:
 
 This code is still under development, and we welcome feedback about any step in the pipeline.
 
+## Modules in SpikeGLX Pipeline
+
 Further documentation can be found in each module's README file. For more information on Kilosort2, please read through the [GitHub wiki](https://github.com/MouseLand/Kilosort2/wiki).
 
 1. [catGT_helper](ecephys_spike_sorting/modules/catGT_helper/README.md): Concatenates trials, applies filters, removes artifacts in neural data. Finds edges in sync and auxiliary channels.
@@ -41,7 +43,7 @@ Further documentation can be found in each module's README file. For more inform
 
 7. [tPrime_helper](ecephys_spike_sorting/modules/tPrime_helper/README.md): Maps event times (edges in auxiliary channels, spike times) in all streams to match a reference stream.
 
-## Modules Specific to Open Ephys
+### Modules Specific to Open Ephys 
 
 1. [extract_from_npx](ecephys_spike_sorting/modules/extract_from_npx/README.md): Calls a binary executable that converts data from compressed NPX format into .dat files (continuous data) and .npy files (event data)
 

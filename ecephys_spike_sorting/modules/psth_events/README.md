@@ -21,9 +21,9 @@ The only input parameter is event_ex_param_str, e.g. 'XD=4,1,50'. The module par
 
 Input data
 ----------
-- **CatGT extraction parameters for toStream** : string specifying the SYNC edges for the toStream
-- **CatGT extraction other streams** : the module will use all of these as fromStreams
+- **CatGT extraction parameters for the event list** : used to identifty which file of extracted edges should be used
+- **KS2 output** : folder of phy input files to which the events.csv file will be copied
 
 Output data
 -----------
-- **spike_times_adj.txt, spike_times_adj.npy** : text files of spike times for each from stream
+- **events.csv** : text files of event times in seconds for plotting PSTH

@@ -1,6 +1,6 @@
 CatGT Helper
 ==============
-Python wrapper for CatGT a C++ console application for preprocessing data collected by SpikeGLX. See the README for CatGT for details CatGT calling and parameters.
+Python wrapper for CatGT, a C++ command application written by Bill Karsh for preprocessing data collected by SpikeGLX. CatGT can also scan the Neuropixels sync signal and auxiliary data to extract pulse edges for synchronization across data streams.  See the README for CatGT for details about parameters.
 
 Dependencies
 ------------
@@ -19,7 +19,7 @@ See the `_schemas.py` file for detailed information about the contents of the in
 
 Input data
 ----------
-- **SpikeGLX *.bin files for ap and ni streams** : int16 binary files written by [SpikeGLX](https://github.com/billkarsh/spikeglx)
+- **SpikeGLX .bin files for ap and ni streams** : int16 binary files written by [SpikeGLX](https://github.com/billkarsh/spikeglx)
 
 Output data
 -----------

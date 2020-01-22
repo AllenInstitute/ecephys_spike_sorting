@@ -18,23 +18,24 @@ Two arguments must be included:
 See the `_schemas.py` file for detailed information about the contents of the input JSON.
 
 TPrime Helper parses toStream_sync_params to find the SYNC file, assuming the data has been saved and processed through CatGT using probe folders. So, a file of sync edges from a probe is expected to be in the probe folder:
-catgt_<run name>_g<gate>\<run name>_g<gate>_imec<probe index>\
 
-spike_times.npy files for all probes for which there are sync edge files are read in and translated to seconds using the sample rate stored in params.py. (Note: the sample rate written out by rezToPhy is replaced by a higher precision value in the kilosort_helper module).
+\catgt_<run name>_g<gate>\<run name>_g<gate>_imec<probe index>
 
-The CatGT command line is parsed:
+spike_times.npy files for all probes for which there are sync edge files are read in and translated to seconds using the sample rate stored in params.py. (Note: the sample rate written out by rezToPhy is replaced by a value with more significant figures in the kilosort_helper module).
 
-All SY extracted(except toStream)are designated fromstreams
+The CatGT command line is parsed to find all extracted edge files:
 
-For all probes not specified as the toStream, the file <probe_folder>\imecN_ks2\spike_times_sec.txt are designated events files
+-All SY extracted (except toStream) are designated fromstreams
 
-If tostream is not XA or XD, niStream_sync is designated a fromstream
+-For all probes not specified as the toStream, the file <probe_folder>\imecN_ks2\spike_times_sec.txt are designated events files
 
-All XA and XD extracted which are not specified as the the toStream or the niStream_sync are designated events files
+-If tostream is not XA or XD, niStream_sync is designated a fromstream
+
+-All XA and XD extracted which are not specified as the the toStream or the niStream_sync are designated events files
 
 These parameters are used to build the TPrime command line.
 
-After running TPrime, the output times are resaved in npy format, as floats.
+TPrime outputs the corrected times in text files. After it is run, these output times are resaved in npy format, as floats.
 
 Notes:
 - Since auxiliary data is usually collected at lower sample rates, a probe should be selected as the reference tostream
