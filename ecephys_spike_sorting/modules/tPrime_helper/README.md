@@ -9,7 +9,7 @@ Dependencies
 Running
 -------
 ```
-python -m ecephys_spike_sorting.modules.TPrime_helper--input_json <path to input json> --output_json <path to output json>
+python -m ecephys_spike_sorting.modules.TPrime_helper --input_json <path to input json> --output_json <path to output json>
 ```
 Two arguments must be included:
 1. The location of an existing file in JSON format containing a list of paths and parameters.
