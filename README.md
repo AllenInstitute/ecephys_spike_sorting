@@ -138,7 +138,7 @@ Parameters are set in two files. Values that are constant across runs—like paths
 
 In the create_input_json.py file, be sure to set these paths for your system:
 
-- ecephys_directory: parent directory that contains the modules directory)
+- ecephys_directory: parent directory that contains the modules directory
 
 - kilosort_repository
 
@@ -166,11 +166,11 @@ The scripts generate a command line to run specific modules using parameters sto
 
 There are two example scripts for running with SpikeGLX data:
 
-spikeGLX_pipeline.py
-	Runs CatGT followed by other modules run on the extracted data. The CatGT log file is parsed to extract the (gfix edits/sec) metric. Currently this is simply written to the command window, but the value could be logged or processing stopped/skipped for bad values.
+**spikeGLX_pipeline.py**
+Runs CatGT followed by other modules run on the extracted data. The CatGT log file is parsed to extract the (gfix edits/sec) metric. Currently this is simply written to the command window, but the value could be logged or processing stopped/skipped for bad values. Finally runs TPrime. See comments in the script file for parameter details.
 
-spikeGLX_noCatGT_pipeline.py
-	Runs modules on data that has already been processed, in particular, doesn’t require the CatGT output to be in the run_folder/probe_folder hierarchy. 
+**spikeGLX_noCatGT_pipeline.py**
+Runs modules on data that has already been processed, in particular, doesn’t require the CatGT output to be in the run_folder/probe_folder hierarchy. 
 
 For either script, edit to set the destination for the json_files, and the location of the input run files. Edit the list of modules to include those you want to run. For the full pipeline script, you also need to set the CatGT and TPrime parameters.
 
