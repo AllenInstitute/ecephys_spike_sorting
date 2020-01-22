@@ -1,6 +1,6 @@
 TPrime Helper
 ==============
-Python wrapper for TPrime, a C++ command line application for mapping times between data streams collected by SpikeGLX. Each stream must have a common sync signal, and the edge times from that sync signal must be extracted by CatGT. See the README for TPrime for details about parameters.
+Python wrapper for TPrime, a C++ command line application written by Bill Karsh, for mapping times between data streams collected by SpikeGLX. Each stream must have a common sync signal, and the edge times from that sync signal must be extracted by CatGT. See the README for TPrime for details about parameters.
 
 Dependencies
 ------------

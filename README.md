@@ -59,7 +59,7 @@ These modules have been tested with Python 3.7.
 
 We recommend using [pipenv](https://github.com/pypa/pipenv) to run these modules.
 
-The SpikeGLX pipeline is dependent on two console applications currently available only for Windows, and has not been tested in Linux or Mac. These instructions are for Windows 10
+The SpikeGLX pipeline is dependent on two command line applications currently available only for Windows, and has not been tested in Linux or Mac. These instructions are for Windows 10.
 
 
 ### Install pipenv
