@@ -5,7 +5,7 @@ from ...common.schemas import EphysParams, Directories
 
 
 class psth_params(DefaultSchema):
-    event_ex_param_str = String(required=True, default='XD_4_1_50', help="parameter string in CatGT used for extraction, e.g. 'XD=4,1,50' or 'SY=0,384,6,500'")
+    event_ex_param_str = String(required=True, default='XD=4,1,50', help="parameter string in CatGT used for extraction, e.g. 'XD=4,1,50' or 'SY=0,384,6,500'")
 
 
 class InputParameters(ArgSchema):
