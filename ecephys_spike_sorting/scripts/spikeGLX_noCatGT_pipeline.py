@@ -19,7 +19,17 @@ npx_directory = r'D:\ecephys_fork\test_data\test_no_preprocess'
 
  
 run_names = [												
-						'SC011_022319_g0_tcat.imec3.ap.bin'
+						'SC011_022319_g0_tcat.imec3.ap.bin',
+                        'SC011_022319_g0_tcat.imec3.ap.bin',
+                        'SC011_022319_g0_tcat.imec3.ap.bin',
+                        'SC011_022319_g0_tcat.imec3.ap.bin',
+                        'SC011_022319_g0_tcat.imec3.ap.bin',
+                        'SC011_022319_g0_tcat.imec3.ap.bin',
+                        'SC011_022319_g0_tcat.imec3.ap.bin',
+                        'SC011_022319_g0_tcat.imec3.ap.bin',
+                        'SC011_022319_g0_tcat.imec3.ap.bin',
+                        'SC011_022319_g0_tcat.imec3.ap.bin',
+                        'SC011_022319_g0_tcat.imec3.ap.bin'
 ]
 
 

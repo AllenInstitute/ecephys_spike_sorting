@@ -56,9 +56,9 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, chan
         epochs = [Epoch('complete_session', 0, np.inf)]
     
 #   define a short epoch for testing
-#    epochs = [Epoch('test',0,10)]
+    # epochs = [Epoch('test',0,10)]
 
-    total_units = np.max(spike_clusters) + 1
+    [total_units, dummy] = pc_feature_ind.shape
     total_epochs = len(epochs)
 
     for epoch in epochs:
@@ -141,7 +141,7 @@ def calculate_isi_violations(spike_times, spike_clusters, total_units, isi_thres
 
     for idx, cluster_id in enumerate(cluster_ids):
 
-        printProgressBar(cluster_id + 1, total_units)
+        printProgressBar(idx+1, len(cluster_ids))
 
         for_this_cluster = (spike_clusters == cluster_id)
         viol_rates[cluster_id], num_violations = isi_violations(spike_times[for_this_cluster], 
@@ -160,7 +160,7 @@ def calculate_presence_ratio(spike_times, spike_clusters, total_units):
 
     for idx, cluster_id in enumerate(cluster_ids):
 
-        printProgressBar(cluster_id + 1, total_units)
+        printProgressBar(idx + 1, len(cluster_ids))
 
         for_this_cluster = (spike_clusters == cluster_id)
         ratios[cluster_id] = presence_ratio(spike_times[for_this_cluster], 
@@ -182,7 +182,7 @@ def calculate_firing_rate(spike_times, spike_clusters, total_units):
 
     for idx, cluster_id in enumerate(cluster_ids):
 
-        printProgressBar(cluster_id + 1, total_units)
+        printProgressBar(idx + 1, len(cluster_ids))
 
         for_this_cluster = (spike_clusters == cluster_id)
         firing_rates[cluster_id] = firing_rate(spike_times[for_this_cluster], 
@@ -200,7 +200,7 @@ def calculate_amplitude_cutoff(spike_clusters, amplitudes, total_units):
 
     for idx, cluster_id in enumerate(cluster_ids):
 
-        printProgressBar(cluster_id + 1, total_units)
+        printProgressBar(idx + 1, len(cluster_ids))
 
 
         for_this_cluster = (spike_clusters == cluster_id)
@@ -237,7 +237,7 @@ def calculate_pc_metrics(spike_clusters,
 
     for idx, cluster_id in enumerate(cluster_ids):
 
-        printProgressBar(cluster_id + 1, total_units)
+        printProgressBar(idx + 1, len(cluster_ids))
 
         peak_channel = peak_channels[cluster_id]
 

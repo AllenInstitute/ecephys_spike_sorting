@@ -107,7 +107,7 @@ def findDisabled(meta):
     # Get the array of saved channels:
     chan = OriginalChans(meta)
     # Find out how many are AP chans
-    [AP,LF,SY] = ChannelCountsIM(meta)
+    [AP, LF, SY] = ChannelCountsIM(meta)
     exChan = list();
     for i in range(0,AP):
         # get enabled flag from this entry, skipping first header entry
@@ -134,23 +134,23 @@ def NP10_ElecInd(meta):
     chan = np.zeros(nChan, dtype='int')
     bank = np.zeros(nChan, dtype='int')
     connected = np.ones(nChan, dtype='int')
-    
-    for i in range(0,nChan):
+
+    for i in range(0, nChan):
         currList = imroList[i+1]
         currList = currList[1:len(currList)]
         currList = currList.split(' ')
         chan[i] = int(currList[0])
         bank[i] = int(currList[1])
-    
+
     elecInd = bank*384 + chan
-        
-    exChan = findDisabled(meta);
-      
-    for i in range(0,len(exChan)): 
+
+    exChan = findDisabled(meta)
+
+    for i in range(0, len(exChan)):
         ind = np.argwhere(chan == exChan[i])
         if ind.size > 0:
             connected[ind] = 0
-            
+
     return elecInd, connected
 
 
@@ -180,10 +180,10 @@ def XYCoord10(meta, elecInd, showPlot):
     elecPos[ind0,1] = viHalf * vSep       # sites 0,2,4...
     ind1 = np.arange(1, nElec, step=2, dtype ='int')
     elecPos[ind1,1] = elecPos[ind0,1];    # sites 1,3,5...
-    
-    xCoord = elecPos[elecInd,0]
-    yCoord = elecPos[elecInd,1]
-    
+
+    xCoord = elecPos[elecInd, 0]
+    yCoord = elecPos[elecInd, 1]
+
     if showPlot:
         # single shank probe. Plot only lowest selected electrode
         
@@ -192,21 +192,21 @@ def XYCoord10(meta, elecInd, showPlot):
         # plot all positions   
         marker_style = dict(c='w', edgecolor = 'k', linestyle='None', marker='s', s=20)                 
         plt.scatter(elecPos[:,0], elecPos[:,1], **marker_style)
-        
+
         # plot selected position
-        marker_style = dict(c='b', edgecolor = 'b', linestyle='None', marker='s', s=15) 
+        marker_style = dict(c='b', edgecolor='b', linestyle='None', marker='s', s=15)
         plt.scatter(xCoord, yCoord, **marker_style)
-        
+
         plt.show()
-    
+
     return(xCoord, yCoord)
-  
-    
+
+
 # Return shank and electrode number for NP2.0 probes
 # Index into these with original (acquired) channel IDs.
 #
 def NP20_ElecInd(meta):
-    
+
     pType = meta['imDatPrb_type']
     imroList = meta['imroTbl'].split(sep=')')
     nChan = len(imroList) - 2     # first entry is header; last is trailing ')'
@@ -317,15 +317,15 @@ def XYCoord20(meta, elecInd, bankMask, shankInd, showPlot):
 
 
 def CoordsToText(chans, xCoord, yCoord, connected, shankInd, shankSep, baseName, savePath, buildPath ):
-    
+
     if buildPath:
-        newName = baseName +'_siteCoords.txt'
+        newName = baseName + '_siteCoords.txt'
         saveFullPath = Path(savePath / newName)
     else:
         saveFullPath = savePath
-    
+
     # Note that the channel index written is the index of that channel in the saved file
-    
+
     with open(saveFullPath, 'w') as outFile:
         for i in range(0,chans.size):
             currX = shankInd[i]*shankSep + xCoord[i]
@@ -438,13 +438,17 @@ def MetaToCoords(metaFullPath, outType, badChan= np.zeros((0), dtype = 'int'), d
         # Get indices of electrodes
         [elecInd, connected] = NP10_ElecInd(meta)
         
+        # set any caller specified band channels
+        connected[badChan] = 0
+        
         # Get saved channels
         chans = OriginalChans(meta)     #inludes SY channel
         [AP,LF,SY] = ChannelCountsIM(meta)    
         chans = chans[0:AP]    
         
-        # Trim elecInd and shankind to include only saved channels
+        # Trim elecInd, connected, and shankind to include only saved channels
         elecInd = elecInd[chans]
+        connected = connected[chans]
         shankInd = np.zeros(elecInd.size, dtype='int')
         
         # Get XY coords for saved channels
@@ -453,26 +457,27 @@ def MetaToCoords(metaFullPath, outType, badChan= np.zeros((0), dtype = 'int'), d
     else:
         # Neuropixels type 21 (single shank) or 24 (four shank)
         
-        # Get indices of electrodes
+        # Get indices of all electrodes from the imro table
         [elecInd, shankInd, bankMask, connected] = NP20_ElecInd(meta)
         
+        # set any caller specified band channels
+        connected[badChan] = 0
+        
         # Get saved channels
-        chans = OriginalChans(meta)     #inludes SY channel
+        chans = OriginalChans(meta)     #includes SY channel
         [AP,LF,SY] = ChannelCountsIM(meta)    
-        chans = chans[0:AP]    
-        
-        # Trim elecInd and shankind to include only saved channels
+        chans = chans[0:AP]
+
+        # Trim elecInd, connected, and shankind to include only saved channels
         elecInd = elecInd[chans]
+        connected = connected[chans]
         shankInd = shankInd[chans]
-        
+
         # Get XY coords for saved channels and plot
         [xCoord, yCoord] = XYCoord20(meta, elecInd, bankMask, shankInd, showPlot)
-        
-    # add caller specified "bad channels"
-    connected[badChan] = 0
-    
-    baseName = metaFullPath.stem    
-    # write output as text  
+
+    baseName = metaFullPath.stem
+    # write output as text
     if len(destFullPath) == 0:
         savePath = metaFullPath.parent
         buildPath = True

@@ -136,7 +136,7 @@ def run_kilosort(args):
 
     execution_time = time.time() - start
 
-    print('total time: ' + str(np.around(execution_time, 2)) + ' seconds')
+    print('kilsort run time: ' + str(np.around(execution_time, 2)) + ' seconds')
     print()
 
     return {"execution_time" : execution_time,
