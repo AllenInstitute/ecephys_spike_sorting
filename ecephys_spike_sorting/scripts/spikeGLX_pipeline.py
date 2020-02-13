@@ -4,6 +4,7 @@ import subprocess
 import numpy as np
 
 from helpers import SpikeGLX_utils
+from helpers import log_from_json
 from create_input_json import createInputJson
 
 # script to run CatGT, KS2, postprocessing and TPrime on data collected using
@@ -14,6 +15,10 @@ from create_input_json import createInputJson
 # -----------
 # Input data
 # -----------
+# Name for log file for this pipeline run. Log file will be saved in the
+# output destination directory catGT_dest
+logName = 'SC024_log.csv'
+
 # Raw data directory = npx_directory
 # run_specs = name, gate, trigger and probes to process
 npx_directory = r'D:\ecephys_fork\test_data\SC_trial'
@@ -93,6 +98,15 @@ try:
 except OSError:
     pass
 
+# delete any existing log with the current name
+logFullPath = os.path.join(catGT_dest, logName)
+try:
+    os.remove(logFullPath)
+except OSError:
+    pass
+
+# create the log file, write header
+log_from_json.writeHeader(logFullPath)
 
 for spec in run_specs:
 
@@ -142,7 +156,7 @@ for spec in run_specs:
         #create json files specific to this probe
         session_id = spec[0] + '_imec' + prb
         input_json = os.path.join(json_directory, session_id + '-input.json')
-        output_json = os.path.join(json_directory, session_id + '-output.json')  
+        
         
         # location of the binary created by CatGT, using -out_prb_fld
         run_str = spec[0] + '_g' + spec[1]
@@ -188,9 +202,12 @@ for spec in run_specs:
         shutil.copy(input_json, os.path.join(data_directory, session_id + '-input.json'))
         
         for module in modules:
+            output_json = os.path.join(json_directory, session_id + '-' + module + '-output.json')  
             command = "python -W ignore -m ecephys_spike_sorting.modules." + module + " --input_json " + input_json \
 		          + " --output_json " + output_json
             subprocess.check_call(command.split(' '))
+            
+        log_from_json.addEntry(modules, json_directory, session_id, logFullPath)
                    
     if runTPrime:
         # after loop over probes, run TPrime to create files of 

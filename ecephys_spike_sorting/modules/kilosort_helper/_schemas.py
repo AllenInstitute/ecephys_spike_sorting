@@ -78,4 +78,6 @@ class OutputParameters(OutputSchema):
     kilosort_commit_hash = String()
     kilosort_commit_date = String()
     mask_channels = NumpyArray()
+    nTemplate = Int()
+    nTot = Int()
     

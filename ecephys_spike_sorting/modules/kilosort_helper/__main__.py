@@ -138,11 +138,18 @@ def run_kilosort(args):
 
     print('kilsort run time: ' + str(np.around(execution_time, 2)) + ' seconds')
     print()
+    
+    # get nTot and nTemplate from phy output; write out table of clusters 
+    # which will be used by C_waves
 
+    nTemplate, nTot = getSortResults(output_dir)
+    
     return {"execution_time" : execution_time,
             "kilosort_commit_date" : commit_date,
             "kilosort_commit_hash" : commit_time,
-            'mask_channels' : np.where(mask == False)[0]} # output manifest
+            "mask_channels" : np.where(mask == False)[0],
+            "nTemplate" : nTemplate,
+            "nTot" : nTot } # output manifest
 
 def get_noise_channels(raw_data_file, num_channels, sample_rate, bit_volts, noise_threshold=20):
 
@@ -206,8 +213,29 @@ def fix_phy_params(output_dir, dat_path, sample_rate):
     with open(os.path.join(output_dir,'params.py'), 'w') as fout:
         for line in paramLines:
             fout.write(line)
-    
-    
+
+
+def getSortResults(output_dir):
+    # load results from phy for run logging and creation of the
+
+    cluLabel = np.load(os.path.join(output_dir, 'spike_clusters.npy'))
+
+    unqLabel, labelCounts = np.unique(cluLabel, return_counts = True)
+    nTot = cluLabel.shape[0]
+
+    templates = np.load(os.path.join(output_dir, 'templates.npy'))
+    channel_map = np.load(os.path.join(output_dir, 'channel_map.npy'))
+
+    nTemplate = templates.shape[0]
+    peak_channels = np.squeeze(channel_map[np.argmax(np.max(templates,1) - np.min(templates,1),1)])
+
+    clus_Table = np.zeros((nTemplate, 2), dtype='uint32')
+    clus_Table[unqLabel, 0] = labelCounts
+    clus_Table[:, 1] = peak_channels
+
+    np.save(os.path.join(output_dir, 'clus_Table.npy'), clus_Table)
+    return nTemplate, nTot
+
 def main():
 
     from ._schemas import InputParameters, OutputParameters
