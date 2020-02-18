@@ -8,9 +8,10 @@ from ..catGT_helper._schemas import CatGTParams
 class tPrimeParams(DefaultSchema):
     tPrime_path = InputDir(help='directory containing the TPrime executable.')
     sync_period = Float(default=1.0, help='Period of sync waveform (sec).')
-    toStream_sync_params = String(default='SY=0,384,6,500', help='string of CatGT params used to extract to stream sync edges, e.g. SY=0,384,6,500')
-    ni_sync_params = String(default='XA=0,1,3,500', help='string of CatGT params used to extract NI sync edges, e.g. XA=0,1,3,500')
-
+    toStream_sync_params = String(required=False, default='SY=0,384,6,500', help='string of CatGT params used to extract to stream sync edges, e.g. SY=0,384,6,500')
+    ni_sync_params = String(required=False, default='XA=0,1,3,500', help='string of CatGT params used to extract NI sync edges, e.g. XA=0,1,3,500')
+    toStream_path_3A = String(required=False, help='full path to toStream edges file')
+    fromStream_list_3A = List(String, required=False, help='list of full paths to fromStream edges files')
 
 class InputParameters(ArgSchema):
     tPrime_helper_params = Nested(tPrimeParams)

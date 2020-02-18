@@ -34,7 +34,9 @@ def createInputJson(output_file,
                     event_ex_param_str = 'XD=4,1,50',
                     sync_period = 1.0,
                     toStream_sync_params = 'SY=0,384,6,500',
-                    niStream_sync_params = 'XA=0,1,3,500'
+                    niStream_sync_params = 'XA=0,1,3,500',
+                    toStream_path_3A = None,
+                    fromStream_list_3A = None
                     ):
 
     # hard coded paths to code on your computer and system
@@ -158,6 +160,7 @@ def createInputJson(output_file,
         },
 
         "ephys_params": {
+            "probe_type" : probe_type,
             "sample_rate" : sample_rate,
             "lfp_sample_rate" : 2500,
             "bit_volts" : uVPerBit,
@@ -166,7 +169,7 @@ def createInputJson(output_file,
             "vertical_site_spacing" : 10e-6,
             "ap_band_file" : continuous_file,
             "lfp_band_file" : os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.1', 'continuous.dat'),
-            "reorder_lfp_channels" : probe_type == '3A',
+            "reorder_lfp_channels" : True,
             "cluster_group_file_name" : 'cluster_group.tsv'
         }, 
 
@@ -281,7 +284,9 @@ def createInputJson(output_file,
                 "tPrime_path" : tPrime_path,
                 "sync_period" : sync_period,
                 "toStream_sync_params" : toStream_sync_params,
-                "niStream_sync_params" : niStream_sync_params
+                "niStream_sync_params" : niStream_sync_params,
+                "toStream_path_3A" : toStream_path_3A,
+                "fromStream_list_3A" : fromStream_list_3A
                 },  
                 
         "psth_events": {

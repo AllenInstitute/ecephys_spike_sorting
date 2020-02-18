@@ -236,7 +236,9 @@ for spec in run_specs:
                                            event_ex_param_str = event_ex_param_str,
                                            sync_period = 1.0,
                                            toStream_sync_params = toStream_sync_params,
-                                           niStream_sync_params = niStream_sync_params
+                                           niStream_sync_params = niStream_sync_params,
+                                           toStream_path_3A = ' ',
+                                           fromStream_list_3A = list()
                                            ) 
         
         command = "python -W ignore -m ecephys_spike_sorting.modules." + 'tPrime_helper' + " --input_json " + input_json \

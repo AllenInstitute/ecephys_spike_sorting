@@ -104,18 +104,19 @@ def ParseTcatName(tcat_name):
     baseName = parts_list[0] + '.' + parts_list[1]
     return baseName
 
-def ParseCatGTLog( logPath, run_name, gate_string, prb_list ):
-    
+
+def ParseCatGTLog(logPath, run_name, gate_string, prb_list):
+
     gfix_str = run_name + '_' + gate_string + ' Gfix'
-    
+
     num_probe = len(prb_list)
-    gfix_edits = np.zeros(num_probe, dtype='float64' )
-    
+    gfix_edits = np.zeros(num_probe, dtype='float64')
+
     gfound = np.zeros(num_probe)
-    pfound = list()             #list of strings of probes found
-    nfound = 0;
-    log_fullpath = logPath.replace('\\','/') + "/CatGT.log"
-    
+    pfound = list()             # list of strings of probes found
+    nfound = 0
+    log_fullpath = logPath.replace('\\', '/') + "/CatGT.log"
+
     with open(log_fullpath, 'r') as reader:
         line = reader.readline()
         while line != '' and nfound < num_probe:  # The EOF char is an empty string

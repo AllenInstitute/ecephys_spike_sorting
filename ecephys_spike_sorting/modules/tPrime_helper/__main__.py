@@ -4,19 +4,21 @@ import logging
 import subprocess
 import time
 import shutil
+import fnmatch
 
 import numpy as np
 
 from ...common.utils import catGT_ex_params_from_str
 
 
-def create_TPrime_bat(args):
+def call_TPrime(args):
 
-    # build a .bat file to call TPrime after manual curation
+    # Run TPrime on a "standard" multiprobe + NI, using NP 1.0 or 2.0, with run
+    # folder and probe folders
     # inputs:
     # full path to Tprime executable
-    # path to "to stream" sync edges ("to stream" = the reference stream for the data set)
-    # paths to "from stream" sync edges and text files of events
+    # parameters for "to stream" extracted edges ("to stream" = the reference stream for the data set)
+    # parameters for NI sync edges
 
     print('ecephys spike sorting: TPrime helper module')
     start = time.time()
@@ -92,8 +94,8 @@ def create_TPrime_bat(args):
             st_file = os.path.join(run_directory, prb_dir, ks_outdir, 'spike_times.npy')
             st_file_sec = spike_times_npy_to_txt(st_file, 0)
             events_list.append(st_file_sec)
-            from_stream_index.append(str(c_index))
-            # build path for output spike times npy file
+            from_stream_index.append(c_index)
+            # build path for output spike times text file
             out_file = os.path.join(run_directory, prb_dir,ks_outdir, 'spike_times_sec_adj.txt')
             out_list.append(out_file)
     
@@ -148,11 +150,10 @@ def create_TPrime_bat(args):
             st_file = os.path.join(run_directory, prb_dir, ks_outdir, 'spike_times.npy')
             st_file_sec = spike_times_npy_to_txt(st_file, 0)
             events_list.append(st_file_sec)
-            from_stream_index.append(str(c_index))
-            # build path for output spike times npy file
+            from_stream_index.append(c_index)
+            # build path for output spike times text file
             out_file = os.path.join(run_directory, prb_dir, ks_outdir, 'spike_times_sec_adj.txt')
             out_list.append(out_file)
-
 
     print('toStream:')
     print(toStream_path)
@@ -166,7 +167,6 @@ def create_TPrime_bat(args):
     for op in out_list:
         print(op)
 
-
     # Print out paths for help with debugging
     tcmd = exe_path + ' -syncperiod=' + repr(sync_period) + \
         ' -tostream=' + toStream_path
@@ -179,6 +179,101 @@ def create_TPrime_bat(args):
 
     # write out batch file to call TPrime
 #    bat_path = os.path.join(run_directory, run_name + '_TPrime.bat')
+#    with open(bat_path, 'w') as batfile:
+#        batfile.write(tcmd)
+
+    # make the TPrime call
+    subprocess.call(tcmd)
+
+    # convert output files to npy
+    for op in out_list:
+        spike_times_sec_to_npy(op)
+
+    execution_time = time.time() - start
+
+    print('total time: ' + str(np.around(execution_time, 2)) + ' seconds')
+
+    return {"execution_time": execution_time}  # output manifest
+
+
+def call_TPrime_3A(args):
+
+    # call TPrime for 3A data
+    # assumes no nidq stream
+    # uses full paths rather than building paths
+    # inputs:
+    # full path to Tprime executable
+    # path to "to stream" sync edges ("to stream" = the reference stream for the data set)
+    # paths to "from stream" sync edges and text files of events
+
+    print('ecephys spike sorting: TPrime helper module')
+    start = time.time()
+
+    # for twStream, get the spike events and convert to seconds
+    toStream_path = args['tPrime_helper_params']['toStream_path_3A']
+    toStream_parent, toStream_name = os.path.split(toStream_path)
+
+
+    from_list = args['tPrime_helper_params']['fromStream_list_3A']       # list of files of sync edges for streams to translate to reference
+    events_list = list()     # list of files of event times to translate to reference
+    from_stream_index = list()     # list of indicies matching event files to a from stream
+    out_list = list()    # list of paths for output files, one per event file
+
+    # convert events in the toStream to sec; they will not be adjusted
+    # search the directory the edges file to get the ks2 output
+    fileList = os.listdir(toStream_parent)
+
+    # get name of ks2 output dir and convert to
+    ks_outdir = fnmatch.filter(fileList, 'imec_*_ks2')[0]
+    st_file = os.path.join(toStream_parent, ks_outdir, 'spike_times.npy')
+    toStream_events_sec = spike_times_npy_to_txt(st_file, 0)
+    # for later data analysis with spike times as sec, also save as npy
+    spike_times_sec_to_npy(toStream_events_sec)
+
+    # fromStreams are just the list provided by the caller for these,
+    # convert only the spike times. For 3A, other digital channels are copies
+    # of those in the toStream
+
+    for fS in from_list:
+        fS_parent, fS_name = os.path.split(fS)
+        fileList = os.listdir(fS_parent)
+        ks_outdir = fnmatch.filter(fileList, 'imec_*_ks2')[0]
+        st_file = os.path.join(fS_parent, ks_outdir, 'spike_times.npy')
+        st_file_sec = spike_times_npy_to_txt(st_file, 0)
+        events_list.append(st_file_sec)
+        c_index = len(from_stream_index)
+        from_stream_index.append(c_index)
+        # build path for output spike times text file
+        out_file = os.path.join(fS_parent, ks_outdir, 'spike_times_sec_adj.txt')
+        out_list.append(out_file)
+
+    # Print out paths for help with debugging
+    print('toStream:')
+    print(toStream_path)
+    print('fromStream')
+    for fp in from_list:
+        print(fp)
+    print('event files')
+    for i, ep in enumerate(events_list):
+        print('index: ' + repr(from_stream_index[i]) + ',' + ep)
+    print('output files')
+    for op in out_list:
+        print(op)
+
+    exe_path = os.path.join(args['tPrime_helper_params']['tPrime_path'], 'TPrime.exe')
+    sync_period = args['tPrime_helper_params']['sync_period']
+
+    tcmd = exe_path + ' -syncperiod=' + repr(sync_period) + \
+        ' -tostream=' + toStream_path
+
+    for i, fp in enumerate(from_list):
+        tcmd = tcmd + ' -fromstream=' + repr(i) + ',' + fp
+
+    for i, ep in enumerate(events_list):
+        tcmd = tcmd + ' -events=' + repr(from_stream_index[i]) + ',' + ep + ',' + out_list[i]
+
+    # write out batch file to call TPrime
+#    bat_path = os.path.join(toStream_parent, toStream_name + '_TPrime.bat')
 #    with open(bat_path, 'w') as batfile:
 #        batfile.write(tcmd)
 
@@ -236,6 +331,7 @@ def spike_times_npy_to_txt(sp_fullPath, sample_rate):
 
     return new_fullPath
 
+
 def spike_times_sec_to_npy(spa_fullPath):
     # convert a text file of spike times in seconds to an npy file of
     # python floats, with shape (Nspike,)
@@ -272,7 +368,10 @@ def main():
     mod = ArgSchemaParser(schema_type=InputParameters,
                           output_schema_type=OutputParameters)
 
-    output = create_TPrime_bat(mod.args)
+    if mod.args['ephys_params']['probe_type'] == '3A':
+        output = call_TPrime_3A(mod.args)
+    else:
+        output = call_TPrime(mod.args)
 
     output.update({"input_parameters": mod.args})
     if "output_json" in mod.args:

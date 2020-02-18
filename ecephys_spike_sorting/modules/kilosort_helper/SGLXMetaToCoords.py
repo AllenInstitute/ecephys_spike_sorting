@@ -438,8 +438,7 @@ def MetaToCoords(metaFullPath, outType, badChan= np.zeros((0), dtype = 'int'), d
         # Get indices of electrodes
         [elecInd, connected] = NP10_ElecInd(meta)
         
-        # set any caller specified band channels
-        connected[badChan] = 0
+
         
         # Get saved channels
         chans = OriginalChans(meta)     #inludes SY channel
@@ -448,8 +447,15 @@ def MetaToCoords(metaFullPath, outType, badChan= np.zeros((0), dtype = 'int'), d
         
         # Trim elecInd, connected, and shankind to include only saved channels
         elecInd = elecInd[chans]
-        connected = connected[chans]
         shankInd = np.zeros(elecInd.size, dtype='int')
+        connected = connected[chans]
+        
+        # Channels identified as noisy by kilosort helper indexed
+        # according to position in the file
+        # since these can include the SYNC channel, remove any from
+        # list that are outside the range of AP channels
+        badChan = badChan[badChan < AP]
+        connected[badChan] = 0
         
         # Get XY coords for saved channels
         [xCoord, yCoord] = XYCoord10(meta, elecInd, showPlot)
@@ -459,19 +465,23 @@ def MetaToCoords(metaFullPath, outType, badChan= np.zeros((0), dtype = 'int'), d
         
         # Get indices of all electrodes from the imro table
         [elecInd, shankInd, bankMask, connected] = NP20_ElecInd(meta)
-        
-        # set any caller specified band channels
-        connected[badChan] = 0
-        
+
         # Get saved channels
-        chans = OriginalChans(meta)     #includes SY channel
-        [AP,LF,SY] = ChannelCountsIM(meta)    
+        chans = OriginalChans(meta)     # includes SY channel
+        [AP, LF, SY] = ChannelCountsIM(meta)  
         chans = chans[0:AP]
 
         # Trim elecInd, connected, and shankind to include only saved channels
         elecInd = elecInd[chans]
         connected = connected[chans]
         shankInd = shankInd[chans]
+        
+        # Channels identified as noisy by kilosort helper indexed
+        # according to position in the file
+        # since these can include the SYNC channel, remove any from
+        # list that are outside the range of AP channels
+        badChan = badChan[badChan < AP]
+        connected[badChan] = 0
 
         # Get XY coords for saved channels and plot
         [xCoord, yCoord] = XYCoord20(meta, elecInd, bankMask, shankInd, showPlot)

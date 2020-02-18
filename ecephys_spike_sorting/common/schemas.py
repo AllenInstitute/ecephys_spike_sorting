@@ -9,7 +9,7 @@ class EphysParams(DefaultSchema):
     reference_channels = NumpyArray(required=False, default=[36, 75, 112, 151, 188, 227, 264, 303, 340, 379], help='Reference channels on Neuropixels probe (numbering starts at 0)')
     template_zero_padding = Int(required=True, default=21, help='Zero-padding on templates output by Kilosort')
     vertical_site_spacing = Float(required=False, default=20e-6, help='Vertical site spacing in meters') 
-    probe_type = String(required=False, default='3A', help='3A, 3B1, or 3B2')
+    probe_type = String(required=False, default='NP1', help='3A, 3B2, NP1')
     lfp_band_file = String(required=False, help='Location of LFP band binary file')
     ap_band_file = String(required=False, help='Location of AP band binary file')
     reorder_lfp_channels = Bool(required=False, default=True, help='Should we fix the ordering of LFP channels (necessary for 3a probes following extract_from_npx modules)')
