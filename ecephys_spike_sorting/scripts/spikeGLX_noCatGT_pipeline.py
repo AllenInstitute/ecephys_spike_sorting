@@ -20,16 +20,7 @@ npx_directory = r'D:\ecephys_fork\test_data\test_no_preprocess'
  
 run_names = [												
 						'SC011_022319_g0_tcat.imec3.ap.bin',
-                        'SC011_022319_g0_tcat.imec3.ap.bin',
-                        'SC011_022319_g0_tcat.imec3.ap.bin',
-                        'SC011_022319_g0_tcat.imec3.ap.bin',
-                        'SC011_022319_g0_tcat.imec3.ap.bin',
-                        'SC011_022319_g0_tcat.imec3.ap.bin',
-                        'SC011_022319_g0_tcat.imec3.ap.bin',
-                        'SC011_022319_g0_tcat.imec3.ap.bin',
-                        'SC011_022319_g0_tcat.imec3.ap.bin',
-                        'SC011_022319_g0_tcat.imec3.ap.bin',
-                        'SC011_022319_g0_tcat.imec3.ap.bin'
+
 ]
 
 
@@ -49,14 +40,20 @@ modules = [
 for name in run_names:
 
     baseName = SpikeGLX_utils.ParseTcatName(name)
+    prbStr = SpikeGLX_utils.GetProbeStr(name)   # returns empty string for 3A
     session_id = baseName
+
+    # Create output directory
+    kilosort_output_parent = os.path.join(npx_directory, baseName)
     
-    outputDirName = baseName + '_phy'
+    if not os.path.exists(kilosort_output_parent):
+        os.mkdir(kilosort_output_parent)
+        
+    # output subdirectory
+    outputName = 'imec' + prbStr + '_ks2'
     
-    kilosort_output_dir = os.path.join(npx_directory, outputDirName)
-    
-    if not os.path.exists(kilosort_output_dir):
-        os.mkdir(kilosort_output_dir)
+    kilosort_output_dir = os.path.join(kilosort_output_parent, outputName)
+
 
     input_json = os.path.join(json_directory, session_id + '-input.json')
     output_json = os.path.join(json_directory, session_id + '-output.json')

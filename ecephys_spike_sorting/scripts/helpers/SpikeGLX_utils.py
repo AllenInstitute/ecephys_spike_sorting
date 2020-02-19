@@ -92,17 +92,26 @@ def ParseTrigStr(trigger_string):
     
     str_list = trigger_string.split(',')
     first_trig = int(str_list[0])
-    last_trig = int(str_list[1])  
-    trig_array =  np.arange(first_trig,last_trig+1)
-    
+    last_trig = int(str_list[1])
+    trig_array =  np.arange(first_trig, last_trig+1)
+
     return(trig_array)
-    
+
 
 def ParseTcatName(tcat_name):
     
     parts_list = tcat_name.split('.')
-    baseName = parts_list[0] + '.' + parts_list[1]
+    baseName = parts_list[0] + '_' + parts_list[1]
     return baseName
+
+def GetProbeStr(tcat_name):
+    parts_list = tcat_name.split('.')
+    imStr = parts_list[1]
+    if len(imStr) == 4:
+        prbStr = ''      # 3A data, no probe index
+    else:
+        prbStr = imStr[4:len(imStr)]
+    return prbStr
 
 
 def ParseCatGTLog(logPath, run_name, gate_string, prb_list):
