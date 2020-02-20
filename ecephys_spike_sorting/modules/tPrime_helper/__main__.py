@@ -118,7 +118,7 @@ def call_TPrime(args):
                 c_type, c_prb, c_ex_name = catGT_ex_params_from_str(ex_str) 
                 c_name = run_name + '_tcat.nidq.' + c_ex_name + '.txt'
                 events_list.append(os.path.join(run_directory, c_name))
-                from_stream_index.append(str(c_index))
+                from_stream_index.append(c_index)
                 c_output_name = run_name + '_tcat.nidq.' + c_ex_name + '.adj.txt'
                 out_file = os.path.join(run_directory, c_output_name)
                 out_list.append(out_file) 
@@ -178,9 +178,9 @@ def call_TPrime(args):
         tcmd = tcmd + ' -events=' + repr(from_stream_index[i]) + ',' + ep + ',' + out_list[i]
 
     # write out batch file to call TPrime
-#    bat_path = os.path.join(run_directory, run_name + '_TPrime.bat')
-#    with open(bat_path, 'w') as batfile:
-#        batfile.write(tcmd)
+    bat_path = os.path.join(run_directory, run_name + '_TPrime.bat')
+    with open(bat_path, 'w') as batfile:
+        batfile.write(tcmd)
 
     # make the TPrime call
     subprocess.call(tcmd)
