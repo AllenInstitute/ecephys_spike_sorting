@@ -39,7 +39,7 @@ run_specs = [
 # Set to an existing directory; all output will be written here.
 # Output will be in the standard SpikeGLX directory structure:
 # run_folder/probe_folder/*.bin
-catGT_dest = r'D:\ecephys_fork\test_data\SC_trial\CatGT_out'
+catGT_dest = r'D:\ecephys_fork\test_data\SC_trial\SC024'
 
 # ------------
 # CatGT params
