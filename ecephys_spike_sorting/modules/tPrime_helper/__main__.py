@@ -19,6 +19,13 @@ def call_TPrime(args):
     # full path to Tprime executable
     # parameters for "to stream" extracted edges ("to stream" = the reference stream for the data set)
     # parameters for NI sync edges
+    
+    # bNPY, if True, no text files of spike times will be written
+    bNPY = True;
+    if bNPY:
+        outSuffix = '.npy'
+    else:
+        outSuffix = '.txt'
 
     print('ecephys spike sorting: TPrime helper module')
     start = time.time()
@@ -59,7 +66,7 @@ def call_TPrime(args):
     c_type, c_prb, ni_sync_ex_name = catGT_ex_params_from_str(ni_sync_params)
 
     if toStream_type == 'SY':
-        # toStream is a probe stream       
+        # toStream is a probe stream  
         # build a path to it
         prb_dir = prb_dir_prefix + str(toStream_prb)
         c_name = run_name + '_tcat.imec' + str(toStream_prb) + '.' + toStream_ex_name + '.txt'
@@ -68,9 +75,12 @@ def call_TPrime(args):
         # convert events in the toStream to sec; they will not be adjusted
         ks_outdir = 'imec' + str(toStream_prb) + '_ks2'
         st_file = os.path.join(run_directory, prb_dir, ks_outdir, 'spike_times.npy')
-        toStream_events_sec = spike_times_npy_to_txt(st_file, 0)
-        # for later data analysis with spike times as sec, also save as npy
-        spike_times_sec_to_npy(toStream_events_sec)
+        # convert to seconds; if bNPY = True, returned file is an npy file
+        # otherwise, text.
+        toStream_events_sec = spike_times_npy_to_sec(st_file, 0, bNPY)
+        # if data was saved as text, also save as npy
+        if not bNPY:
+            spike_times_sec_to_npy(toStream_events_sec)
 
         # remove the toStream the list of im extraction params
         matchI = [i for i, value in enumerate(im_ex_list) if toStream_params in value]
@@ -92,11 +102,12 @@ def call_TPrime(args):
             # build path to spike times npy file
             ks_outdir = 'imec' + str(c_prb) + '_ks2'
             st_file = os.path.join(run_directory, prb_dir, ks_outdir, 'spike_times.npy')
-            st_file_sec = spike_times_npy_to_txt(st_file, 0)
+            st_file_sec = spike_times_npy_to_sec(st_file, 0, bNPY)
             events_list.append(st_file_sec)
             from_stream_index.append(c_index)
             # build path for output spike times text file
-            out_file = os.path.join(run_directory, prb_dir,ks_outdir, 'spike_times_sec_adj.txt')
+            out_name = 'spike_times_sec_adj' + outSuffix
+            out_file = os.path.join(run_directory, prb_dir,ks_outdir, out_name)
             out_list.append(out_file)
     
         # get index for sync channel in NI. If none or not found, no ni
@@ -139,7 +150,7 @@ def call_TPrime(args):
         # loop over all SY files
         for ex_str in im_ex_list:
             # get params
-            c_type, c_prb, c_ex_name = catGT_ex_params_from_str(ex_str)          
+            c_type, c_prb, c_ex_name = catGT_ex_params_from_str(ex_str)  
             # build file name for this fromStream
             prb_dir = prb_dir_prefix + str(c_prb)
             c_name = run_name + '_tcat.imec' + str(c_prb) + '.' + c_ex_name + '.txt'
@@ -148,11 +159,12 @@ def call_TPrime(args):
             # build path to spike times npy file
             ks_outdir = 'imec' + str(c_prb) + '_ks2'
             st_file = os.path.join(run_directory, prb_dir, ks_outdir, 'spike_times.npy')
-            st_file_sec = spike_times_npy_to_txt(st_file, 0)
+            st_file_sec = spike_times_npy_to_sec(st_file, 0, bNPY)
             events_list.append(st_file_sec)
             from_stream_index.append(c_index)
             # build path for output spike times text file
-            out_file = os.path.join(run_directory, prb_dir, ks_outdir, 'spike_times_sec_adj.txt')
+            out_name = 'spike_times_sec_adj' + outSuffix
+            out_file = os.path.join(run_directory, prb_dir, ks_outdir, out_name)
             out_list.append(out_file)
 
     print('toStream:')
@@ -185,9 +197,10 @@ def call_TPrime(args):
     # make the TPrime call
     subprocess.call(tcmd)
 
-    # convert output files to npy
-    for op in out_list:
-        spike_times_sec_to_npy(op)
+    # convert output files were text, convert to npy
+    if not bNPY:
+        for op in out_list:
+            spike_times_sec_to_npy(op)
 
     execution_time = time.time() - start
 
@@ -205,6 +218,13 @@ def call_TPrime_3A(args):
     # full path to Tprime executable
     # path to "to stream" sync edges ("to stream" = the reference stream for the data set)
     # paths to "from stream" sync edges and text files of events
+    
+    # bNPY, if True, no text files of spike times will be written
+    bNPY = True
+    if bNPY:
+        outSuffix = '.npy'
+    else:
+        outSuffix = '.txt'
 
     print('ecephys spike sorting: TPrime helper module')
     start = time.time()
@@ -212,7 +232,6 @@ def call_TPrime_3A(args):
     # for twStream, get the spike events and convert to seconds
     toStream_path = args['tPrime_helper_params']['toStream_path_3A']
     toStream_parent, toStream_name = os.path.split(toStream_path)
-
 
     from_list = args['tPrime_helper_params']['fromStream_list_3A']       # list of files of sync edges for streams to translate to reference
     events_list = list()     # list of files of event times to translate to reference
@@ -223,12 +242,13 @@ def call_TPrime_3A(args):
     # search the directory the edges file to get the ks2 output
     fileList = os.listdir(toStream_parent)
 
-    # get name of ks2 output dir and convert to
+    # get name of ks2 output dir and convert to sec
     ks_outdir = fnmatch.filter(fileList, 'imec_*_ks2')[0]
     st_file = os.path.join(toStream_parent, ks_outdir, 'spike_times.npy')
-    toStream_events_sec = spike_times_npy_to_txt(st_file, 0)
+    toStream_events_sec = spike_times_npy_to_sec(st_file, 0, bNPY)
     # for later data analysis with spike times as sec, also save as npy
-    spike_times_sec_to_npy(toStream_events_sec)
+    if not bNPY:
+        spike_times_sec_to_npy(toStream_events_sec)
 
     # fromStreams are just the list provided by the caller for these,
     # convert only the spike times. For 3A, other digital channels are copies
@@ -239,12 +259,13 @@ def call_TPrime_3A(args):
         fileList = os.listdir(fS_parent)
         ks_outdir = fnmatch.filter(fileList, 'imec_*_ks2')[0]
         st_file = os.path.join(fS_parent, ks_outdir, 'spike_times.npy')
-        st_file_sec = spike_times_npy_to_txt(st_file, 0)
+        st_file_sec = spike_times_npy_to_sec(st_file, 0, bNPY)
         events_list.append(st_file_sec)
         c_index = len(from_stream_index)
         from_stream_index.append(c_index)
         # build path for output spike times text file
-        out_file = os.path.join(fS_parent, ks_outdir, 'spike_times_sec_adj.txt')
+        out_name = 'spike_times_sec_adj' + outSuffix
+        out_file = os.path.join(fS_parent, ks_outdir, out_name)
         out_list.append(out_file)
 
     # Print out paths for help with debugging
@@ -281,8 +302,9 @@ def call_TPrime_3A(args):
     subprocess.call(tcmd)
 
     # convert output files to npy
-    for op in out_list:
-        spike_times_sec_to_npy(op)
+    if not bNPY:
+        for op in out_list:
+            spike_times_sec_to_npy(op)
 
     execution_time = time.time() - start
 
@@ -291,7 +313,7 @@ def call_TPrime_3A(args):
     return {"execution_time": execution_time}  # output manifest
 
 
-def spike_times_npy_to_txt(sp_fullPath, sample_rate):
+def spike_times_npy_to_sec(sp_fullPath, sample_rate, bNPY):
     # convert spike_times.npy to text of times in sec
     # return path to the new file. Can take sample_rate as a
     # parameter, or set to 0 to read from param file
@@ -299,7 +321,11 @@ def spike_times_npy_to_txt(sp_fullPath, sample_rate):
     # get file name and create path to new file
     sp_path, sp_fileName = os.path.split(sp_fullPath)
     baseName, bExt = os.path.splitext(sp_fileName)
-    new_fileName = baseName + '_sec.txt'
+    if bNPY:
+        new_fileName = baseName + '_sec.npy'
+    else:
+        new_fileName = baseName + '_sec.txt'
+        
     new_fullPath = os.path.join(sp_path, new_fileName)
 
     # load spike_times.npy; returns numpy array (Nspike,) as uint64
@@ -322,12 +348,16 @@ def spike_times_npy_to_txt(sp_fullPath, sample_rate):
 
     spike_times_sec = spike_times/sample_rate   # spike_times_sec dtype = float
 
-    # write out single column text file
-    nSpike = len(spike_times_sec)
-    with open(new_fullPath, 'w') as outfile:
-        for i in range(0, nSpike-1):
-            outfile.write(f'{spike_times_sec[i]:.6f}\n')
-        outfile.write(f'{spike_times_sec[nSpike-1]:.6f}')
+    if bNPY:
+        # write out npy file
+        np.save(new_fullPath, spike_times_sec)
+    else:
+        # write out single column text file
+        nSpike = len(spike_times_sec)
+        with open(new_fullPath, 'w') as outfile:
+            for i in range(0, nSpike-1):
+                outfile.write(f'{spike_times_sec[i]:.6f}\n')
+            outfile.write(f'{spike_times_sec[nSpike-1]:.6f}')
 
     return new_fullPath
 
