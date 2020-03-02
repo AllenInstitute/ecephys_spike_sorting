@@ -294,9 +294,9 @@ def call_TPrime_3A(args):
         tcmd = tcmd + ' -events=' + repr(from_stream_index[i]) + ',' + ep + ',' + out_list[i]
 
     # write out batch file to call TPrime
-#    bat_path = os.path.join(toStream_parent, toStream_name + '_TPrime.bat')
-#    with open(bat_path, 'w') as batfile:
-#        batfile.write(tcmd)
+    bat_path = os.path.join(toStream_parent, toStream_name + '_TPrime.bat')
+    with open(bat_path, 'w') as batfile:
+        batfile.write(tcmd)
 
     # make the TPrime call
     subprocess.call(tcmd)
