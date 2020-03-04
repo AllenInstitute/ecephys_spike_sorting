@@ -224,12 +224,6 @@ for spec in run_specs:
     
     
         if run_CatGT:
-            # delete any existing log with the current name
-            catGTlogFullPath = os.path.join(catGT_dest, logName)
-            try:
-                os.remove(catGTlogFullPath)
-            except OSError:
-                pass
             
             command = "python -W ignore -m ecephys_spike_sorting.modules." + 'catGT_helper' + " --input_json " + input_json \
     		          + " --output_json " + output_json
