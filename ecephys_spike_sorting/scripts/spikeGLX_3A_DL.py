@@ -74,6 +74,8 @@ catGT_cmd_string = '-aphipass=300 -aplopass=9000 -gbldmx -gfix=0,0.10,0.02'
 sy_ex_param_list = list()
 sy_ex_param_list.append([0, 0])
 sy_ex_param_list.append([1, 50])
+sy_ex_param_list.append([1, 10])
+sy_ex_param_list.append([1, 1200])
 
 # ----------------------
 # psth_events parameters
@@ -100,10 +102,10 @@ sync_param = [0,0] # SYNC bit and msec duration of SYNC signal
 modules = [
 			'kilosort_helper',
             'kilosort_postprocessing',
-            'noise_templates',
-            'psth_events',
-            'mean_waveforms',
-            'quality_metrics'
+            #'noise_templates',
+            #'psth_events',
+            #'mean_waveforms',
+            #'quality_metrics'
 			]
 
 json_directory = r'D:\ecephys_fork\json_files'
@@ -223,9 +225,9 @@ for spec in run_specs:
     
         if run_CatGT:
             # delete any existing log with the current name
-            logFullPath = os.path.join(catGT_dest, logName)
+            catGTlogFullPath = os.path.join(catGT_dest, logName)
             try:
-                os.remove(logFullPath)
+                os.remove(catGTlogFullPath)
             except OSError:
                 pass
             
