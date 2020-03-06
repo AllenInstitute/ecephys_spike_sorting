@@ -316,8 +316,9 @@ def calculate_silhouette_score(spike_clusters,
     random_spike_inds = np.random.permutation(spike_clusters.size)
     random_spike_inds = random_spike_inds[:total_spikes]
     num_pc_features = pc_features.shape[1]
+    num_channels = np.max(pc_feature_ind) + 1
 
-    all_pcs = np.zeros((total_spikes, np.max(pc_feature_ind) * num_pc_features + 1))
+    all_pcs = np.zeros((total_spikes, num_channels * num_pc_features))
 
     for idx, i in enumerate(random_spike_inds):
         
@@ -325,7 +326,7 @@ def calculate_silhouette_score(spike_clusters,
         channels = pc_feature_ind[unit_id,:]
         
         for j in range(0,num_pc_features):
-            all_pcs[idx, channels + np.max(pc_feature_ind) * j] = pc_features[i,j,:]
+            all_pcs[idx, channels + num_channels * j] = pc_features[i,j,:]
 
     cluster_labels = spike_clusters[random_spike_inds]
 
