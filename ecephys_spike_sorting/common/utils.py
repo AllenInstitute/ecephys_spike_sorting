@@ -531,3 +531,25 @@ def catGT_ex_params_from_str(ex_str):
         ex_name_str = ex_type + '_' + ex_parts[0] + '_' + ex_parts[3]
 
     return ex_type, prb_index, ex_name_str
+
+def getSortResults(output_dir):
+    # load results from phy for run logging and creation of the table for C_Waves
+
+    cluLabel = np.load(os.path.join(output_dir, 'spike_clusters.npy'))
+
+    unqLabel, labelCounts = np.unique(cluLabel, return_counts = True)
+    nTot = cluLabel.shape[0]
+
+    templates = np.load(os.path.join(output_dir, 'templates.npy'))
+    channel_map = np.load(os.path.join(output_dir, 'channel_map.npy'))
+
+    nTemplate = templates.shape[0]
+    peak_channels = np.squeeze(channel_map[np.argmax(np.max(templates,1) - np.min(templates,1),1)])
+
+    clus_Table = np.zeros((nTemplate, 2), dtype='uint32')
+    clus_Table[unqLabel, 0] = labelCounts
+    clus_Table[:, 1] = peak_channels
+
+    np.save(os.path.join(output_dir, 'clus_Table.npy'), clus_Table)
+
+    return nTemplate, nTot

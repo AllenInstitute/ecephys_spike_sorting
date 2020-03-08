@@ -6,7 +6,7 @@ import time
 
 import numpy as np
 
-from ...common.utils import load_kilosort_data
+from ...common.utils import load_kilosort_data, getSortResults
 
 from .postprocessing import remove_double_counted_spikes
 
@@ -15,8 +15,8 @@ def run_postprocessing(args):
     print('ecephys spike sorting: kilosort postprocessing module')
 
     print("Loading data...")
-    
-    #print(args.keys()) 
+
+    #print(args.keys())
     #print(args['directories'].keys())
 
     start = time.time()
@@ -48,17 +48,21 @@ def run_postprocessing(args):
     print("Saving data...")
 
     # save data -- it's fine to overwrite existing files, because the original outputs are stored in rez.mat
-    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'spike_times.npy'), spike_times)
-    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'amplitudes.npy'), amplitudes)
-    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'spike_clusters.npy'), spike_clusters)
-    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'spike_templates.npy'), spike_templates)
-    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'pc_features.npy'), pc_features)
-    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'template_features.npy'), template_features)
-    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'overlap_matrix.npy'), overlap_matrix)
-    np.save(os.path.join(args['directories']['kilosort_output_directory'], 'overlap_summary.npy'), overlap_summary)
-    
+    output_dir = args['directories']['kilosort_output_directory']
+    np.save(os.path.join(output_dir, 'spike_times.npy'), spike_times)
+    np.save(os.path.join(output_dir, 'amplitudes.npy'), amplitudes)
+    np.save(os.path.join(output_dir, 'spike_clusters.npy'), spike_clusters)
+    np.save(os.path.join(output_dir, 'spike_templates.npy'), spike_templates)
+    np.save(os.path.join(output_dir, 'pc_features.npy'), pc_features)
+    np.save(os.path.join(output_dir, 'template_features.npy'), template_features)
+    np.save(os.path.join(output_dir, 'overlap_matrix.npy'), overlap_matrix)
+    np.save(os.path.join(output_dir, 'overlap_summary.npy'), overlap_summary)
+
     # save the overlap_summary as a text file -- allows user to easily understand what happened
-    np.savetxt(os.path.join(args['directories']['kilosort_output_directory'], 'overlap_summary.csv'), overlap_summary, fmt = '%d', delimiter = ',')
+    np.savetxt(os.path.join(output_dir, 'overlap_summary.csv'), overlap_summary, fmt = '%d', delimiter = ',')
+
+    # remoake the clus_Table.npy with the new spike counts
+    getSortResults(output_dir)
 
     execution_time = time.time() - start
 

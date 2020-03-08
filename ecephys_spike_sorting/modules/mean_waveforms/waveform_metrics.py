@@ -45,8 +45,6 @@ def calculate_waveform_metrics(waveforms,
         Number of sites to use for 2D waveform metrics
     site_spacing : float
         Average vertical distance between sites (m)
-    epoch_name : str
-        Name of epoch for which these waveforms originated
 
     Outputs:
     -------
@@ -89,6 +87,92 @@ def calculate_waveform_metrics(waveforms,
 
     return metrics
 
+def calculate_waveform_metrics_from_avg(avg_waveform,
+                                        snr,
+                                        cluster_id, 
+                                        peak_channel, 
+                                        channel_map, 
+                                        sample_rate, 
+                                        upsampling_factor, 
+                                        spread_threshold,
+                                        site_range,
+                                        site_spacing):
+
+    """
+    Calculate metrics for an array of waveforms for a single cluster.
+
+    Metrics come from Jia et al. (2019) High-density extracellular probes reveal 
+    dendritic backpropagation and facilitate neuron classification. J Neurophys
+
+    https://doi.org/10.1152/jn.00680.2018
+
+
+    Inputs:
+    -------
+    avg_waveform : numpy.ndarray (num_channels x num_samples)
+        from C_waves output
+    snr : from C_waves output
+    cluster_id : int
+        ID for cluster
+    peak_channel : int
+        Location of waveform peak, read from C_waves input clus_Table
+    channel_map : numpy.ndarray
+        Channels used for spike sorting
+    sample_rate : float
+        Sample rate in Hz
+    upsampling_factor : float
+        Relative rate at which to upsample the spike waveform
+    spread_threshold : float
+        Threshold for computing spread of 2D waveform
+    site_range : float
+        Number of sites to use for 2D waveform metrics
+    site_spacing : float
+        Average vertical distance between sites (m)
+
+    Outputs:
+    -------
+    metrics : pandas.DataFrame
+        Single-row table containing all metrics
+
+    """
+
+    # snr = calculate_snr(waveforms[:, peak_channel, :])
+    
+    # calulating from average waveforms drawn from whole session
+    epoch_name = 'complete_session'
+    
+    # all metric calculations are restricted to the channesl in the map
+    mean_2D_waveform = np.squeeze(avg_waveform[channel_map, :])
+    local_peak = np.argmin(np.abs(channel_map - peak_channel))
+
+    num_samples = mean_2D_waveform.shape[1]
+    new_sample_count = int(num_samples * upsampling_factor)
+
+    mean_1D_waveform = resample(
+        mean_2D_waveform[local_peak, :], new_sample_count)
+
+    timestamps = np.linspace(0, num_samples / sample_rate, new_sample_count)
+
+    duration = calculate_waveform_duration(mean_1D_waveform, timestamps)
+    halfwidth = calculate_waveform_halfwidth(mean_1D_waveform, timestamps)
+    PT_ratio = calculate_waveform_PT_ratio(mean_1D_waveform)
+    repolarization_slope = calculate_waveform_repolarization_slope(
+        mean_1D_waveform, timestamps)
+    recovery_slope = calculate_waveform_recovery_slope(
+        mean_1D_waveform, timestamps)
+
+    amplitude, spread, velocity_above, velocity_below = calculate_2D_features(
+        mean_2D_waveform, timestamps, local_peak, spread_threshold, site_range, site_spacing)
+
+    data = [[cluster_id, epoch_name, peak_channel, snr, duration, halfwidth, PT_ratio, repolarization_slope,
+              recovery_slope, amplitude, spread, velocity_above, velocity_below]]
+
+    metrics = pd.DataFrame(data,
+                           columns=['cluster_id', 'epoch_name', 'peak_channel', 'snr', 'duration', 'halfwidth',
+                                     'PT_ratio', 'repolarization_slope', 'recovery_slope', 'amplitude',
+                                     'spread', 'velocity_above', 'velocity_below'])
+
+    return metrics
 
 # ==========================================================
 

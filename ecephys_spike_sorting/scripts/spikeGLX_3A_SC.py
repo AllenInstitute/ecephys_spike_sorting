@@ -119,6 +119,11 @@ try:
     os.remove('Tprime.log')
 except OSError:
     pass
+# delete existing Tprime.log
+try:
+    os.remove('C_Waves.log')
+except OSError:
+    pass
 
 # delete any existing log with the current name
 logFullPath = os.path.join(catGT_dest, logName)
@@ -294,7 +299,7 @@ for spec in run_specs:
                                            probe_string = '',
                                            catGT_stream_string = catGT_stream_string,
                                            catGT_cmd_string = catGT_cmd_string,
-                                           catGT_gfix_edits = gfix_edits[i],
+                                           catGT_gfix_edits = gfix_edits[0],
                                            extracted_data_directory = catGT_dest,
                                            event_ex_param_str = event_ex_param_str,
                                            sync_period = sync_period,

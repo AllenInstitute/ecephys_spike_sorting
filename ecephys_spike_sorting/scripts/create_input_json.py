@@ -45,6 +45,7 @@ def createInputJson(output_file,
     npy_matlab_repository = r'Z:\workstation_backup\full_080119\Documents\npy-matlab-master'
     catGTPath = r'Z:\CatGT'
     tPrime_path=r'Z:\TPrimeApp\TPrime'
+    cWaves_path=r'Z:\C_Waves'
     
     # for config files and kilosort working space
     kilosort_output_tmp = r'D:\kilosort_datatemp' 
@@ -241,14 +242,17 @@ def createInputJson(output_file,
         "mean_waveform_params" : {
         
             "mean_waveforms_file" : os.path.join(kilosort_output_directory, 'mean_waveforms.npy'),
-
             "samples_per_spike" : 82,
             "pre_samples" : 20,
-            "num_epochs" : 1,
+            "num_epochs" : 1,           #epochs not implemented for c_waves
             "spikes_per_epoch" : 1000,
             "spread_threshold" : 0.12,
-            "site_range" : 16
+            "site_range" : 16,    
+            "cWaves_path" : cWaves_path,
+            "use_C_Waves" : False,
+            "snr_radius" : 8
         },
+            
 
         "noise_waveform_params" : {
             "classifier_path" : os.path.join(modules_directory, 'noise_templates', 'rf_classifier.pkl'),

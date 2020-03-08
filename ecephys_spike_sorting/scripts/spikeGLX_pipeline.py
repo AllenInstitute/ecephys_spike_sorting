@@ -21,7 +21,7 @@ logName = 'SC024_log.csv'
 
 # Raw data directory = npx_directory
 # run_specs = name, gate, trigger and probes to process
-npx_directory = r'Y:\colonell_backup\pipeline_test'
+npx_directory = r'D:\ecephys_fork\test_data\SC_trial'
 
 # Each run_spec is a list of 4 strings:
 #   undecorated run name (no g/t specifier, the run field in CatGT)
@@ -39,7 +39,7 @@ run_specs = [
 # Set to an existing directory; all output will be written here.
 # Output will be in the standard SpikeGLX directory structure:
 # run_folder/probe_folder/*.bin
-catGT_dest = r'Y:\colonell_backup\pipeline_test'
+catGT_dest = r'D:\ecephys_fork\test_data\SC_trial\SC024'
 
 # ------------
 # CatGT params
@@ -95,6 +95,12 @@ except OSError:
 # delete existing Tprime.log
 try:
     os.remove('Tprime.log')
+except OSError:
+    pass
+
+# delete existing C_waves.log
+try:
+    os.remove('C_Waves.log')
 except OSError:
     pass
 

@@ -123,6 +123,12 @@ try:
 except OSError:
     pass
 
+# delete existing C_waves.log
+try:
+    os.remove('C_Waves.log')
+except OSError:
+    pass
+
 # delete any existing log with the current name
 logFullPath = os.path.join(catGT_dest_parent, logName)
 try:
