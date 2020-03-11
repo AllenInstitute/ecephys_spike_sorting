@@ -1,21 +1,39 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+import fnmatch
 import os
+import sys
 from pathlib import Path
 
 
 import ecephys_spike_sorting.modules.kilosort_helper.SGLXMetaToCoords as SGLXMeta
 
 def GetFirstTrialPath(catGT_run_name, gate_string, trigger_string, probe_string ):
-    trig_array = ParseTrigStr(trigger_string)
     prb_list = ParseProbeStr(probe_string)
     run_folder = catGT_run_name + '_g' + gate_string
     prb_folder =  run_folder + '_imec' + prb_list[0]
+    first_trig, last_trig = ParseTrigStr(trigger_string, prb_folder)
     filename = catGT_run_name + '_g' + gate_string + '_t' + \
-                 str(trig_array[0]) + '.imec' + prb_list[0] + '.ap.bin'
+                 str(first_trig) + '.imec' + prb_list[0] + '.ap.bin'
     firstTrialPath = os.path.join(run_folder, prb_folder, filename) 
 
     return firstTrialPath
+
+def GetTrialRange(prb_folder):
+    tFiles = os.listdir(prb_folder)
+    minIndex =  sys.maxsize
+    maxIndex = 0
+    for tName in tFiles:
+        if (fnmatch.fnmatch(tName,'*.ap.bin')):
+            parts = tName.split('_')
+            tparts = parts[2].split('.')
+            tInd = int(tparts[0][1:])
+            if tInd > maxIndex:
+                maxIndex = tInd
+            if tInd < minIndex:
+                minIndex = tInd
+    return minIndex, maxIndex
+
     
 def EphysParams(ap_band_file):
     # assume metadata file is in same directory as binary, Constuct metadata path
@@ -88,14 +106,29 @@ def ParseProbeStr(probe_string):
 
     return prb_list
 
-def ParseTrigStr(trigger_string):
+def ParseTrigStr(trigger_string, prb_folder):
     
     str_list = trigger_string.split(',')
-    first_trig = int(str_list[0])
-    last_trig = int(str_list[1])
-    trig_array =  np.arange(first_trig, last_trig+1)
+    first_trig_str = str_list[0]
+    last_trig_str = str_list[1]
+    
+    if last_trig_str.find('end') >= 0 or first_trig_str.find('start') >= 0 :
+        # get the full range from the directory
+        minInd, maxInd = GetTrialRange(prb_folder)
 
-    return(trig_array)
+    if first_trig_str.find('start') >= 0:
+        first_trig = minInd
+    else:
+        first_trig = int(first_trig_str)
+    
+    if last_trig_str.find('end') >= 0:
+        last_trig = maxInd
+    else:
+        last_trig = int(last_trig_str)
+        
+    # trig_array =  np.arange(first_trig, last_trig+1)
+
+    return first_trig, last_trig
 
 
 def ParseTcatName(tcat_name):
@@ -146,4 +179,5 @@ def ParseCatGTLog(logPath, run_name, gate_string, prb_list):
         gfix_edits[i] = gfound[pfound.index(prb_list[i])]
      
     return gfix_edits
+
 

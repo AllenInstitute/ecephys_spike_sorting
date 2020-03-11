@@ -29,6 +29,8 @@ npx_directory = r'D:\ecephys_fork\test_data\3A'
 #           => the folder containing the data should also have this name
 #   (string) gate index, as a string (e.g. '0')
 #   (string) triggers to process/concatenate, as a string e.g. '0,400', '0,0 for a single file
+#           can replace first limit with 'start', last with 'end'; 'start,end'
+#           will concatenate all trials in the probe folder
 #   (list of strings) probe labels to process, as a list, e.g. ['blue','red','yellow']
 #   (list of ints) SY channel for each run -- if no SY channel, or not extracting that data, enter None
 #
@@ -193,13 +195,18 @@ for spec in run_specs:
         output_json = os.path.join(json_directory, session_id + '-output.json')
         print('Creating json file for preprocessing')
         print(runFolder)
+        # In this case, the run folder and probe folder are the same;
+        # parse trigger string using this folder to interpret 'start' and 'end'
+        first_trig, last_trig = SpikeGLX_utils.ParseTrigStr(spec[2], runFolder)      
+        trigger_str = repr(first_trig) + ',' + repr(last_trig)
+        
         info = createInputJson(input_json, npx_directory=runFolder, 
     	                                   continuous_file = None,
                                            spikeGLX_data = 'True',
     									   kilosort_output_directory=catGT_dest,
                                            catGT_run_name = runName,
                                            gate_string = spec[1],
-                                           trigger_string = spec[2],
+                                           trigger_string = trigger_str,
                                            probe_string = '',
                                            catGT_stream_string = catGT_stream_string,
                                            catGT_cmd_string = probe_catGT_cmd_string,
@@ -257,7 +264,7 @@ for spec in run_specs:
                                        noise_template_use_rf = False,
                                        catGT_run_name = session_id,
                                        gate_string = spec[1],
-                                       trigger_string = spec[2],
+                                       trigger_string = trigger_str,
                                        probe_string = '',
                                        catGT_stream_string = catGT_stream_string,
                                        catGT_cmd_string = probe_catGT_cmd_string,
@@ -295,7 +302,7 @@ for spec in run_specs:
                                            noise_template_use_rf = False,
                                            catGT_run_name = spec[0],
                                            gate_string = spec[1],
-                                           trigger_string = spec[2],
+                                           trigger_string = trigger_str,
                                            probe_string = '',
                                            catGT_stream_string = catGT_stream_string,
                                            catGT_cmd_string = catGT_cmd_string,

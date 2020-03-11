@@ -28,7 +28,9 @@ npx_directory = r'D:\ecephys_fork\test_data\3A_DL'
 #   (string) animal name = undecorated run name , e.g. 'dl56',
 #   (string) date of recording, as yyyymmdd, eg '20181126'
 #   (string) gate index, as a string (e.g. '0')
-#   (string) triggers to process/concatenate, as a string e.g. '0,400', '0,0 for a single file
+#   (string) triggers to process/concatenate, as a string e.g. '0,400', '0,0', 
+#           can replace first limit with 'start', last with 'end'; 'start,end'
+#           will concatenate all trials in the probe folder
 #   (list of strings) computer/ probe labels to process, as a list, e.g. ['ww2','ww4']
 #   (list of ints) SY channel for each run -- if no SY channel, or not extracting that data, enter None
 #
@@ -38,7 +40,7 @@ npx_directory = r'D:\ecephys_fork\test_data\3A_DL'
 #   Does not use SpikeGLX generated run folders
 
 run_specs = [
-					['dl56', '20181126', '0', '50:54', ['ww2','ww4'], [384,384]]
+					['dl56', '20181126', '0', 'start,end', ['ww2','ww4'], [384,384]]
 ]
 
 
@@ -56,7 +58,7 @@ catGT_dest_parent = r'D:\ecephys_fork\test_data\3A_DL\DL56'
 run_CatGT = True  # set to False to sort/process previously processed data.
 # catGT streams to process, e.g. just '-ap' for ap band only, '-ap -ni' for
 # ap plus ni aux inputs
-catGT_stream_string = '-prb_3A -ap -no_run_fld'
+catGT_stream_string = '-prb_3A -ap -no_run_fld -t_miss_ok'
 
 # CatGT command string includes all instructions for catGT operations
 # Note that directory naming in this script requires -prb_fld and -out_prb_fld
@@ -213,13 +215,18 @@ for spec in run_specs:
         output_json = os.path.join(json_directory, session_id + '-output.json')
         print('Creating json file for preprocessing')
         print(runFolder)
+        # In this case, the run folder and probe folder are the same;
+        # parse trigger string using this folder to interpret 'start' and 'end'
+        first_trig, last_trig = SpikeGLX_utils.ParseTrigStr(spec[3], runFolder)      
+        trigger_str = repr(first_trig) + ',' + repr(last_trig)
+        
         info = createInputJson(input_json, npx_directory=runFolder, 
     	                                   continuous_file = None,
                                            spikeGLX_data = 'True',
     									   kilosort_output_directory=catGT_dest,
                                            catGT_run_name = runName,
                                            gate_string = spec[2],
-                                           trigger_string = spec[3],
+                                           trigger_string = trigger_str,
                                            probe_string = '',
                                            catGT_stream_string = catGT_stream_string,
                                            catGT_cmd_string = probe_catGT_cmd_string,
@@ -285,7 +292,7 @@ for spec in run_specs:
                                        noise_template_use_rf = False,
                                        catGT_run_name = session_id,
                                        gate_string = spec[1],
-                                       trigger_string = spec[2],
+                                       trigger_string = trigger_str,
                                        probe_string = '',
                                        catGT_stream_string = catGT_stream_string,
                                        catGT_cmd_string = probe_catGT_cmd_string,
@@ -323,7 +330,7 @@ for spec in run_specs:
                                            noise_template_use_rf = False,
                                            catGT_run_name = spec[0],
                                            gate_string = spec[1],
-                                           trigger_string = spec[2],
+                                           trigger_string = trigger_str,
                                            probe_string = '',
                                            catGT_stream_string = catGT_stream_string,
                                            catGT_cmd_string = catGT_cmd_string,

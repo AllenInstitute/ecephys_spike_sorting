@@ -27,6 +27,8 @@ npx_directory = r'D:\ecephys_fork\test_data\SC_trial'
 #   undecorated run name (no g/t specifier, the run field in CatGT)
 #   gate index, as a string (e.g. '0')
 #   triggers to process/concatenate, as a string e.g. '0,400', '0,0 for a single file
+#           can replace first limit with 'start', last with 'end'; 'start,end'
+#           will concatenate all trials in the probe folder
 #   probes to process, as a string, e.g. '0', '0,3', '0:3'
 
 run_specs = [										
@@ -121,6 +123,17 @@ for spec in run_specs:
     # Run CatGT
     input_json = os.path.join(json_directory, session_id + '-input.json')
     output_json = os.path.join(json_directory, session_id + '-output.json')
+    
+    # Make list of probes from the probe string
+    prb_list = SpikeGLX_utils.ParseProbeStr(spec[3])
+    
+    # build path to the first probe folder
+    run_folder_name = spec[0] + '_g' + spec[1]
+    prb0_fld_name = run_folder_name + '_imec' + prb_list[0]
+    prb0_fld = os.path.join(npx_directory, run_folder_name, prb0_fld_name)
+    first_trig, last_trig = SpikeGLX_utils.ParseTrigStr(spec[2], prb0_fld)
+    trigger_str = repr(first_trig) + ',' + repr(last_trig)
+    
     print('Creating json file for preprocessing')
     info = createInputJson(input_json, npx_directory=npx_directory, 
 	                                   continuous_file = None,
@@ -128,15 +141,12 @@ for spec in run_specs:
 									   kilosort_output_directory=catGT_dest,
                                        catGT_run_name = session_id,
                                        gate_string = spec[1],
-                                       trigger_string = spec[2],
+                                       trigger_string = trigger_str,
                                        probe_string = spec[3],
                                        catGT_stream_string = catGT_stream_string,
                                        catGT_cmd_string = catGT_cmd_string,
                                        extracted_data_directory = catGT_dest
                                        )
-
-    # Make list of probes from the probe string
-    prb_list = SpikeGLX_utils.ParseProbeStr(spec[3])
 
     # CatGT operates on whole runs with multiple probes, so gets called in just
     # once per run_spec
@@ -195,7 +205,7 @@ for spec in run_specs:
                                        noise_template_use_rf = False,
                                        catGT_run_name = session_id,
                                        gate_string = spec[1],
-                                       trigger_string = spec[2],
+                                       trigger_string = trigger_str,
                                        probe_string = spec[3],
                                        catGT_stream_string = catGT_stream_string,
                                        catGT_cmd_string = catGT_cmd_string,
@@ -233,7 +243,7 @@ for spec in run_specs:
                                            noise_template_use_rf = False,
                                            catGT_run_name = spec[0],
                                            gate_string = spec[1],
-                                           trigger_string = spec[2],
+                                           trigger_string = trigger_str,
                                            probe_string = spec[3],
                                            catGT_stream_string = catGT_stream_string,
                                            catGT_cmd_string = catGT_cmd_string,

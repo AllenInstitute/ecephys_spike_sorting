@@ -15,7 +15,7 @@ https://github.com/AllenInstitute/ecephys_spike_sorting
 
 ## Overview
 
-The general outline of the pipeline is preprocessing, spike sorting by [Kilosort2](https://github.com/MouseLand/Kilosort2) , followed by cleanup and calculation of QC metrics. The original version from the Allen used preprocessing specifically for data saved using the [Open Ephys GUI](https://github.com/open-ephys/plugin-gui). This version is designed to run with data collected using [SpikeGLX](http://billkarsh.github.io/SpikeGLX), and its associated tools (CatGT and TPrime). The identification of noise clusters and calculation of QC metrics is unchanged from the original code.
+The general outline of the pipeline is preprocessing, spike sorting by [Kilosort2](https://github.com/MouseLand/Kilosort2) , followed by cleanup and calculation of QC metrics. The original version from the Allen used preprocessing specifically for data saved using the [Open Ephys GUI](https://github.com/open-ephys/plugin-gui). This version is designed to run with data collected using [SpikeGLX](http://billkarsh.github.io/SpikeGLX), and its associated tools (CatGT, TPrime, and C_Waves). The identification of noise clusters and calculation of QC metrics is unchanged from the original code.
 
 The spikeGLX_pipeline.py script implements this pipeline: 
 
@@ -59,7 +59,7 @@ These modules have been tested with Python 3.7.
 
 We recommend using [pipenv](https://github.com/pypa/pipenv) to run these modules.
 
-The SpikeGLX pipeline is dependent on two command line applications currently available only for Windows, and has not been tested in Linux or Mac. These instructions are for Windows 10.
+The SpikeGLX pipeline is dependent on three command line applications currently available only for Windows, and has not been tested in Linux or Mac. These instructions are for Windows 10.
 
 
 ### Install pipenv
@@ -145,6 +145,8 @@ In the create_input_json.py file, be sure to set these paths for your system:
 - npy_matlab_repository
 
 - catGTPath: contains the CatGT.exe file
+
+- cWaves_path: contains the C_Waves.exe file
 
 - tPrimePath: contains the TPrime.exe file
 
