@@ -2,7 +2,17 @@ Mean Waveforms
 ==============
 Extracts mean waveforms from raw data, given spike times and cluster IDs.
 
+**In the original Allen Institute implementation:
 Computes waveforms separately for individual epochs, as well as for the entire experiment. If no epochs are specified, waveforms are selected randomly from the entire recording. Waveform standard deviation is currently computed, but not saved.
+
+**In the Janelia revised implementation:
+Computes waveforms using Bill Karsh's command line tool C_Waves. This version does not use epochs; spikes are drawn uniformly from the entire recording. The SNR is given by:
+
+(Vmax - Vmin) on the peak channel
+--------------------------------- 
+ 2 * standard deviation
+
+variance = (1/(N-degrees of freedom))*sum(residuals^2)
 
 Metrics are computed for every waveform, and include features of the 1D peak-channel waveform and the 2D waveform centered on the soma location.
 

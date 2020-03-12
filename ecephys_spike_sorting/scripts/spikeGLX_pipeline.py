@@ -12,6 +12,12 @@ from create_input_json import createInputJson
 # "Folder per probe" selected (probes stored in separate folders) AND
 # that CatGT is run with the -out_prb_fld option
 
+# -------------------------------
+# -------------------------------
+# User input -- Edit this section
+# -------------------------------
+# -------------------------------
+
 # -----------
 # Input data
 # -----------
@@ -52,7 +58,8 @@ run_CatGT = True   # set to False to sort/process previously processed data.
 catGT_stream_string = '-ap -ni'
 
 # CatGT command string includes all instructions for catGT operations
-# Note that directory naming in this script requires -prb_fld and -out_prb_fld
+# Note 1: directory naming in this script requires -prb_fld and -out_prb_fld
+# Note 2: this command line includes specification of edge extraction
 # see CatGT readme for details
 catGT_cmd_string = '-prb_fld -out_prb_fld -aphipass=300 -aplopass=9000 -gbldmx -gfix=0,0.10,0.02 -SY=0,384,6,500 -SY=1,384,6,500 -XA=0,1,3,500 -XA=1,3,3,0 -XD=4,1,50 -XD=4,2,1.7 -XD=4,3,5'
 
@@ -87,6 +94,11 @@ modules = [
 
 json_directory = r'D:\ecephys_fork\json_files'
 
+# -----------------------
+# -----------------------
+# End of user input
+# -----------------------
+# -----------------------
 
 # delete the existing CatGT.log
 try:
