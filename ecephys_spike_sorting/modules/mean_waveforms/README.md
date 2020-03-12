@@ -6,13 +6,22 @@ Extracts mean waveforms from raw data, given spike times and cluster IDs.
 Computes waveforms separately for individual epochs, as well as for the entire experiment. If no epochs are specified, waveforms are selected randomly from the entire recording. Waveform standard deviation is currently computed, but not saved.
 
 **In the Janelia revised implementation:
-Computes waveforms using Bill Karsh's command line tool C_Waves. This version does not use epochs; spikes are drawn uniformly from the entire recording. The SNR is given by:
+Computes waveforms using Bill Karsh's command line tool C_Waves. This version does not support epochs; spikes are drawn uniformly from the entire recording. The SNR is calculated over a disk of recording sites, and is given by:
 
-(Vmax - Vmin) on the peak channel
---------------------------------- 
- 2 * standard deviation
+(Vmax - Vmin) on the peak channel/(2*sqrt(variance))
 
 variance = (1/(N-degrees of freedom))*sum(residuals^2)
+
+residuals = channel x sample array of (raw data - mean)
+
+The C_Waves implementation is very efficient (~1000X faster than the python version). It is turned on by setting 
+
+use_C_Waves : True 
+
+in create_input_json.py. The compiled code can be downloaded from the SpikeGLX website (http://billkarsh.github.io/SpikeGLX/#post-processing-tools).
+
+Waveform Metrics
+================
 
 Metrics are computed for every waveform, and include features of the 1D peak-channel waveform and the 2D waveform centered on the soma location.
 
