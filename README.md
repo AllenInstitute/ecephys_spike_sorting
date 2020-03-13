@@ -132,16 +132,16 @@ After completing the install, close the command window and reopen as a normal us
 
 ### Install CatGT, TPrime, and C_Waves
 
-[CatGT](http://billkarsh.github.io/SpikeGLX/#catgt), [TPrime](http://billkarsh.github.io/SpikeGLX/#tprime), and [C_Waves](http://billkarsh.github.io/SpikeGLX/#post-processing-tools) are all available on the Spike GLX download page. To install, simply download the zipped folder and extract to a convenient location, see the instructions [here](http://billkarsh.github.io/SpikeGLX/#command-line-tool-installation). The paths to these executables must then be set in create_input_json.py.
+[CatGT](http://billkarsh.github.io/SpikeGLX/#catgt), [TPrime](http://billkarsh.github.io/SpikeGLX/#tprime), and [C_Waves](http://billkarsh.github.io/SpikeGLX/#post-processing-tools) are each available on the SpikeGLX download page. To install, simply download each zipped folder and extract to a convenient location, see the instructions [here](http://billkarsh.github.io/SpikeGLX/#command-line-tool-installation). The paths to these executables must then be set in **create_input_json.py**.
 
 
 ## Usage
 
 ### Edit parameters for your system and runs
 
-Parameters are set in two files. Values that are constant across runs—like paths to code, parameters for sorting, etc – are set in create_input_json.py. Parameters that need to be set per run (run names, which triggers and probes to process…) are set in script files.
+Parameters are set in two files. Values that are constant across runs—like paths to code, parameters for sorting, etc – are set in **create_input_json.py**. Parameters that need to be set per run (run names, which triggers and probes to process…) are set in script files.
 
-In the create_input_json.py file, be sure to set these paths for your system:
+In **create_input_json.py**, be sure to set these paths for your system:
 
 - ecephys_directory: parent directory that contains the modules directory
 
@@ -157,7 +157,7 @@ In the create_input_json.py file, be sure to set these paths for your system:
 
 - kilosort_output_temp: for the KS2 residual file, also temporary copies of the config and master file
 
-Other “mostly constant” parameters in create_input_json:
+Other “mostly constant” parameters in **create_input_json.py**:
 
 - Kilosort2 parameters
 
