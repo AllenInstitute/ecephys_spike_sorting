@@ -1,6 +1,13 @@
 Mean Waveforms
 ==============
-Extracts mean waveforms from raw data, given spike times and cluster IDs.
+Extracts mean waveforms and compute waveform metrics from raw data, given spike times and cluster IDs.
+
+Dependencies
+------------
+[C_Waves](http://billkarsh.github.io/SpikeGLX/#post-processing-tools)
+
+Mean Waveform Calculation
+=========================
 
 **In the original Allen Institute implementation:**
 Computes waveforms separately for individual epochs, as well as for the entire experiment. If no epochs are specified, waveforms are selected randomly from the entire recording. Waveform standard deviation is currently computed, but not saved.
@@ -14,16 +21,14 @@ variance = (1/(N-degrees of freedom))*sum(residuals^2)
 
 residuals = channel x sample array of (raw data - mean)
 
-The C_Waves implementation is very efficient (~1000X faster than the python version). It is turned on by setting 
+The C_Waves implementation is very efficient (~1000X faster than the python version). It is turned on in **create_input_json.py** by setting:
 
 ```
     use_C_Waves : True
 ```
 
-in create_input_json.py. The C_Waves tool can be downloaded from the SpikeGLX download [page](http://billkarsh.github.io/SpikeGLX/#post-processing-tools).
-
-Waveform Metrics
-================
+Waveform Metric Calculation
+===========================
 
 Metrics are computed for every waveform, and include features of the 1D peak-channel waveform and the 2D waveform centered on the soma location.
 

@@ -4,7 +4,7 @@ Python wrapper for TPrime, a C++ command line application written by Bill Karsh,
 
 Dependencies
 ------------
-[TPrime](https://billkarsh.github.io/SpikeGLX/)
+[TPrime](https://billkarsh.github.io/SpikeGLX/#tprime)
 
 Running
 -------

@@ -4,7 +4,7 @@ Python wrapper for CatGT, a C++ command application written by Bill Karsh for pr
 
 Dependencies
 ------------
-[CatGT](https://billkarsh.github.io/SpikeGLX/)
+[CatGT](https://billkarsh.github.io/SpikeGLX/#catgt)
 
 Running
 -------
