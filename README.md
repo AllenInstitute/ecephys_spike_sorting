@@ -37,7 +37,7 @@ Further documentation can be found in each module's README file. For more inform
 
 5. [noise_templates](ecephys_spike_sorting/modules/noise_templates/README.md): Identifies noise units based on their waveform shape and ISI histogram or a random forest classifier.
 
-6. [mean_waveforms](ecephys_spike_sorting/modules/mean_waveforms/README.md): Extracts mean waveforms from the raw data, given spike times and unit IDs. Also calculates metrics for each waveform.
+6. [mean_waveforms](ecephys_spike_sorting/modules/mean_waveforms/README.md): Extracts mean waveforms from the raw data, given spike times and unit IDs. Also calculates metrics for each waveform. In this version the mean waveforms can be calculated using Bill Karsh's efficient C_Waves tool.
 
 7. [quality_metrics](ecephys_spike_sorting/modules/quality_metrics/README.md): Calculates quality metrics for each unit to assess isolation and sorting quality.
 
@@ -129,6 +129,11 @@ https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-
 NOTE: This install needs to be repeated whenenver the virtual environment is rebuilt (e.g. after creating a new clone or download of the repo).
 
 After completing the install, close the command window and reopen as a normal user (not administrator) to run scripts.
+
+### Install CatGT, TPrime, and C_Waves
+
+[CatGT](http://billkarsh.github.io/SpikeGLX/#catgt), [TPrime](http://billkarsh.github.io/SpikeGLX/#tprime), and C_Waves are all available on the Spike GLX download page. To install, simply download the zipped folder and extract to a convenient location, see the instructions [here](http://billkarsh.github.io/SpikeGLX/#command-line-tool-installation). The paths to these executables must then be set in create_input_json.py.
+
 
 ## Usage
 
