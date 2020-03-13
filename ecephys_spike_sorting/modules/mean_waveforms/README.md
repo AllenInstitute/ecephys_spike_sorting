@@ -16,7 +16,9 @@ residuals = channel x sample array of (raw data - mean)
 
 The C_Waves implementation is very efficient (~1000X faster than the python version). It is turned on by setting 
 
-use_C_Waves : True 
+```
+    use_C_Waves : True
+```
 
 in create_input_json.py. The C_Waves tool can be downloaded from the SpikeGLX download [page](http://billkarsh.github.io/SpikeGLX/#post-processing-tools).
 
