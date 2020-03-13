@@ -18,7 +18,7 @@ The C_Waves implementation is very efficient (~1000X faster than the python vers
 
 use_C_Waves : True 
 
-in create_input_json.py. The C_Waves tool can be downloaded from the [SpikeGLX download page] (http://billkarsh.github.io/SpikeGLX/#post-processing-tools).
+in create_input_json.py. The C_Waves tool can be downloaded from the SpikeGLX download [page](http://billkarsh.github.io/SpikeGLX/#post-processing-tools).
 
 Waveform Metrics
 ================
