@@ -21,7 +21,7 @@ variance = (1/(N-degrees of freedom))*sum(residuals^2)
 
 residuals = channel x sample array of (raw data - mean)
 
-The C_Waves implementation is very efficient (~1000X faster than the python version). It is turned on in **create_input_json.py** by setting:
+The C_Waves implementation is very efficient. It is turned on in **create_input_json.py** by setting:
 
 ```
     use_C_Waves : True
