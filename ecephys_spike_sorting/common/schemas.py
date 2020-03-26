@@ -30,3 +30,6 @@ class CommonFiles(DefaultSchema):
 
 class WaveformMetricsFile(DefaultSchema):
     waveform_metrics_file = String(help='Location of waveform metrics CSV')
+    
+class ClusterMetricsFile(DefaultSchema):
+    cluster_metrics_file = String(help='Location of cluster metrics CSV')

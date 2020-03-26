@@ -1,7 +1,7 @@
 from argschema import ArgSchema, ArgSchemaParser 
 from argschema.schemas import DefaultSchema
 from argschema.fields import Nested, InputDir, String, Float, Dict, Int, Bool
-from ...common.schemas import EphysParams, Directories, WaveformMetricsFile
+from ...common.schemas import EphysParams, Directories, WaveformMetricsFile, ClusterMetricsFile
 
 class MeanWaveformParams(DefaultSchema):
     samples_per_spike = Int(required=True, default=82, help='Number of samples to extract for each spike')
@@ -21,6 +21,7 @@ class InputParameters(ArgSchema):
     
     waveform_metrics = Nested(WaveformMetricsFile)
     mean_waveform_params = Nested(MeanWaveformParams)
+    cluster_metrics = Nested(ClusterMetricsFile)
     ephys_params = Nested(EphysParams)
     directories = Nested(Directories)
 

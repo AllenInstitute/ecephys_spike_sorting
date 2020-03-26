@@ -100,6 +100,16 @@ def calculate_mean_waveforms(args):
         writeDataAsNpy(waveforms, args['mean_waveform_params']['mean_waveforms_file'])
         metrics.to_csv(args['waveform_metrics']['waveform_metrics_file'])
 
+
+    # if the cluster metrics have already been run, merge the waveform metrics into that file
+    if os.path.exists(args['cluster_metrics']['cluster_metrics_file']):
+        qmetrics = pd.read_csv(args['cluster_metrics']['cluster_metrics_file'])
+        qmetrics = qmetrics.merge(pd.read_csv(args['waveform_metrics']['waveform_metrics_file'], index_col=0),
+                     on='cluster_id',
+                     suffixes=('_quality_metrics','_waveform_metrics'))  
+        print("Saving merged quality metrics ...")
+        qmetrics.to_csv(args['cluster_metrics']['cluster_metrics_file'])
+        
     execution_time = time.time() - start
 
     print('total time: ' + str(np.around(execution_time,2)) + ' seconds')

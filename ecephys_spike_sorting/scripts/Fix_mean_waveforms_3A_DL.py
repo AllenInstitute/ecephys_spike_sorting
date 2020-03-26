@@ -5,6 +5,7 @@ import numpy as np
 
 from helpers import SpikeGLX_utils
 from helpers import log_from_json
+from helpers import metric_file_fix
 from create_input_json import createInputJson
 
 # script to run CatGT, KS2, postprocessing and TPrime on data collected using
@@ -55,7 +56,7 @@ catGT_dest_parent = r'D:\ecephys_fork\test_data\3A_DL\DL56'
 # ------------
 # CatGT params
 # ------------
-run_CatGT = True  # set to False to sort/process previously processed data.
+run_CatGT = False  # set to False to sort/process previously processed data.
 # catGT streams to process, e.g. just '-ap' for ap band only, '-ap -ni' for
 # ap plus ni aux inputs
 catGT_stream_string = '-prb_3A -ap -no_run_fld -t_miss_ok'
@@ -92,7 +93,7 @@ event_ex_param_index = 1
 # -----------------
 # TPrime parameters
 # -----------------
-runTPrime = True   # set to False if not using TPrime
+runTPrime = False   # set to False if not using TPrime
 sync_period = 12.0   # true for SYNC wave, in 3A using the trial TTL signal
 sync_param = [0,0] # SYNC bit and msec duration of SYNC signal
 
@@ -102,12 +103,12 @@ sync_param = [0,0] # SYNC bit and msec duration of SYNC signal
 # List of modules to run per probe; 
 # CatGT is handled separated; TPrime is called once for each run.
 modules = [
-			'kilosort_helper',
-            'kilosort_postprocessing',
-            'noise_templates',
+			#'kilosort_helper',
+            #'kilosort_postprocessing',
+            #'noise_templates',
             #'psth_events',
             'mean_waveforms',
-            'quality_metrics'
+            #'quality_metrics'
 			]
 
 json_directory = r'D:\ecephys_fork\json_files'
@@ -283,6 +284,9 @@ for spec in run_specs:
 
         print(data_directory)
         print(continuous_file)
+        
+        # for removing bad columns from a metrics file
+        metric_file_fix.DelColumns(kilosort_output_dir)
 
         info = createInputJson(input_json, npx_directory=npx_directory, 
 	                                   continuous_file = continuous_file,

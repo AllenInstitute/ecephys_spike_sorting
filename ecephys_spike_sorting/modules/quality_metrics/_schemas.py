@@ -1,7 +1,7 @@
 from argschema import ArgSchema, ArgSchemaParser 
 from argschema.schemas import DefaultSchema
 from argschema.fields import Nested, InputDir, String, Float, Dict, Int
-from ...common.schemas import EphysParams, Directories, WaveformMetricsFile
+from ...common.schemas import EphysParams, Directories, WaveformMetricsFile, ClusterMetricsFile
 
 
 class QualityMetricsParams(DefaultSchema):
@@ -16,8 +16,6 @@ class QualityMetricsParams(DefaultSchema):
     drift_metrics_min_spikes_per_interval = Int(required=False, default=10, help='Minimum number of spikes for computing depth')
     drift_metrics_interval_s = Float(required=False, default=100, help='Interval length is seconds for computing spike depth')
 
-    quality_metrics_output_file = String(required=True, help='CSV file where metrics will be saved')
-    
 
 class InputParameters(ArgSchema):
     
@@ -25,6 +23,7 @@ class InputParameters(ArgSchema):
     ephys_params = Nested(EphysParams)
     directories = Nested(Directories)
     waveform_metrics = Nested(WaveformMetricsFile)
+    cluster_metrics = Nested(ClusterMetricsFile)
     
 class OutputSchema(DefaultSchema): 
     input_parameters = Nested(InputParameters, 

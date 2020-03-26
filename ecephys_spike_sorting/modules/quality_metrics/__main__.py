@@ -39,7 +39,7 @@ def calculate_quality_metrics(args):
         return {"execution_time" : execution_time,
             "quality_metrics_output_file" : None} 
 
-    output_file = args['quality_metrics_params']['quality_metrics_output_file']
+    output_file = args['cluster_metrics']['cluster_metrics_file']
 
     if os.path.exists(args['waveform_metrics']['waveform_metrics_file']):
         metrics = metrics.merge(pd.read_csv(args['waveform_metrics']['waveform_metrics_file'], index_col=0),
