@@ -147,18 +147,17 @@ for spec in run_specs:
 
     # create space for gfix_edits read from catGT log
     gfix_edits = np.zeros(len(prb_list), dtype='float64')
-    
+
     # inputs for tPrime
     fromStream_list = list()
 
     for i, prb in enumerate(prb_list):
 
-        runFolder = os.path.join(npx_directory, session_id)   #path to folder containing the binaries
         runName = session_id + prb
 
         # build parameter strings for catGT edge extractions for this probe
         currSY = spec[4][i]
-        
+
         if currSY is not None:
             ex_param_str = ''
             for exparam in sy_ex_param_list:
@@ -189,34 +188,31 @@ for spec in run_specs:
             event_ex_param_str = 'SY=0,384,1,50'  # just default filler
             
         
+        if run_CatGT:           
+            runFolder = os.path.join(npx_directory, session_id)   #path to folder containing the binaries
+            # Run CatGT
+            input_json = os.path.join(json_directory, session_id + '-input.json')
+            output_json = os.path.join(json_directory, session_id + '-output.json')
+            print('Creating json file for preprocessing')
+            print(runFolder)
+            # In this case, the run folder and probe folder are the same;
+            # parse trigger string using this folder to interpret 'start' and 'end'
+            first_trig, last_trig = SpikeGLX_utils.ParseTrigStr(spec[2], runFolder)      
+            trigger_str = repr(first_trig) + ',' + repr(last_trig)
+            
+            info = createInputJson(input_json, npx_directory=runFolder, 
+        	                                   continuous_file = None,
+                                               spikeGLX_data = 'True',
+        									   kilosort_output_directory=catGT_dest,
+                                               catGT_run_name = runName,
+                                               gate_string = spec[1],
+                                               trigger_string = trigger_str,
+                                               probe_string = '',
+                                               catGT_stream_string = catGT_stream_string,
+                                               catGT_cmd_string = probe_catGT_cmd_string,
+                                               extracted_data_directory = catGT_dest
+                                               )
 
-        # Run CatGT
-        input_json = os.path.join(json_directory, session_id + '-input.json')
-        output_json = os.path.join(json_directory, session_id + '-output.json')
-        print('Creating json file for preprocessing')
-        print(runFolder)
-        # In this case, the run folder and probe folder are the same;
-        # parse trigger string using this folder to interpret 'start' and 'end'
-        first_trig, last_trig = SpikeGLX_utils.ParseTrigStr(spec[2], runFolder)      
-        trigger_str = repr(first_trig) + ',' + repr(last_trig)
-        
-        info = createInputJson(input_json, npx_directory=runFolder, 
-    	                                   continuous_file = None,
-                                           spikeGLX_data = 'True',
-    									   kilosort_output_directory=catGT_dest,
-                                           catGT_run_name = runName,
-                                           gate_string = spec[1],
-                                           trigger_string = trigger_str,
-                                           probe_string = '',
-                                           catGT_stream_string = catGT_stream_string,
-                                           catGT_cmd_string = probe_catGT_cmd_string,
-                                           extracted_data_directory = catGT_dest
-                                           )
-    
-    
-    
-    
-        if run_CatGT:
             command = "python -W ignore -m ecephys_spike_sorting.modules." + 'catGT_helper' + " --input_json " + input_json \
     		          + " --output_json " + output_json
             subprocess.check_call(command.split(' '))           
@@ -226,6 +222,9 @@ for spec in run_specs:
             gfix_edits = SpikeGLX_utils.ParseCatGTLog( os.getcwd(), runName, spec[1], ['0'] )
             edit_string  = '{:.3f}'.format(gfix_edits[0])
             print(runName + ' gfix edits/sec: ' + edit_string)
+        else:
+            # fill in dummy gfix_edits for running without preprocessing
+            gfix_edits = np.zeros(len(prb_list), dtype='float64' )
 
              
         # finsihed preprocessing.
@@ -264,7 +263,7 @@ for spec in run_specs:
                                        noise_template_use_rf = False,
                                        catGT_run_name = session_id,
                                        gate_string = spec[1],
-                                       trigger_string = trigger_str,
+                                       trigger_string = 'cat',
                                        probe_string = '',
                                        catGT_stream_string = catGT_stream_string,
                                        catGT_cmd_string = probe_catGT_cmd_string,
