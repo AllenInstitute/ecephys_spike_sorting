@@ -18,31 +18,29 @@ from create_input_json import createInputJson
 # -----------
 # Name for log file for this pipeline run. Log file will be saved in the
 # output destination directory catGT_dest
-logName = 'dl56_20181126_fix_log.csv'
+logName = 'SCFR006_fix_log.csv'
 
 # Raw data directory = npx_directory, all runs to be processed are in
 # subfolders of this folder
-# NOT USED IN THIS SCRIPT -- works from catGT output
-# npx_directory = r'D:\ecephys_fork\test_data\3A_DL'
+# NOT USED IN THIS SCRIPT
+# npx_directory = r'D:\ecephys_fork\test_data\3A'
 
 # run_specs = name, gate, trigger and probes to process
 # Each run_spec is a list:
-#   (string) animal name = undecorated run name , e.g. 'dl56',
-#   (string) date of recording, as yyyymmdd, eg '20181126'
+#   (string) undecorated run name (no g/t specifier, the run field in CatGT),
+#           => the folder containing the data should also have this name
 #   (string) gate index, as a string (e.g. '0')
-#   (string) triggers to process/concatenate, as a string e.g. '0,400', '0,0', 
+#   (string) triggers to process/concatenate, as a string e.g. '0,400', '0,0 for a single file
 #           can replace first limit with 'start', last with 'end'; 'start,end'
 #           will concatenate all trials in the probe folder
-#   (list of strings) computer/ probe labels to process, as a list, e.g. ['ww2','ww4']
+#   (list of strings) probe labels to process, as a list, e.g. ['blue','red','yellow']
 #   (list of ints) SY channel for each run -- if no SY channel, or not extracting that data, enter None
 #
-#   The assumed file structure for input is:
-#   /probe(computer) label/date/animal name/*.bin files
-#   Note that the both the folder name and run name = animal name
-#   Does not use SpikeGLX generated run folders
+#   The name for the binary and metadata files is assume to be the undecorated
+#   run name + probe label
 
 run_specs = [
-					['dl56', '20181126', '0', 'start,end', ['ww2','ww4'], [384,384]]
+					['SCFR006_011419', '0', '0,5', ['blue','red','yellow'], [384,221,384]]
 ]
 
 
@@ -50,17 +48,18 @@ run_specs = [
 # ------------------
 # Output destination
 # ------------------
-# Set to an existing directory; all output will be written here, in
-# subfolders named animal name_date
-catGT_dest_parent = r'D:\ecephys_fork\test_data\3A_DL\DL56'
+# Set to an existing directory; all output will be written here.
+# Output will be in the standard SpikeGLX directory structure:
+# run_folder/probe_folder/*.bin
+catGT_dest = r'D:\ecephys_fork\test_data\3A\SCFR006'
 
 # ------------
 # CatGT params
 # ------------
-run_CatGT = False  # set to False to sort/process previously processed data.
+run_CatGT = False   # set to False to sort/process previously processed data.
 # catGT streams to process, e.g. just '-ap' for ap band only, '-ap -ni' for
 # ap plus ni aux inputs
-catGT_stream_string = '-prb_3A -ap -no_run_fld -t_miss_ok'
+catGT_stream_string = '-prb_3A -ap -no_run_fld'
 
 # CatGT command string includes all instructions for catGT operations
 # Note that directory naming in this script requires -prb_fld and -out_prb_fld
@@ -76,10 +75,8 @@ catGT_cmd_string = '-aphipass=300 -aplopass=9000 -gbldmx -gfix=0,0.10,0.02'
 # for each desired estraction from the SY channel, specify bit and length in msec
 # the extraction strings for catGT will be built for each probe
 sy_ex_param_list = list()
-sy_ex_param_list.append([0, 0])
+sy_ex_param_list.append([5, 0])
 sy_ex_param_list.append([1, 50])
-sy_ex_param_list.append([1, 10])
-sy_ex_param_list.append([1, 1200])
 
 # ----------------------
 # psth_events parameters
@@ -96,7 +93,7 @@ event_ex_param_index = 1
 # -----------------
 runTPrime = False   # set to False if not using TPrime
 sync_period = 12.0   # true for SYNC wave, in 3A using the trial TTL signal
-sync_param = [0,0] # SYNC bit and msec duration of SYNC signal
+sync_param = [5,0] # SYNC bit and msec duration of SYNC signal
 
 # ---------------
 # Modules List
@@ -126,15 +123,14 @@ try:
     os.remove('Tprime.log')
 except OSError:
     pass
-
-# delete existing C_waves.log
+# delete existing Tprime.log
 try:
     os.remove('C_Waves.log')
 except OSError:
     pass
 
 # delete any existing log with the current name
-logFullPath = os.path.join(catGT_dest_parent, logName)
+logFullPath = os.path.join(catGT_dest, logName)
 try:
     os.remove(logFullPath)
 except OSError:
@@ -146,15 +142,10 @@ log_from_json.writeHeader(logFullPath)
 
 for spec in run_specs:
 
-    session_id = spec[0] + '_' + spec[1] + '_g' + spec[2]
-
-    # if the directory animal name_date does not yet exist, create it
-    catGT_dest = os.path.join(catGT_dest_parent, session_id)
-    if not os.path.exists(catGT_dest):
-        os.mkdir(catGT_dest)
+    session_id = spec[0]
 
     # probe list == probe label list for 3A
-    prb_list = spec[4]
+    prb_list = spec[3]
 
     # create space for gfix_edits read from catGT log
     gfix_edits = np.zeros(len(prb_list), dtype='float64')
@@ -164,19 +155,10 @@ for spec in run_specs:
 
     for i, prb in enumerate(prb_list):
 
-        # name of run in input data; note that this run name is not unique
-        # but repeated for different dates
-        runName = spec[0]
+        runName = session_id + prb
 
         # build parameter strings for catGT edge extractions for this probe
-        currSY = spec[5][i]
-        
-        # build the "final" name for the catGT output folder
-        # CatGT output will intially go into a folder named for the input;
-        # after running rename to this name
-        final_catGT_name = 'catgt_' + spec[0] + '_' + spec[1] + prb + '_g' + spec[2]
-        final_catGT_dest = os.path.join( catGT_dest, final_catGT_name)
-        print('final_catGT_dest: ', final_catGT_dest)
+        currSY = spec[4][i]
 
         if currSY is not None:
             ex_param_str = ''
@@ -184,10 +166,11 @@ for spec in run_specs:
                 currStr = ('SY=0,{0:d},{1:d},{2:d}'.format(currSY, exparam[0], exparam[1]))
                 ex_param_str = ex_param_str + ' -' + currStr
                 if exparam == sync_param:
-                    # for Tprime, build path to extracted edges  
-                    currNameStr = ('SY_{0:d}_{1:d}_{2:d}'.format(currSY, exparam[0], exparam[1]))
-                    sy_name = runName + '_g' + spec[2] + '_tcat.imec.' + currNameStr + '.txt'
-                    sy_path = os.path.join(catGT_dest, final_catGT_dest, sy_name)
+                    # for Tprime, build path to extracted edges
+                    currStr = ('SY_{0:d}_{1:d}_{2:d}'.format(currSY, exparam[0], exparam[1]))
+                    sy_name = runName + '_g' + spec[1] + '_tcat.imec.' + currStr + '.txt'
+                    sy_dir = 'catgt_' + runName + '_g' + spec[1]
+                    sy_path = os.path.join(catGT_dest, sy_dir, sy_name)
                     if i == 0:
                         # this will be the toStream
                         toStream = sy_path
@@ -207,20 +190,16 @@ for spec in run_specs:
             event_ex_param_str = 'SY=0,384,1,50'  # just default filler
             
         
-        if run_CatGT:
-            # Path to folder containing trial files.
-            # The assumed file structure for input is:
-            # /probe(computer) label/animal name/date/*.bin files
-            runFolder = os.path.join(npx_directory, prb, spec[0], spec[1])
+        if run_CatGT:           
+            runFolder = os.path.join(npx_directory, session_id)   #path to folder containing the binaries
             # Run CatGT
-            
             input_json = os.path.join(json_directory, session_id + '-input.json')
             output_json = os.path.join(json_directory, session_id + '-output.json')
             print('Creating json file for preprocessing')
             print(runFolder)
             # In this case, the run folder and probe folder are the same;
             # parse trigger string using this folder to interpret 'start' and 'end'
-            first_trig, last_trig = SpikeGLX_utils.ParseTrigStr(spec[3], runFolder)      
+            first_trig, last_trig = SpikeGLX_utils.ParseTrigStr(spec[2], runFolder)      
             trigger_str = repr(first_trig) + ',' + repr(last_trig)
             
             info = createInputJson(input_json, npx_directory=runFolder, 
@@ -228,30 +207,23 @@ for spec in run_specs:
                                                spikeGLX_data = 'True',
         									   kilosort_output_directory=catGT_dest,
                                                catGT_run_name = runName,
-                                               gate_string = spec[2],
+                                               gate_string = spec[1],
                                                trigger_string = trigger_str,
                                                probe_string = '',
                                                catGT_stream_string = catGT_stream_string,
                                                catGT_cmd_string = probe_catGT_cmd_string,
                                                extracted_data_directory = catGT_dest
                                                )
-        
+
             command = "python -W ignore -m ecephys_spike_sorting.modules." + 'catGT_helper' + " --input_json " + input_json \
     		          + " --output_json " + output_json
             subprocess.check_call(command.split(' '))           
     
             # parse the CatGT log and write results to command line
             # for 3A, there's only one probe, called 0
-            gfix_edits = SpikeGLX_utils.ParseCatGTLog( os.getcwd(), runName, spec[2], ['0'] )
+            gfix_edits = SpikeGLX_utils.ParseCatGTLog( os.getcwd(), runName, spec[1], ['0'] )
             edit_string  = '{:.3f}'.format(gfix_edits[0])
             print(runName + ' gfix edits/sec: ' + edit_string)
-            
-            # rename output folder a name that includes the date and probe name
-            
-            orig_catGT_name = 'catgt_' + runName + '_g' + spec[2]
-            orig_catGT_out = os.path.join(catGT_dest, orig_catGT_name)
-            
-            os.rename(orig_catGT_out, final_catGT_dest)
         else:
             # fill in dummy gfix_edits for running without preprocessing
             gfix_edits = np.zeros(len(prb_list), dtype='float64' )
@@ -263,10 +235,11 @@ for spec in run_specs:
         input_json = os.path.join(json_directory, spec[0] + prb + '-input.json')
         
         
-        # location of the binary after renaming 
-        data_directory = final_catGT_dest
-        # fileName, built from the input run name
-        fileName = runName + '_g' + spec[2] + '_tcat.imec.ap.bin'
+        # location of the binary created by CatGT, using -out_prb_fld
+        run_str = spec[0] + prb + '_g' + spec[1]
+        run_folder = 'catgt_' + run_str
+        data_directory = os.path.join(catGT_dest, run_folder)
+        fileName = run_str + '_tcat.imec.ap.bin'
         continuous_file = os.path.join(data_directory, fileName)
  
         outputName = 'imec_' + prb + '_ks2'
@@ -287,7 +260,7 @@ for spec in run_specs:
         # for removing bad columns from a metrics file
         metric_file_fix.DelColumns(kilosort_output_dir)
 
-        info = createInputJson(input_json, npx_directory=final_catGT_dest, 
+        info = createInputJson(input_json, npx_directory=catGT_dest, 
 	                                   continuous_file = continuous_file,
                                        spikeGLX_data = True,
 									   kilosort_output_directory=kilosort_output_dir,
@@ -325,7 +298,7 @@ for spec in run_specs:
         input_json = os.path.join(json_directory, session_id + '-input.json')
         output_json = os.path.join(json_directory, session_id + '-output.json')
         
-        info = createInputJson(input_json, npx_directory=final_catGT_dest, 
+        info = createInputJson(input_json, npx_directory=catGT_dest, 
     	                                   continuous_file = continuous_file,
                                            spikeGLX_data = True,
     									   kilosort_output_directory=kilosort_output_dir,

@@ -104,6 +104,7 @@ def calculate_mean_waveforms(args):
     # if the cluster metrics have already been run, merge the waveform metrics into that file
     if os.path.exists(args['cluster_metrics']['cluster_metrics_file']):
         qmetrics = pd.read_csv(args['cluster_metrics']['cluster_metrics_file'])
+        qmetrics = qmetrics.drop(qmetrics.columns[0], axis='columns')
         qmetrics = qmetrics.merge(pd.read_csv(args['waveform_metrics']['waveform_metrics_file'], index_col=0),
                      on='cluster_id',
                      suffixes=('_quality_metrics','_waveform_metrics'))  

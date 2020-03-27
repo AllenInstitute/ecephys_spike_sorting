@@ -24,11 +24,12 @@ from create_input_json import createInputJson
 # -----------
 # Name for log file for this pipeline run. Log file will be saved in the
 # output destination directory catGT_dest
-logName = 'SC024_log.csv'
+logName = 'SC024_fix_log.csv'
 
 # Raw data directory = npx_directory
 # run_specs = name, gate, trigger and probes to process
-npx_directory = r'D:\ecephys_fork\test_data\SC_trial'
+# IGNORED IN THIS SCRIPT
+# npx_directory = r'D:\ecephys_fork\test_data\SC_trial'
 
 # Each run_spec is a list of 4 strings:
 #   undecorated run name (no g/t specifier, the run field in CatGT)
@@ -134,36 +135,37 @@ for spec in run_specs:
     session_id = spec[0]
 
     # Run CatGT
-    input_json = os.path.join(json_directory, session_id + '-input.json')
-    output_json = os.path.join(json_directory, session_id + '-output.json')
-    
-    # Make list of probes from the probe string
-    prb_list = SpikeGLX_utils.ParseProbeStr(spec[3])
-    
-    # build path to the first probe folder
-    run_folder_name = spec[0] + '_g' + spec[1]
-    prb0_fld_name = run_folder_name + '_imec' + prb_list[0]
-    prb0_fld = os.path.join(npx_directory, run_folder_name, prb0_fld_name)
-    first_trig, last_trig = SpikeGLX_utils.ParseTrigStr(spec[2], prb0_fld)
-    trigger_str = repr(first_trig) + ',' + repr(last_trig)
-    
-    print('Creating json file for preprocessing')
-    info = createInputJson(input_json, npx_directory=npx_directory, 
-	                                   continuous_file = None,
-                                       spikeGLX_data = 'True',
-									   kilosort_output_directory=catGT_dest,
-                                       catGT_run_name = session_id,
-                                       gate_string = spec[1],
-                                       trigger_string = trigger_str,
-                                       probe_string = spec[3],
-                                       catGT_stream_string = catGT_stream_string,
-                                       catGT_cmd_string = catGT_cmd_string,
-                                       extracted_data_directory = catGT_dest
-                                       )
-
-    # CatGT operates on whole runs with multiple probes, so gets called in just
-    # once per run_spec
     if run_CatGT:
+        input_json = os.path.join(json_directory, session_id + '-input.json')
+        output_json = os.path.join(json_directory, session_id + '-output.json')
+        
+        # Make list of probes from the probe string
+        prb_list = SpikeGLX_utils.ParseProbeStr(spec[3])
+        
+        # build path to the first probe folder
+        run_folder_name = spec[0] + '_g' + spec[1]
+        prb0_fld_name = run_folder_name + '_imec' + prb_list[0]
+        prb0_fld = os.path.join(npx_directory, run_folder_name, prb0_fld_name)
+        first_trig, last_trig = SpikeGLX_utils.ParseTrigStr(spec[2], prb0_fld)
+        trigger_str = repr(first_trig) + ',' + repr(last_trig)
+        
+        print('Creating json file for preprocessing')
+        info = createInputJson(input_json, npx_directory=npx_directory, 
+    	                                   continuous_file = None,
+                                           spikeGLX_data = 'True',
+    									   kilosort_output_directory=catGT_dest,
+                                           catGT_run_name = session_id,
+                                           gate_string = spec[1],
+                                           trigger_string = trigger_str,
+                                           probe_string = spec[3],
+                                           catGT_stream_string = catGT_stream_string,
+                                           catGT_cmd_string = catGT_cmd_string,
+                                           extracted_data_directory = catGT_dest
+                                           )
+    
+        # CatGT operates on whole runs with multiple probes, so gets called in just
+        # once per run_spec
+
         command = "python -W ignore -m ecephys_spike_sorting.modules." + 'catGT_helper' + " --input_json " + input_json \
 		          + " --output_json " + output_json
         subprocess.check_call(command.split(' '))           
@@ -176,6 +178,8 @@ for spec in run_specs:
             edit_string = '{:.3f}'.format(gfix_edits[i])
             print('Probe ' + prb_list[i] + '; gfix edits/sec: ' + repr(gfix_edits[i]))
     else:
+        # Make list of probes from the probe string
+        prb_list = SpikeGLX_utils.ParseProbeStr(spec[3])
         # fill in dummy gfix_edits for running without preprocessing
         gfix_edits = np.zeros(len(prb_list), dtype='float64' )
          
@@ -215,7 +219,7 @@ for spec in run_specs:
         # for removing bad columns from a metrics file
         metric_file_fix.DelColumns(kilosort_output_dir)
 
-        info = createInputJson(input_json, npx_directory=npx_directory, 
+        info = createInputJson(input_json, npx_directory=catGT_dest, 
 	                                   continuous_file = continuous_file,
                                        spikeGLX_data = True,
 									   kilosort_output_directory=kilosort_output_dir,
@@ -223,7 +227,7 @@ for spec in run_specs:
                                        noise_template_use_rf = False,
                                        catGT_run_name = session_id,
                                        gate_string = spec[1],
-                                       trigger_string = trigger_str,
+                                       trigger_string = 'cat',
                                        probe_string = spec[3],
                                        catGT_stream_string = catGT_stream_string,
                                        catGT_cmd_string = catGT_cmd_string,
@@ -253,7 +257,7 @@ for spec in run_specs:
         input_json = os.path.join(json_directory, session_id + '-input.json')
         output_json = os.path.join(json_directory, session_id + '-output.json')
         
-        info = createInputJson(input_json, npx_directory=npx_directory, 
+        info = createInputJson(input_json, npx_directory=catGT_dest, 
     	                                   continuous_file = continuous_file,
                                            spikeGLX_data = True,
     									   kilosort_output_directory=kilosort_output_dir,

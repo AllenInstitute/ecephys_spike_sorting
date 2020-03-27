@@ -18,11 +18,13 @@ def DelColumns(kilosort_output_dir):
         colList = qmetrics.columns
         nCol = len(colList)
         if nCol > 15:
-            # file has extra columns
+            # when resaving, eliminate the unnamed column 0
             # to delete columns beyond index 14, need to get column labels
             # and pass that list to the drop command
-            colList = colList[15:]
-            qmetrics = qmetrics.drop(colList, axis='columns')
-        print("Re-saving new cluster metrics file after deleting columns ...")
-        qmetrics.to_csv(qmetric_file)
+            dropList = colList[15:]
+            qmetrics = qmetrics.drop(dropList, axis='columns')
+            dropList = colList[0]
+            qmetrics = qmetrics.drop(dropList, axis='columns')
+            print("Re-saving new cluster metrics file after deleting columns ...")
+            qmetrics.to_csv(qmetric_file)
     return
