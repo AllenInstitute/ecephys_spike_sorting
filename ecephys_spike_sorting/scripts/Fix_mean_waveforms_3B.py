@@ -40,7 +40,7 @@ logName = 'SC024_fix_log.csv'
 #   probes to process, as a string, e.g. '0', '0,3', '0:3'
 
 run_specs = [										
-						['SC024_092319_NP1.0_Midbrain', '0', '0,4', '0,1']
+						['SC024_092319_NP1.0_Midbrain', '0', '0,4', '0:1']
 ]
 
 # ------------------
@@ -133,15 +133,14 @@ log_from_json.writeHeader(logFullPath)
 for spec in run_specs:
 
     session_id = spec[0]
-
+    # Make list of probes from the probe string
+    prb_list = SpikeGLX_utils.ParseProbeStr(spec[3])
+    
     # Run CatGT
     if run_CatGT:
         input_json = os.path.join(json_directory, session_id + '-input.json')
         output_json = os.path.join(json_directory, session_id + '-output.json')
-        
-        # Make list of probes from the probe string
-        prb_list = SpikeGLX_utils.ParseProbeStr(spec[3])
-        
+
         # build path to the first probe folder
         run_folder_name = spec[0] + '_g' + spec[1]
         prb0_fld_name = run_folder_name + '_imec' + prb_list[0]
