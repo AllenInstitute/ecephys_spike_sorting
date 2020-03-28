@@ -25,6 +25,14 @@ def DelColumns(kilosort_output_dir):
             qmetrics = qmetrics.drop(dropList, axis='columns')
             dropList = colList[0]
             qmetrics = qmetrics.drop(dropList, axis='columns')
+
+            # rename the epoch_name column label, which will have _quality_metrics appended
+            colList = qmetrics.columns
+            ec = [col for col in colList if 'epoch_name_quality_metrics' in col]
+            if len(ec) > 0:
+                print('renaming column')
+                qmetrics = qmetrics.rename(columns={'epoch_name_quality_metrics':'epoch_name'})
+
             print("Re-saving new cluster metrics file after deleting columns ...")
             qmetrics.to_csv(qmetric_file)
     return
