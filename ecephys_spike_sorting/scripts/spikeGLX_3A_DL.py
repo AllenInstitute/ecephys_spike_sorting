@@ -71,13 +71,15 @@ catGT_stream_string = '-prb_3A -ap -no_run_fld -t_miss_ok'
 #   - the correct channel for the extraction is specfied in run_spec[4]
 catGT_cmd_string = '-aphipass=300 -aplopass=9000 -gbldmx -gfix=0,0.10,0.02'
 
-# for each desired estraction from the SY channel, specify bit and length in msec
+# for each desired estraction from the SY channel, specify:
+# bit, span in msec, and tolerance in ms, or -1 to use default
+# tolerance of 20% of span
 # the extraction strings for catGT will be built for each probe
 sy_ex_param_list = list()
-sy_ex_param_list.append([0, 0])
-sy_ex_param_list.append([1, 50])
-sy_ex_param_list.append([1, 10])
-sy_ex_param_list.append([1, 1200])
+sy_ex_param_list.append([0, 0, -1])
+sy_ex_param_list.append([1, 50, -1])
+sy_ex_param_list.append([1, 10, -1])
+sy_ex_param_list.append([1, 1200, 0.2])
 
 # ----------------------
 # psth_events parameters
@@ -94,7 +96,7 @@ event_ex_param_index = 1
 # -----------------
 runTPrime = True   # set to False if not using TPrime
 sync_period = 12.0   # true for SYNC wave, in 3A using the trial TTL signal
-sync_param = [0,0] # SYNC bit and msec duration of SYNC signal
+sync_param = [0, 0, -1] # SYNC bit and msec duration of SYNC signal
 
 # ---------------
 # Modules List
@@ -183,7 +185,11 @@ for spec in run_specs:
         if currSY is not None:
             ex_param_str = ''
             for exparam in sy_ex_param_list:
-                currStr = ('SY=0,{0:d},{1:d},{2:d}'.format(currSY, exparam[0], exparam[1]))
+                if exparam[2] == -1:
+                    # use default tolerance
+                    currStr = ('SY=0,{0:d},{1:d},{2:d}'.format(currSY, exparam[0], exparam[1]))
+                else:
+                    currStr = ('SY=0,{0:d},{1:d},{2:d},{3:.1f}'.format(currSY, exparam[0], exparam[1], exparam[2]))
                 ex_param_str = ex_param_str + ' -' + currStr
                 if exparam == sync_param:
                     # for Tprime, build path to extracted edges  
