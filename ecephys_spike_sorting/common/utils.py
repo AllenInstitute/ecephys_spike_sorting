@@ -286,6 +286,7 @@ def load_kilosort_data(folder,
                 
     templates = templates[:,template_zero_padding:,:] # remove zeros
     spike_clusters = np.squeeze(spike_clusters) # fix dimensions
+    spike_templates = np.squeeze(spike_templates) # fix dimensions
     spike_times = np.squeeze(spike_times)# fix dimensions
 
     if convert_to_seconds and sample_rate is not None:
@@ -309,7 +310,7 @@ def load_kilosort_data(folder,
         return spike_times, spike_clusters, spike_templates, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality, pc_features, pc_feature_ind
 
 
-def get_spike_depths(spike_clusters, pc_features, pc_feature_ind):
+def get_spike_depths(spike_templates, pc_features, pc_feature_ind):
 
     """
     Calculates the distance (in microns) of individual spikes from the probe tip
@@ -318,8 +319,8 @@ def get_spike_depths(spike_clusters, pc_features, pc_feature_ind):
 
     Input:
     -----
-    spike_clusters : numpy.ndarray (N x 0)
-        Cluster IDs for N spikes
+    spike_templates : numpy.ndarray (N x 0)
+        Template IDs for N spikes
     pc_features : numpy.ndarray (N x channels x num_PCs)
         PC features for each spike
     pc_feature_ind  : numpy.ndarray (M x channels)
@@ -337,7 +338,7 @@ def get_spike_depths(spike_clusters, pc_features, pc_feature_ind):
     pc_features_copy[pc_features_copy < 0] = 0
     pc_power = pow(pc_features_copy, 2)
 
-    spike_feat_ind = pc_feature_ind[spike_clusters, :]
+    spike_feat_ind = pc_feature_ind[spike_templates, :]
     spike_depths = np.sum(spike_feat_ind * pc_power, 1) / np.sum(pc_power,1)
 
     return spike_depths * 10
