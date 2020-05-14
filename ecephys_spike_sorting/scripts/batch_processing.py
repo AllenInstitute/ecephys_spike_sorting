@@ -3,19 +3,15 @@ import subprocess
 
 from create_input_json import createInputJson
 
-sorted_directories = [						
-						'/home/joshs/Downloads/data-exchange-JSiegle-20200507T181030Z-001/data-exchange-JSiegle'
+sorted_directories = [	
 
+	'/path/to/kilosort/outputs'					
 
 ]
 
-#'/mnt/md0/data/mouse412804/766640955_412804_20181022_probeC_sorted/continuous/Neuropix-3a-100.0']
-#npx_directories = [r'L:\766640955_412804_20181022_probeC']
+probe_type = '3a'
 
-probe_type = 'PXI'
-
-#json_directory = r'C:\Users\svc_neuropix\Documents\json_files'
-json_directory = sorted_directories[0]
+json_directory = r'C:\Users\svc_neuropix\Documents\json_files'
 
 for directory in sorted_directories:
 
