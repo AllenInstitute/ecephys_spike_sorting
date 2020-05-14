@@ -17,7 +17,15 @@ from ...common.utils import printProgressBar, get_spike_depths
 
 
 
-def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_features, pc_feature_ind, params, epochs = None):
+def calculate_metrics(spike_times, 
+                      spike_clusters, 
+                      spike_templates, 
+                      amplitudes, 
+                      channel_map, 
+                      pc_features, 
+                      pc_feature_ind, 
+                      params, 
+                      epochs = None):
 
     """ Calculate metrics for all units on one probe
 
@@ -26,7 +34,9 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
     spike_times : numpy.ndarray (num_spikes x 0)
         Spike times in seconds (same timebase as epochs)
     spike_clusters : numpy.ndarray (num_spikes x 0)
-        Cluster IDs for each spike time
+        Cluster IDs for each spike 
+    spike_templates : numpy.ndarray (num_spikes x 0)
+        Original template IDs for each spike time
     amplitudes : numpy.ndarray (num_spikes x 0)
         Amplitude value for each spike time
     channel_map : numpy.ndarray (num_units x 0)
@@ -51,16 +61,37 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
 
     metrics = pd.DataFrame()
 
+    np.random.seed(9999)
+
     if epochs is None:
         epochs = [Epoch('complete_session', 0, np.inf)]
 
-    total_units = np.max(spike_clusters) + 1
+    total_units = len(np.unique(spike_clusters))
     total_epochs = len(epochs)
 
     for epoch in epochs:
 
         in_epoch = (spike_times > epoch.start_time) * (spike_times < epoch.end_time)
 
+        print("Calculating silhouette score")
+        the_silhouette_score = calculate_silhouette_score(spike_clusters[in_epoch],
+                                                        spike_templates[in_epoch], 
+                                                       total_units,
+                                                       pc_features[in_epoch,:,:],
+                                                       pc_feature_ind,
+                                                       params['n_silhouette'])
+
+        print("Calculating drift metrics")
+        max_drift, cumulative_drift = calculate_drift_metrics(spike_times[in_epoch],
+                                                       spike_clusters[in_epoch], 
+                                                       spike_templates[in_epoch],
+                                                       total_units,
+                                                       pc_features[in_epoch,:,:],
+                                                       pc_feature_ind,
+                                                       params['drift_metrics_interval_s'],
+                                                       params['drift_metrics_min_spikes_per_interval'])
+
+        
         print("Calculating isi violations")
         isi_viol = calculate_isi_violations(spike_times[in_epoch], spike_clusters[in_epoch], total_units, params['isi_threshold'], params['min_isi'])
         
@@ -73,8 +104,10 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
         print("Calculating amplitude cutoff")
         amplitude_cutoff = calculate_amplitude_cutoff(spike_clusters[in_epoch], amplitudes[in_epoch], total_units)
         
+        
         print("Calculating PC-based metrics")
         isolation_distance, l_ratio, d_prime, nn_hit_rate, nn_miss_rate = calculate_pc_metrics(spike_clusters[in_epoch], 
+                                                                                                spike_templates[in_epoch],
                                                                                                 total_units,
                                                                                                 pc_features[in_epoch,:,:],
                                                                                                 pc_feature_ind,
@@ -83,24 +116,8 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_f
                                                                                                 params['max_spikes_for_nn'],
                                                                                                 params['n_neighbors'])
   
-        print("Calculating silhouette score")
-        the_silhouette_score = calculate_silhouette_score(spike_clusters[in_epoch], 
-                                                       total_units,
-                                                       pc_features[in_epoch,:,:],
-                                                       pc_feature_ind,
-                                                       params['n_silhouette'])
 
-
-        print("Calculating drift metrics")
-        max_drift, cumulative_drift = calculate_drift_metrics(spike_times[in_epoch],
-                                                       spike_clusters[in_epoch], 
-                                                       total_units,
-                                                       pc_features[in_epoch,:,:],
-                                                       pc_feature_ind,
-                                                       params['drift_metrics_interval_s'],
-                                                       params['drift_metrics_min_spikes_per_interval'])
-
-        cluster_ids = np.arange(total_units)
+        cluster_ids = np.unique(spike_clusters)
 
         epoch_name = [epoch.name] * len(cluster_ids)
 
@@ -136,10 +153,10 @@ def calculate_isi_violations(spike_times, spike_clusters, total_units, isi_thres
 
     for idx, cluster_id in enumerate(cluster_ids):
 
-        printProgressBar(cluster_id + 1, total_units)
+        printProgressBar(idx + 1, total_units)
 
         for_this_cluster = (spike_clusters == cluster_id)
-        viol_rates[cluster_id], num_violations = isi_violations(spike_times[for_this_cluster], 
+        viol_rates[idx], num_violations = isi_violations(spike_times[for_this_cluster], 
                                                        min_time = np.min(spike_times), 
                                                        max_time = np.max(spike_times), 
                                                        isi_threshold=isi_threshold, 
@@ -155,10 +172,10 @@ def calculate_presence_ratio(spike_times, spike_clusters, total_units):
 
     for idx, cluster_id in enumerate(cluster_ids):
 
-        printProgressBar(cluster_id + 1, total_units)
+        printProgressBar(idx + 1, total_units)
 
         for_this_cluster = (spike_clusters == cluster_id)
-        ratios[cluster_id] = presence_ratio(spike_times[for_this_cluster], 
+        ratios[idx] = presence_ratio(spike_times[for_this_cluster], 
                                                        min_time = np.min(spike_times), 
                                                        max_time = np.max(spike_times))
 
@@ -177,10 +194,10 @@ def calculate_firing_rate(spike_times, spike_clusters, total_units):
 
     for idx, cluster_id in enumerate(cluster_ids):
 
-        printProgressBar(cluster_id + 1, total_units)
+        printProgressBar(idx + 1, total_units)
 
         for_this_cluster = (spike_clusters == cluster_id)
-        firing_rates[cluster_id] = firing_rate(spike_times[for_this_cluster], 
+        firing_rates[idx] = firing_rate(spike_times[for_this_cluster], 
                                         min_time = np.min(spike_times),
                                         max_time = np.max(spike_times))
 
@@ -195,16 +212,17 @@ def calculate_amplitude_cutoff(spike_clusters, amplitudes, total_units):
 
     for idx, cluster_id in enumerate(cluster_ids):
 
-        printProgressBar(cluster_id + 1, total_units)
+        printProgressBar(idx + 1, total_units)
 
 
         for_this_cluster = (spike_clusters == cluster_id)
-        amplitude_cutoffs[cluster_id] = amplitude_cutoff(amplitudes[for_this_cluster])
+        amplitude_cutoffs[idx] = amplitude_cutoff(amplitudes[for_this_cluster])
 
     return amplitude_cutoffs
 
 
 def calculate_pc_metrics(spike_clusters, 
+                         spike_templates,
                          total_units,
                          pc_features, 
                          pc_feature_ind, 
@@ -217,24 +235,33 @@ def calculate_pc_metrics(spike_clusters,
     half_spread = int((num_channels_to_compare - 1) / 2)
 
     cluster_ids = np.unique(spike_clusters)
+    template_ids = np.unique(spike_templates)
 
-    peak_channels = np.zeros((total_units,), dtype='uint16')
+    template_peak_channels = np.zeros((len(template_ids),), dtype='uint16')
+    cluster_peak_channels = np.zeros((len(cluster_ids),), dtype='uint16')
     isolation_distances = np.zeros((total_units,))
     l_ratios = np.zeros((total_units,))
     d_primes = np.zeros((total_units,))
     nn_hit_rates = np.zeros((total_units,))
     nn_miss_rates = np.zeros((total_units,))
 
+    for idx, template_id in enumerate(template_ids):
+        for_template = np.squeeze(spike_templates == template_id)
+        pc_max = np.argmax(np.mean(pc_features[for_template, 0, :],0))
+        template_peak_channels[idx] = pc_feature_ind[template_id, pc_max]
+
     for idx, cluster_id in enumerate(cluster_ids):
         for_unit = np.squeeze(spike_clusters == cluster_id)
-        pc_max = np.argmax(np.mean(pc_features[for_unit, 0, :],0))
-        peak_channels[cluster_id] = pc_feature_ind[cluster_id, pc_max]
+        templates_for_unit = np.unique(spike_templates[for_unit])
+        template_positions = np.where(np.isin(template_ids, templates_for_unit))[0]
+        cluster_peak_channels[idx] = np.median(template_peak_channels[template_positions])
 
     for idx, cluster_id in enumerate(cluster_ids):
 
-        printProgressBar(cluster_id + 1, total_units)
+        printProgressBar(idx + 1, total_units)
 
-        peak_channel = peak_channels[cluster_id]
+        peak_channel = cluster_peak_channels[idx]
+        num_spikes_in_cluster = np.sum(spike_clusters == cluster_id)
 
         half_spread_down = peak_channel \
             if peak_channel < half_spread \
@@ -244,43 +271,33 @@ def calculate_pc_metrics(spike_clusters,
             if peak_channel + half_spread > np.max(pc_feature_ind) \
             else half_spread
 
-        units_for_channel, channel_index = np.unravel_index(np.where(pc_feature_ind.flatten() == peak_channel)[0], pc_feature_ind.shape)
-        
-        units_in_range = (peak_channels[units_for_channel] >= peak_channel - half_spread_down) * \
-                         (peak_channels[units_for_channel] <= peak_channel + half_spread_up)
-        
-        units_for_channel = units_for_channel[units_in_range]
-        channel_index = channel_index[units_in_range]
-
         channels_to_use = np.arange(peak_channel - half_spread_down, peak_channel + half_spread_up + 1)
 
-        spike_counts = np.zeros(units_for_channel.shape)
+        units_in_range = cluster_ids[np.isin(cluster_peak_channels, channels_to_use)]
 
-        for idx2, cluster_id2 in enumerate(units_for_channel):
+        spike_counts = np.zeros(units_in_range.shape)
+
+        for idx2, cluster_id2 in enumerate(units_in_range):
             spike_counts[idx2] = np.sum(spike_clusters == cluster_id2)
             
-        this_unit_idx = np.where(units_for_channel == cluster_id)[0]
-
-        if spike_counts[this_unit_idx] > max_spikes_for_cluster:
-            relative_counts = spike_counts / spike_counts[this_unit_idx] * max_spikes_for_cluster
+        if num_spikes_in_cluster > max_spikes_for_cluster:
+            relative_counts = spike_counts / num_spikes_in_cluster * max_spikes_for_cluster
         else:
             relative_counts = spike_counts
             
         all_pcs = np.zeros((0, pc_features.shape[1], channels_to_use.size))
         all_labels = np.zeros((0,))
             
-        for idx2, cluster_id2 in enumerate(units_for_channel):
+        for idx2, cluster_id2 in enumerate(units_in_range):
 
-            try:
-                channel_mask = make_channel_mask(cluster_id2, pc_feature_ind, channels_to_use)
-            except IndexError:
-                # Occurs when pc_feature_ind does not contain all channels of interest
-                # In that case, we will exclude this unit for the calculation
-                pass
-            else:
-                subsample = int(relative_counts[idx2])
-                index_mask = make_index_mask(spike_clusters, cluster_id2, min_num = 0, max_num = subsample)
-                pcs = get_unit_pcs(pc_features, index_mask, channel_mask)
+            subsample = int(relative_counts[idx2])
+
+            pcs = get_unit_pcs(cluster_id2, spike_clusters, spike_templates, 
+                               pc_feature_ind, pc_features, channels_to_use,
+                               subsample)
+
+            if pcs is not None and len(pcs.shape) == 3:
+            
                 labels = np.ones((pcs.shape[0],)) * cluster_id2
                 
                 all_pcs = np.concatenate((all_pcs, pcs),0)
@@ -290,28 +307,31 @@ def calculate_pc_metrics(spike_clusters,
 
         if all_pcs.shape[0] > 10:
 
-            isolation_distances[cluster_id], l_ratios[cluster_id] = mahalanobis_metrics(all_pcs, all_labels, cluster_id)
+            isolation_distances[idx], l_ratios[idx] = mahalanobis_metrics(all_pcs, all_labels, cluster_id)
 
-            d_primes[cluster_id] = lda_metrics(all_pcs, all_labels, cluster_id)
+            d_primes[idx] = lda_metrics(all_pcs, all_labels, cluster_id)
 
-            nn_hit_rates[cluster_id], nn_miss_rates[cluster_id] = nearest_neighbors_metrics(all_pcs, all_labels, cluster_id, max_spikes_for_nn, n_neighbors)
+            nn_hit_rates[idx], nn_miss_rates[idx] = nearest_neighbors_metrics(all_pcs, all_labels, cluster_id, max_spikes_for_nn, n_neighbors)
 
         else:
 
-            isolation_distances[cluster_id] = np.nan
-            d_primes[cluster_id] = np.nan
-            nn_hit_rates[cluster_id] = np.nan
-            nn_miss_rates[cluster_id] = np.nan
+            isolation_distances[idx] = np.nan
+            d_primes[idx] = np.nan
+            nn_hit_rates[idx] = np.nan
+            nn_miss_rates[idx] = np.nan
 
 
     return isolation_distances, l_ratios, d_primes, nn_hit_rates, nn_miss_rates 
 
 
-def calculate_silhouette_score(spike_clusters, 
+def calculate_silhouette_score(spike_clusters,
+                                spike_templates, 
                                  total_units,
                                  pc_features, 
                                  pc_feature_ind,
                                  total_spikes):
+
+    cluster_ids = np.unique(spike_clusters)
 
     random_spike_inds = np.random.permutation(spike_clusters.size)
     random_spike_inds = random_spike_inds[:total_spikes]
@@ -322,15 +342,13 @@ def calculate_silhouette_score(spike_clusters,
 
     for idx, i in enumerate(random_spike_inds):
         
-        unit_id = spike_clusters[i]
+        unit_id = spike_templates[i]
         channels = pc_feature_ind[unit_id,:]
         
         for j in range(0,num_pc_features):
             all_pcs[idx, channels + num_channels * j] = pc_features[i,j,:]
 
-    cluster_labels = spike_clusters[random_spike_inds]
-
-    cluster_ids = np.unique(cluster_labels)
+    cluster_labels = np.squeeze(spike_clusters[random_spike_inds])
 
     SS = np.empty((total_units, total_units))
     SS[:] = np.nan
@@ -346,8 +364,8 @@ def calculate_silhouette_score(spike_clusters,
                 X = all_pcs[inds,:]
                 labels = cluster_labels[inds]
                 
-                if len(labels) > 2:
-                    SS[i,j] = silhouette_score(X, labels)
+                if len(labels) > 2 and len(np.unique(labels)) > 1:
+                    SS[idx1,idx2] = silhouette_score(X, labels)
 
     with warnings.catch_warnings():
       warnings.simplefilter("ignore")
@@ -359,6 +377,7 @@ def calculate_silhouette_score(spike_clusters,
 
 def calculate_drift_metrics(spike_times,
                             spike_clusters,
+                            spike_templates,
                             total_units,
                             pc_features, 
                             pc_feature_ind,
@@ -368,7 +387,7 @@ def calculate_drift_metrics(spike_times,
     max_drift = np.zeros((total_units,))
     cumulative_drift = np.zeros((total_units,))
 
-    depths = get_spike_depths(spike_clusters, pc_features, pc_feature_ind)
+    depths = get_spike_depths(spike_templates, pc_features, pc_feature_ind)
     
     interval_starts = np.arange(np.min(spike_times), np.max(spike_times), interval_length)
     interval_ends = interval_starts + interval_length
@@ -396,8 +415,8 @@ def calculate_drift_metrics(spike_times,
             
         median_depths = np.array(median_depths)
             
-        max_drift[cluster_id] = np.around(np.nanmax(median_depths) - np.nanmin(median_depths),2)
-        cumulative_drift[cluster_id] = np.around(np.nansum(np.abs(np.diff(median_depths))),2)
+        max_drift[idx] = np.around(np.nanmax(median_depths) - np.nanmin(median_depths),2)
+        cumulative_drift[idx] = np.around(np.nansum(np.abs(np.diff(median_depths))),2)
 
     return max_drift, cumulative_drift
 
@@ -702,80 +721,32 @@ def nearest_neighbors_metrics(all_pcs, all_labels, this_unit_id, max_spikes_for_
 
 # ==========================================================
 
-def make_index_mask(spike_clusters, unit_id, min_num, max_num):
+def get_unit_pcs(unit_id, 
+                 spike_clusters, 
+                 spike_templates, 
+                 pc_feature_ind, 
+                 pc_features, 
+                 channels_to_use,
+                 subsample):
 
-    """ Create a mask for the spike index dimensions of the pc_features array  
-
-    Inputs:
-    -------
-    spike_clusters : numpy.ndarray (num_spikes x 0)
-        Contains cluster IDs for all spikes in pc_features array
-    unit_id : Int
-        ID for this unit
-    min_num : Int
-        Minimum number of spikes to return; if there are not enough spikes for this unit, return all False
-    max_num : Int
-        Maximum number of spikes to return; if too many spikes for this unit, return a random subsample
-
-    Output:
-    -------
-    index_mask : numpy.ndarray (boolean)
-        Mask of spike indices for pc_features array
-
-    """
-    
-    index_mask = spike_clusters == unit_id
-        
-    inds = np.where(index_mask)[0]
-    
-    if len(inds) < min_num:
-        index_mask = np.zeros((spike_clusters.size,), dtype='bool')
-    else:
-        index_mask = np.zeros((spike_clusters.size,), dtype='bool')
-        order = np.random.permutation(inds.size)
-        index_mask[inds[order[:max_num]]] = True
-        
-    return index_mask
-
-
-def make_channel_mask(unit_id, pc_feature_ind, channels_to_use):
-
-    """ Create a mask for the channel dimension of the pc_features array  
+    """ Return PC features for one unit 
 
     Inputs:
     -------
     unit_id : Int
         ID for this unit
+    spike_clusters : np.ndarray
+        Cluster labels for each spike
+    spike_templates : np.ndarry
+        Template labels for each spike
     pc_feature_ind : np.ndarray
         Channels used for PC calculation for each unit
+    pc_features : np.ndarray
+        Array of all PC features
     channels_to_use : np.ndarray
         Channels to use for calculating metrics
-
-    Output:
-    -------
-    channel_mask : numpy.ndarray
-        Channel indices to extract from pc_features array
-    
-    """
-    
-    these_inds = pc_feature_ind[unit_id, :]
-    channel_mask = [np.argwhere(these_inds == i)[0][0] for i in channels_to_use]
-
-    return np.array(channel_mask)
-
-
-def get_unit_pcs(these_pc_features, index_mask, channel_mask):
-
-    """ Use the index_mask and channel_mask to return PC features for one unit 
-
-    Inputs:
-    -------
-    these_pc_features : numpy.ndarray (float)
-        Array of pre-computed PC features (num_spikes x num_PCs x num_channels)
-    index_mask : numpy.ndarray (boolean)
-        Mask for spike index dimension of pc_features array
-    channel_mask : numpy.ndarray (boolean)
-        Mask for channel index dimension of pc_features array
+    subsample : Int
+        maximum number of spikes to return
 
     Output:
     -------
@@ -784,8 +755,34 @@ def get_unit_pcs(these_pc_features, index_mask, channel_mask):
 
     """
 
-    unit_PCs = these_pc_features[index_mask,:,:]
-
-    unit_PCs = unit_PCs[:,:,channel_mask]
     
-    return unit_PCs
+    inds_for_unit = np.where(spike_clusters == unit_id)[0]
+
+    spikes_to_use = np.random.permutation(inds_for_unit)[:subsample]
+
+    unique_template_ids = np.unique(spike_templates[spikes_to_use])
+
+    unit_PCs = []
+
+    for template_id in unique_template_ids:
+
+        index_mask = spikes_to_use[np.squeeze(spike_templates[spikes_to_use]) == template_id]
+        these_inds = pc_feature_ind[template_id, :]
+
+        pc_array = []
+        
+        for i in channels_to_use:
+            
+            if np.isin(i, these_inds):
+                channel_index = np.argwhere(these_inds == i)[0][0]
+                pc_array.append(pc_features[index_mask, :, channel_index])
+            else:
+                return None
+
+        unit_PCs.append(np.stack(pc_array, axis=-1))
+
+    if len(unit_PCs) > 0:
+
+        return np.concatenate(unit_PCs)
+    else:
+        return None
