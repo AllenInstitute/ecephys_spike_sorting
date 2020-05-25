@@ -36,12 +36,14 @@ def createInputJson(output_file,
                     toStream_sync_params = 'SY=0,384,6,500',
                     niStream_sync_params = 'XA=0,1,3,500',
                     toStream_path_3A = None,
-                    fromStream_list_3A = None
+                    fromStream_list_3A = None,
+                    CSBseed = 1,
+                    LTseed = 1
                     ):
 
     # hard coded paths to code on your computer and system
     ecephys_directory = r'D:\ecephys_fork\ecephys_spike_sorting\ecephys_spike_sorting'
-    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS2_current'
+    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS2_MP_052120\Kilosort2'
     npy_matlab_repository = r'C:\Users\labadmin\Documents\jic\npy-matlab-master'
     catGTPath = r'C:\Users\labadmin\Documents\jic\CatGT'
     tPrime_path=r'C:\Users\labadmin\Documents\jic\TPrimeApp\TPrime'
@@ -231,7 +233,9 @@ def createInputJson(output_file,
                 "momentum" : '[20 400]',
                 "sigmaMask" : 30,
                 "ThPre" : 8,
-                "gain" : uVPerBit
+                "gain" : uVPerBit,
+                "CSBseed" : CSBseed,
+                "LTseed" : LTseed
             }
         },
 

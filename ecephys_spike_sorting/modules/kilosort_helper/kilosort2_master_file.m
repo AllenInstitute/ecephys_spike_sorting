@@ -4,9 +4,8 @@
 
 %path to the config file will also be added to the matlab path using call in python
 %pathToYourConfigFile = 'D:\kilosort_datatemp'; % take from Github folder and put it somewhere else (together with the master_file)
+clear;  %clear anything in memory
 run('kilosort2_config_file.m')
-
-%%
 
 % find the binary file
 rootZ       = ops.rootZ
@@ -24,6 +23,13 @@ rez = learnAndSolve8b(rez);
 
 % final merges
 rez = find_merges(rez, 1);
+
+% sort before running splitAll, for deterministic calculation
+[~, isort]   = sort(rez.st3(:,1), 'ascend');
+rez.st3      = rez.st3(isort, :);
+rez.st2      = rez.st2(isort, :);
+rez.cProj    = rez.cProj(isort, :);
+rez.cProjPC  = rez.cProjPC(isort, :, :);
 
 % final splits by SVD
 rez = splitAllClusters(rez, 1);

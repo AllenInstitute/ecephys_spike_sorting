@@ -40,8 +40,8 @@ Output data
 
 - **output_summary.csv** : describing the changes made to the data. The five columns are:
 
-Cluster label
-Spikes in cluster after removing duplicates
-“within cluster” spikes removed
-“between cluster” spikes removed, summed over all
-Cluster label of the partner containing the most duplicates
+1. Cluster label
+2. Spikes in cluster after removing duplicates
+3. “within cluster” spikes removed
+4. “between cluster” spikes removed, summed over all
+5. Cluster label of the partner containing the most duplicates

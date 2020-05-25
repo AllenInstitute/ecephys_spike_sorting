@@ -40,6 +40,8 @@ class Kilosort2Parameters(DefaultSchema):
     nPCs = Int(required=False, default=3, help='how many PCs to project the spikes into')
     useRAM = Int(required=False, default=0, help='must be 0')
     gain = Float(required=False, default=1, help='uV/bit to report amplitudes in uV')
+    CSBseed = Int(required=False, default=1, help='random seed for clusterSingleBatches')
+    LTseed = Int(required=False, default=1, help='random seed for learnTemplates')
 
 class KilosortHelperParameters(DefaultSchema):
 
