@@ -60,8 +60,6 @@ def remove_double_counted_spikes(spike_times, spike_clusters, spike_templates,
 
     """
 
-    unit_list = np.arange(np.max(spike_clusters)+1)
-    
     peak_chan_idx = np.squeeze(np.argmax(np.max(templates,1) - np.min(templates,1),1))
 
     peak_channels = np.squeeze(channel_map[peak_chan_idx])
@@ -69,6 +67,9 @@ def remove_double_counted_spikes(spike_times, spike_clusters, spike_templates,
     num_clusters = peak_channels.size;
     
     order = np.argsort(peak_channels)
+    
+    unit_list = np.arange(order.size+1)
+    
     sorted_unit_list = unit_list[order]
 
     overlap_matrix = np.zeros((num_clusters, num_clusters))

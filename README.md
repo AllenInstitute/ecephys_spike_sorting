@@ -68,8 +68,8 @@ If the machine doesn't already have python, install it. For the ecephys code, th
 
 If you forget to check the the "Add to PATH" box, it can be added afterward by editing the Environment Variables (under Advanced system settings). The two paths to add are to the Python folder containing the exe, and the scripts folder, e.g.:
 
-C:\Users\labadmin\AppData\Local\Programs\Python\Python38
-C:\Users\labadmin\AppData\Local\Programs\Python\Python38\Scripts
+C:\Users\labadmin\AppData\Local\Programs\Python\Python37
+C:\Users\labadmin\AppData\Local\Programs\Python\Python37\Scripts
 
 Open the Windows command prompt as administrator, and install pipenv:
 
@@ -78,7 +78,7 @@ Open the Windows command prompt as administrator, and install pipenv:
 ```
 The pipenv executable will be in:
 
-C:\Users\labadmin\AppData\Roaming\Python\Python38\Scripts
+C:\Users\labadmin\AppData\Roaming\Python\Python37\Scripts
 
 Add this path to the PATH environment variable.
 

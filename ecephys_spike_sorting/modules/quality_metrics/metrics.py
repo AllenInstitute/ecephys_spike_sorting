@@ -88,11 +88,12 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, chan
                                                                                                 params['n_neighbors'])
   
         print("Calculating silhouette score")
+        nSpikes = spike_times[in_epoch].size
         the_silhouette_score = calculate_silhouette_score(spike_clusters[in_epoch], 
                                                        total_units,
                                                        pc_features[in_epoch,:,:],
                                                        pc_feature_ind,
-                                                       params['n_silhouette'])
+                                                       min(nSpikes, params['n_silhouette']))
 
 
         print("Calculating drift metrics")
