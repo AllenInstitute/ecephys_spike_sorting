@@ -96,8 +96,11 @@ def extract_waveforms(raw_data,
 
         for cluster_idx, cluster_id in enumerate(cluster_ids):
 
-            printProgressBar(cluster_idx+1, total_units)
-
+            try:
+                printProgressBar(cluster_idx+1, total_units)
+            except Exception as E:
+                pass
+                
             in_cluster = (spike_clusters[in_epoch] == cluster_id)
 
             if np.sum(in_cluster) > 0:

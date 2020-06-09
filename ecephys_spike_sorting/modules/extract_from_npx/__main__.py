@@ -19,8 +19,9 @@ def run_npx_extractor(args):
     start = time.time()
 
     commit_date, commit_hash = get_repo_commit_date_and_hash(args['extract_from_npx_params']['npx_extractor_repo'])
+    extraction_location = args['directories']['extraction_location']
 
-    extracted_data_drive, directory = os.path.splitdrive(args['directories']['extracted_data_directory'])
+    extracted_data_drive, directory = os.path.splitdrive(extraction_location)
     
     total, used, free = shutil.disk_usage(extracted_data_drive)
     
@@ -28,12 +29,14 @@ def run_npx_extractor(args):
     
     assert(free > filesize * 2)
     
-    if not os.path.exists(args['directories']['extracted_data_directory']):
-        os.mkdir(args['directories']['extracted_data_directory'])
-
-    subprocess.check_call([args['extract_from_npx_params']['npx_extractor_executable'], 
+    if not os.path.exists(extraction_location):
+        os.mkdir(extraction_location)
+    arg_list = [args['extract_from_npx_params']['npx_extractor_executable'], 
                            args['extract_from_npx_params']['npx_directory'], 
-                           args['directories']['extracted_data_directory']])
+                           extraction_location]
+    #print(arg_list)
+
+    subprocess.check_call(arg_list)
 
     execution_time = time.time() - start
 
@@ -55,8 +58,11 @@ def main():
     from ._schemas import InputParameters, OutputParameters
 
     """Main entry point:"""
+    #raise(ValueError)
+
     mod = ArgSchemaParser(schema_type=InputParameters,
                           output_schema_type=OutputParameters)
+    #raise(ValueError) ^^^^ The directories are being created by this command!!!! But I can't find anything in argschema parser...
 
     output = run_npx_extractor(mod.args)
 

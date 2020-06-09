@@ -81,7 +81,7 @@ def make_config_string(forwardslash_data_file_location, data_file_name, Nfilt = 
         ops.datatype            = 'dat';  % binary ('dat', 'bin') or 'openEphys'
         ops.root                = '"""+forwardslash_data_file_location+"""'; % 'openEphys' only: where raw files are
         ops.fbinary             = fullfile(ops.root, '"""+data_file_name+"""'); % will be created for 'openEphys'       
-        ops.fproc               = 'C:/data/kilosort/temp_wh.dat'; % residual from RAM of preprocessed data      
+        ops.fproc               = 'D:/data/kilosort/temp_wh.dat'; % residual from RAM of preprocessed data      
         
         ops.fs                  = 30000;        % sampling rate        (omit if already in chanMap file)
         ops.NchanTOT            = Nchannels;           % total number of channels (omit if already in chanMap file)

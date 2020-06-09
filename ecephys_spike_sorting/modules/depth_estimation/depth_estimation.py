@@ -48,14 +48,18 @@ def compute_channel_offsets(ap_data, ephys_params, params):
         end_sample = start_sample + int(params['time_interval'] * ephys_params['sample_rate'])
 
         for ch in range(numChannels):
-
-            printProgressBar(i * numChannels + ch +1, numChannels * numIterations)
-
+            try:
+                    printProgressBar(i * numChannels + ch +1, numChannels * numIterations)
+            except Exception as E:
+                pass
             data = ap_data[start_sample:end_sample, ch]
-            offsets[ch,i] = np.median(data)
+            offsets[ch,i] = np.nanmedian(data).astype('int')
             median_subtr = data - offsets[ch,i]
             rms_noise[ch,i] = rms(median_subtr) * ephys_params['bit_volts']
         
+
+    print(offsets)
+
     mask = np.ones((numChannels,), dtype=bool)
     mask[ephys_params['reference_channels']] = False
     mask[np.median(rms_noise,1) > params['hi_noise_thresh']] = False
@@ -93,7 +97,7 @@ def find_surface_channel(lfp_data, ephys_params, params):
         - air_channel : channel at agar / air surface (approximate)
         
     """
-    
+    print('using this script')
     nchannels = ephys_params['num_channels']
     sample_frequency = ephys_params['lfp_sample_rate']
 
@@ -130,9 +134,10 @@ def find_surface_channel(lfp_data, ephys_params, params):
         power = np.zeros((int(nfft/2+1), nchannels))
     
         for ch in np.arange(nchannels):
-
-            printProgressBar(p * nchannels + ch + 1, nchannels * n_passes)
-
+            try:
+                printProgressBar(p * nchannels + ch + 1, nchannels * n_passes)
+            except Exception as E:
+                pass
             sample_frequencies, Pxx_den = welch(chunk[:,ch], fs=sample_frequency, nfft=nfft)
             power[:,ch] = Pxx_den
         

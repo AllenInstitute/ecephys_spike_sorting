@@ -18,6 +18,7 @@ def createInputJson(output_file,
                     npx_directory=None, 
                     continuous_file = None,
                     extracted_data_directory=None,
+                    lfp_directory=None,
                     kilosort_output_directory=None, 
                     kilosort_output_tmp=None, 
                     probe_type='3A'):
@@ -60,12 +61,20 @@ def createInputJson(output_file,
     if continuous_file is None:
         continuous_file = os.path.join(kilosort_output_directory, 'continuous.dat')
 
+    sorted_basedir = os.path.split(os.path.split(kilosort_output_directory)[0])[0]
+    probe_json = os.path.join(sorted_basedir, 'probe_info.json')
+    if lfp_directory is None:
+        lfp_directory = os.path.join(sorted_basedir, 'continuous', 'Neuropix-' + acq_system + '-100.1')
+
+    
+
     dictionary = \
     {
 
         "directories": {
-            "extracted_data_directory": extracted_data_directory,
-            "kilosort_output_directory": kilosort_output_directory,
+            "extraction_location": extracted_data_directory,
+            "extracted_data_directory": kilosort_output_directory, #"D:\\for_some_reason_this_is_being_made"
+            "kilosort_output_directory": kilosort_output_directory, #"D:\\for_some_reason_this_is_being_made"
             "kilosort_output_tmp": kilosort_output_tmp
         },
 
@@ -86,22 +95,23 @@ def createInputJson(output_file,
             "reference_channels" : reference_channels,
             "vertical_site_spacing" : 10e-6,
             "ap_band_file" : continuous_file,
-            "lfp_band_file" : os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.1', 'continuous.dat'),
-            "reorder_lfp_channels" : probe_type == '3A'
+            "lfp_band_file" : os.path.join(lfp_directory, 'continuous.dat'),
+            "reorder_lfp_channels" : probe_type == '3A',
+            "cluster_group_file_name" : "cluster_group.tsv.v2"
         }, 
 
         "extract_from_npx_params" : {
             "npx_directory": npx_directory,
             "settings_xml": settings_xml,
-            "npx_extractor_executable": r"C:\Users\svc_neuropix\Documents\GitHub\open-ephys\Tools\NpxExtractor\NpxExtractor.exe",
-            "npx_extractor_repo": r"C:\Users\svc_neuropix\Documents\GitHub\open-ephys"
+            "npx_extractor_executable": r"C:\Users\svc_neuropix\Documents\GitHub\npxextractor\NpxExtractor\Release\NpxExtractor.exe",
+            "npx_extractor_repo": r"C:\Users\svc_neuropix\Documents\GitHub\npxextractor"
         },
 
         "depth_estimation_params" : {
             "hi_noise_thresh" : 50.0,
             "lo_noise_thresh" : 3.0,
             "save_figure" : 1,
-            "figure_location" : os.path.join(extracted_data_directory, 'probe_depth.png'),
+            "figure_location" : os.path.join(sorted_basedir, 'probe_depth.png'),
             "smoothing_amount" : 5,
             "power_thresh" : 2.5,
             "diff_thresh" : -0.06,
@@ -161,9 +171,10 @@ def createInputJson(output_file,
         },
 
         "noise_waveform_params" : {
-            "classifier_path" : os.path.join(os.getcwd(), 'ecephys_spike_sorting', 'modules', 'noise_templates', 'rf_classifier.pkl')
-
+            "classifier_path" : os.path.join(os.getcwd(), 'ecephys_spike_sorting', 'modules', 'noise_templates', 'rf_classifier.pkl'),
+            "multiprocessing_worker_count" : 10
         },
+
 
         "quality_metrics_params" : {
             "isi_threshold" : 0.0015,
@@ -173,7 +184,7 @@ def createInputJson(output_file,
             "max_spikes_for_nn" : 10000,
             "n_neighbors" : 4,
             'n_silhouette' : 10000,
-            "quality_metrics_output_file" : os.path.join(kilosort_output_tmp, "new_metrics.csv"),
+            "quality_metrics_output_file" : os.path.join(kilosort_output_tmp, "metrics.csv"),
             "drift_metrics_interval_s" : 51,
             "drift_metrics_min_spikes_per_interval" : 10
         }

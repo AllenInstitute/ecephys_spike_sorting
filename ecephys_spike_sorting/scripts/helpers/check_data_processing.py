@@ -7,14 +7,15 @@ from collections import namedtuple
 import glob
 import datetime
 import psutil
+import logging
 
 npx_paramstup = namedtuple('npx_paramstup',['backup_location','start_module','end_module'])
 
-backup_drive = r'T:'
+backup_drive = r'Q:'
 default_start = 'copy_raw_data'
 default_end = 'copy_processed_data'
 
-network_location = r"\\sd5\sd5"
+network_location = r"\\sd4\SD4.2"
 
 npx_directories = {r'J:\800972939_366122_20181224_probeA':npx_paramstup(backup_drive,default_start,default_end),
 					r'K:\800972939_366122_20181224_probeB':npx_paramstup(backup_drive,default_start,default_end),
@@ -26,23 +27,22 @@ npx_directories = {r'J:\800972939_366122_20181224_probeA':npx_paramstup(backup_d
 
 data_file_params = namedtuple('data_file_params',['relpath','upload','sorting_step'])
 
-def check_data_processing(npx_directory,npx_params):
-	try:
-		a = npx_params.backup_location
-	except Exception as E:
-		npx_params_old = npx_params
-		npx_params = npx_paramstup(npx_params_old.backup1,None,None)
-		network_location = npx_params_old.backup2
+def check_data_processing(probe_type, npx_directory, local_sort_dir, raw_backup_1, raw_backup_2, sort_backup_1, sort_backup_2, lims_upload_location):
+	#npx_dir is directory where raw data lives
+	#local_sort dir is where sorted data lives
+	#then set all of these up here, if is not none, then compute it for backwards compatibility
 
 	basepath,session = os.path.split(npx_directory)
 	probe = session.split("_")[-1]
-	local_sort_dir = os.path.join(basepath,session+"_sorted")
-	relpaths, data_files = make_files()
-	try:
-			backup_temp = os.path.join(npx_params.backup_location, 'temp.txt')
-	except Exception as E:
-			backup_temp = os.path.join(npx_params.backup1, 'temp.txt')
-	base_temp = os.path.join(basepath, 'temp.txt')
+
+	original_location, tail = os.path.splitdrive(npx_directory)
+	baqckup_location, tail = os.path.splitdrive(raw_backup_1)
+
+
+	relpaths, data_files = make_files(probe_type)
+
+	backup_temp = os.path.join(baqckup_location, 'temp.txt')
+	base_temp = os.path.join(original_location, 'temp.txt')
 	try:
 		open(backup_temp, 'a').close
 	except Exception as E:
@@ -62,13 +62,10 @@ def check_data_processing(npx_directory,npx_params):
 		print('ERROR: Backup drive test failed, backup drive could be the same as the acquisition drive')
 
 	raw_size_backup = 0
-	try:
-		raw_backup_path = os.path.join(npx_params.backup_location,session)
-	except Exception as E:
-		raw_backup_path = os.path.join(npx_params.backup_location,session)
-	if os.path.isdir(raw_backup_path):
+
+	if os.path.isdir(raw_backup_1):
 		#print('The raw data has been backed up for '+probe)
-		raw_size_backup = dir_size(raw_backup_path)
+		raw_size_backup = dir_size(raw_backup_1)
 	else:
 		print('ERROR: Could not find raw data_backup for '+probe+':')
 
@@ -92,7 +89,7 @@ def check_data_processing(npx_directory,npx_params):
 	network_mtime_dict = {}
 	for data_file,file_params in data_files.items():
 		relpath = relpaths[file_params.relpath]		
-		local_path = os.path.join(basepath,session+"_sorted",relpath,data_file)
+		local_path = os.path.join(local_sort_dir,relpath,data_file)
 		found = False
 		try:
 			acquisition_size_dict[data_file] = os.path.getsize(local_path)
@@ -101,15 +98,15 @@ def check_data_processing(npx_directory,npx_params):
 		except FileNotFoundError as E:
 			pass
 
-		backup_path = os.path.join(npx_params.backup_location,session+"_sorted",relpath,data_file)
+		backup_path = os.path.join(sort_backup_1,relpath,data_file)
 		try:
 			backup_size_dict[data_file] = os.path.getsize(backup_path)
 			backup_mtime_dict[data_file] = os.path.getmtime(backup_path)
-			found = True
+			found = True		
 		except FileNotFoundError as E:
 			pass
 
-		network_path = os.path.join(network_location,session+"_sorted",relpath,data_file)
+		network_path = os.path.join(sort_backup_2,relpath,data_file)
 		try:
 			network_size_dict[data_file] = os.path.getsize(network_path)
 			network_mtime_dict[data_file] = os.path.getmtime(network_path)
@@ -154,10 +151,10 @@ def check_data_processing(npx_directory,npx_params):
 
 	missing_backup_list = []
 	for file in data_files:
-		if file not in backup_size_dict:
+		if file not in network_size_dict:
 			missing_backup_list.append(file)
 	if missing_backup_list:
-		print('ERROR: Some files are not backed up locally for '+probe+':')
+		print('ERROR: Some files are not backed up for '+probe+':')
 		print(missing_backup_list)
 	else:
 		pass
@@ -165,8 +162,8 @@ def check_data_processing(npx_directory,npx_params):
 
 	mismatch_size_list = []
 	for file in data_files:
-		if file in acquisition_size_dict and file in backup_size_dict:
-			if not(acquisition_size_dict[file]==backup_size_dict[file]) or not (acquisition_mtime_dict[file]==backup_mtime_dict[file]):
+		if file in acquisition_size_dict and file in network_size_dict:
+			if not(acquisition_size_dict[file]==network_size_dict[file]) or not (acquisition_mtime_dict[file]==network_mtime_dict[file]):
 				mismatch_size_list.append(file)
 	if mismatch_size_list:
 		print('ERROR: Some processing files have different sizes or modification times on the backup drive and acquisition drive for '+probe)
@@ -175,19 +172,36 @@ def check_data_processing(npx_directory,npx_params):
 		pass
 		#print('all files on the backup drive match the size and modification times of those on the acquisition drive for '+probe)
 	sucess = False
-	if not(missing_files_list) and not(mismatch_size_list) and not(missing_backup_list) and not backup_drive_error:
+	if not(missing_files_list) and not(mismatch_size_list) and not(missing_backup_list):
+		sucess = True
 		if raw_size == raw_size_backup and raw_size>0:
 			print("Deleting NPX files from the acquisition drive for ",probe)
-			safe_delete_npx(basepath, npx_params.backup_location, session)
+			safe_delete_npx(npx_directory, raw_backup_1)
+		lims_files = {}
 		delete_files = {}
 		for file,file_params in data_files.items():
-			if file_params.upload == False and file in acquisition_size_dict:
+			upload = False
+			if file_params.upload == True and file in acquisition_size_dict:
+				upload = True
+				lims_files[file]=file_params
+			depth = 'depth' in file_params.sorting_step
+			sorting = 'sorting' in file_params.sorting_step
+			if not(depth) and not(sorting and upload) and file in acquisition_size_dict:
 				delete_files[file]=file_params
+		if lims_files:
+			print("Copying files to the lims upload drive for ",probe)
+			for lims_file,lims_file_params in lims_files.items():
+				relpath = relpaths[lims_file_params.relpath]
+				print('Copying lims_file: '+ str(lims_file))
+				#time.sleep(3)
+				copy_a_file(local_sort_dir, lims_upload_location, relpath, lims_file)
+		#raise(ValueError)
 		if delete_files:
-			print("Deleting files not needed for day 2 upload from the acquisition drive for ",probe)
+			print("Deleting files not needed for phy viewing for ",probe)
 			for delete_file,delete_file_params in delete_files.items():
 				relpath = relpaths[delete_file_params.relpath]
-				safe_delete_file(basepath, npx_params.backup_location, session, relpath, delete_file)
+				#could add copy to backup here)
+				safe_delete_file(local_sort_dir, sort_backup_2, relpath, delete_file)
 			#sorted_dir = os.path.join(basepath,session+"_sorted")
 			#print(sorted_dir)
 			#backup_npx_dir = os.path.join(npx_params.backup_location,session+"_sorted")
@@ -214,11 +228,11 @@ def check_data_processing(npx_directory,npx_params):
 				#	except Exception as E:
 				#		pass
 			try:
-				shutil.rmtree(os.path.join(basepath,session+"_sorted", 'logs'))
+				pass
+				#shutil.rmtree(os.path.join(local_sort_dir, 'logs'))
 			except Exception as E:
 				print('Could not delete log folder')
 			print('Marking as sucess!')
-			sucess = True
 		else:
 			pass
 			#print("No files found to delete for day 2 upload")
@@ -236,9 +250,8 @@ def check_data_processing(npx_directory,npx_params):
 		#print("No extra files were found for ", probe)
 
 	net_raw_size_backup = 0
-	net_raw_backup_path = os.path.join(network_location,session)
-	if os.path.isdir(net_raw_backup_path):
-		net_raw_size_backup = dir_size(net_raw_backup_path)
+	if os.path.isdir(raw_backup_2):
+		net_raw_size_backup = dir_size(raw_backup_2)
 		if net_raw_size_backup == raw_size_backup:
 			pass
 			#print('The raw data is on SD4 and the size matches the backup for '+probe)
@@ -272,9 +285,7 @@ def check_data_processing(npx_directory,npx_params):
 		#print('All files on the backup drive match the size and modification times of those on SD4 for '+probe)
 	return sucess
 
-def safe_delete_npx(base_path, backup, session):
-	local_npx_dir = os.path.join(base_path,session)
-	backup_npx_dir =  os.path.join(backup,session)
+def safe_delete_npx(local_npx_dir, backup_npx_dir):
 	for root, dirs, files in os.walk(local_npx_dir):
 		for name in files:
 			local_path = os.path.join(root,name)
@@ -299,9 +310,9 @@ def safe_delete_npx(base_path, backup, session):
 	except Exception as E:
 		print("WARNING: Raw directory not deleted, probably non-empty")
 
-def safe_delete_file(base_path, backup, session, relpath, data_file):
-	local_path = os.path.join(base_path,session+"_sorted",relpath,data_file)
-	backup_path = os.path.join(backup,session+"_sorted",relpath,data_file)
+def safe_delete_file(local_dir, backup_dir, relpath, data_file):
+	local_path = os.path.join(local_dir,relpath,data_file)
+	backup_path = os.path.join(backup_dir,relpath,data_file)
 	try:
 		if os.path.getsize(local_path)==os.path.getsize(backup_path) and not os.path.samefile(local_path, backup_path):
 			os.remove(local_path)		
@@ -311,8 +322,16 @@ def safe_delete_file(base_path, backup, session, relpath, data_file):
 		print(data_file + " not deleted, other error")
 		print(E)
 
-
-
+def copy_a_file(local_dir, lims_upload_location, relpath, data_file):
+	local_path = os.path.join(local_dir,relpath)
+	session_dir = os.path.split(local_dir)[1]
+	print(session_dir)
+	lims_upload_path = os.path.join(lims_upload_location, session_dir, relpath)
+	command_string = "robocopy "+ local_path +" "+lims_upload_path +' '+data_file+r" /xc /xn /xo"
+	try:
+		subprocess.check_call(command_string)
+	except Exception as E:
+		logging.warning(E, exc_info=True)
 
 def dir_size(dir_path):
       total_size = 0
@@ -324,11 +343,11 @@ def dir_size(dir_path):
       return total_size
     
 
-def make_files():
+def make_files(probe_type):
 	relpaths = {
-	                'lfp':r"continuous\Neuropix-3a-100.1",
-	                'spikes':r"continuous\Neuropix-3a-100.0",
-	                'events':r"events\Neuropix-3a-100.0\TTL_1",
+	                'lfp':r"continuous\Neuropix-{}-100.1".format(probe_type),
+	                'spikes':r"continuous\Neuropix-{}-100.0".format(probe_type),
+	                'events':r"events\Neuropix-{}-100.0\TTL_1".format(probe_type),
 	                'empty':""
 	                    }
 	        
@@ -336,8 +355,9 @@ def make_files():
 	      "probe_info.json":data_file_params('empty',True,'depth_estimation'),
 	      "channel_states.npy":data_file_params('events',True,'extraction'),
 	      "event_timestamps.npy":data_file_params('events',True,'extraction'),
-	      r"continuous\Neuropix-3a-100.1\continuous.dat":data_file_params('empty',True,'extraction'),
-	      "lfp_timestamps.npy":data_file_params('lfp',True,'sorting'),
+	      #r"continuous\Neuropix-{}-100.1\continuous.dat".format(probe_type):data_file_params('empty',True,'extraction'),
+	      "continuous.dat":data_file_params('lfp',True,'extraction'),
+	      "lfp_timestamps.npy":data_file_params('lfp',True,'extraction'),
 	      "amplitudes.npy":data_file_params('spikes',True,'sorting'),
 	      "spike_times.npy":data_file_params('spikes',True,'sorting'),
 	          "mean_waveforms.npy":data_file_params('spikes',True,'mean waveforms'),
@@ -349,12 +369,16 @@ def make_files():
 	          "templates_ind.npy":data_file_params('spikes',True,'sorting'),
 	          "similar_templates.npy":data_file_params('spikes',True,'sorting'),
 	          "metrics.csv":data_file_params('spikes',True,'metrics'),
+	          "waveform_metrics.csv":data_file_params('spikes',False,'metrics'),
 	          "channel_positions.npy":data_file_params('spikes',True,'sorting'),
-	          "cluster_group.tsv":data_file_params('spikes',True,'sorting'),
+	          #"cluster_group.tsv":data_file_params('spikes',True,'sorting'),
+	          "cluster_Amplitude.tsv":data_file_params('spikes',False,'sorting'),
+	          "cluster_ContamPct.tsv":data_file_params('spikes',False,'sorting'),
+	          "cluster_KSLabel.tsv":data_file_params('spikes',False,'sorting'),
 	          "channel_map.npy":data_file_params('spikes',True,'sorting'),
 	          "params.py":data_file_params('spikes',True,'sorting'),
 	      "probe_depth.png":data_file_params("empty",False,'depth estimation'),
-	      r"continuous\Neuropix-3a-100.0\continuous.dat":data_file_params('empty',False,'extraction'),
+	      r"continuous\Neuropix-{}-100.0\continuous.dat".format(probe_type):data_file_params('empty',False,'extraction'),
 	      "residuals.dat":data_file_params('spikes',False,'median subtraction'),
 	      "pc_features.npy":data_file_params('spikes',False,'sorting'),
 	      "template_features.npy":data_file_params('spikes',False,'sorting'),

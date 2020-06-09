@@ -3,12 +3,12 @@ import subprocess
 
 from create_input_json import createInputJson
 
-sorted_directories = ['/mnt/md0/data/mouse412804/766640955_412804_20181022_probeC_sorted/continuous/Neuropix-3a-100.0']
+sorted_directories = [r'E:\test_2019-07-25_18-16-48_probeA_sorted']
 #npx_directories = [r'L:\766640955_412804_20181022_probeC']
 
-probe_type = '3A'
+probe_type = 'PXI'
 
-json_directory = '/mnt/md0/data/json_files'
+json_directory = r'C:\Users\svc_neuropix\Documents\json_files'#'/mnt/md0/data/json_files'
 #json_directory = r'C:\Users\svc_neuropix\Documents\json_files'
 
 for directory in sorted_directories:
@@ -18,16 +18,19 @@ for directory in sorted_directories:
 	input_json = os.path.join(json_directory, session_id + '-input.json')
 	output_json = os.path.join(json_directory, session_id + '-output.json')
 
-	info = createInputJson(input_json, kilosort_output_directory=directory)
+	info = createInputJson(input_json,
+		kilosort_output_directory=os.path.join(directory, 'continuous', 'Neuropix-PXI-100.0'),
+	 extracted_data_directory=directory,
+	 probe_type=probe_type)
 
 	modules = [ #'extract_from_npx',
-				#'depth_estimation',
+				'depth_estimation']#,
 				##'median_subtraction',
 				#'kilosort_helper',
 				#'kilosort_postprocessing',
 				#'noise_templates',
 				#'mean_waveforms',
-				'quality_metrics']
+				#'quality_metrics']
 
 	for module in modules:
 

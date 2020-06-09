@@ -16,10 +16,14 @@ def run_depth_estimation(args):
 
     numChannels = args['ephys_params']['num_channels']
 
-    rawDataAp = np.memmap(args['ephys_params']['ap_band_file'], dtype='int16', mode='r')
+    raw_path = args['ephys_params']['ap_band_file']
+    print('depth_estimation AP path is: '+ raw_path)
+    rawDataAp = np.memmap(raw_path, dtype='int16', mode='r')
     dataAp = np.reshape(rawDataAp, (int(rawDataAp.size/numChannels), numChannels))
 
     rawDataLfp = np.memmap(args['ephys_params']['lfp_band_file'], dtype='int16', mode='r')
+    raw_path = args['ephys_params']['lfp_band_file']
+    print('depth_estimation LFP path is: '+ raw_path)
     dataLfp = np.reshape(rawDataLfp, (int(rawDataLfp.size/numChannels), numChannels))
 
     print('Computing surface channel...')
