@@ -53,12 +53,12 @@ class processing_session():
         self.json_directory = r'C:\Users\svc_neuropix\Documents\json_files'
 
 
-        session_name2 = "1008639574_491252_20200219"
-        default_backup1_2 = r'U:'
+        session_name2 = "1030489628_498756_20200617"
+        default_backup1_2 = r'V:'
         default_backup2_2 = os.path.join(r'\\10.128.50.43\sd6.2', session_name2)
         default_start_2 = 'depth_estimation'
 
-        session_name3 = '949408739_475987_20190918'
+        session_name3 = '1028043324_498757_20200604'
         default_backup1_3 = r"I:"
         default_backup2_3 = os.path.join(r'\\10.128.50.43\sd6', session_name3)
         default_start_3 = 'kilosort_helper'
@@ -84,23 +84,23 @@ class processing_session():
         probes = OrderedDict()
 
         if 'A' in probes_in:
-            probes['probeA']=probe_params('A', '2', '1', session_name, default_start, 'depth_estimation', default_backup1, default_backup2)
+            probes['probeA']=probe_params('A', '2', '1', session_name, default_start, default_end, default_backup1, default_backup2)
         if 'B' in probes_in:
             probes['probeB']=probe_params('B', '2', '2',  session_name, default_start, default_end, default_backup1, default_backup2)
         if 'C' in probes_in:
             probes['probeC']=probe_params('C', '2', '3',  session_name, default_start, default_end, default_backup1, default_backup2)
         if 'D' in probes_in:
-            probes['probeD']=probe_params('D', '3', '1',  session_name, default_start, 'depth_estimation', default_backup1, default_backup2)
+            probes['probeD']=probe_params('D', '3', '1',  session_name, default_start, default_end, default_backup1, default_backup2)
         if 'E' in probes_in:
             probes['probeE']=probe_params('E', '3', '2',  session_name, default_start, default_end, default_backup1, default_backup2)
         if 'F' in probes_in:
             probes['probeF']=probe_params('F', '3', '3',  session_name, default_start, default_end, default_backup1, default_backup2)
 
 
-        #probes['probeA2']=probe_params('A', '2a', '1', session_name2, default_start_2, default_end, default_backup1_2, default_backup2_2)
-        #probes['probeB2']=probe_params('B', '2a', '2',  session_name2, default_start_2, default_end, default_backup1_2, default_backup2_2)
-        #probes['probeC2']=probe_params('C', '2a', '3',  session_name2, default_start_2, default_end, default_backup1_2, default_backup2_2)
-        #probes['probeD2']=probe_params('D', '3a', '1',  session_name2, default_start_2, default_end, default_backup1_2, default_backup2_2)
+        probes['probeA2']=probe_params('A', '2a', '1', session_name2, default_start_2, default_end, default_backup1_2, default_backup2_2)
+        probes['probeB2']=probe_params('B', '2a', '2',  session_name2, default_start_2, default_end, default_backup1_2, default_backup2_2)
+        probes['probeC2']=probe_params('C', '2a', '3',  session_name2, default_start_2, default_end, default_backup1_2, default_backup2_2)
+        #probes['probeD2']=probe_params('D', '3a', '1',  session_name2, 'cleanup', default_end, default_backup1_2, default_backup2_2)
         #probes['probeE2']=probe_params('E', '3a', '2',  session_name2, default_start_2, default_end, default_backup1_2, default_backup2_2)
         #probes['probeF2']=probe_params('F', '3a', '3',  session_name2, default_start_2, default_end, default_backup1_2, default_backup2_2)
 

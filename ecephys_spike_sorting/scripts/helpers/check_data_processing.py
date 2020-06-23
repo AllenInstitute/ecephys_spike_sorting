@@ -27,6 +27,13 @@ npx_directories = {r'J:\800972939_366122_20181224_probeA':npx_paramstup(backup_d
 
 data_file_params = namedtuple('data_file_params',['relpath','upload','sorting_step'])
 
+def get_path(path):
+	try:
+		full_path = glob.glob(path)[0]
+	except Exception as E:
+		full_path = path
+	return full_path
+
 def check_data_processing(probe_type, npx_directory, local_sort_dir, raw_backup_1, raw_backup_2, sort_backup_1, sort_backup_2, lims_upload_location):
 	#npx_dir is directory where raw data lives
 	#local_sort dir is where sorted data lives
@@ -89,7 +96,7 @@ def check_data_processing(probe_type, npx_directory, local_sort_dir, raw_backup_
 	network_mtime_dict = {}
 	for data_file,file_params in data_files.items():
 		relpath = relpaths[file_params.relpath]		
-		local_path = os.path.join(local_sort_dir,relpath,data_file)
+		local_path = get_path(os.path.join(local_sort_dir,relpath,data_file))
 		found = False
 		try:
 			acquisition_size_dict[data_file] = os.path.getsize(local_path)
@@ -98,7 +105,7 @@ def check_data_processing(probe_type, npx_directory, local_sort_dir, raw_backup_
 		except FileNotFoundError as E:
 			pass
 
-		backup_path = os.path.join(sort_backup_1,relpath,data_file)
+		backup_path = get_path(os.path.join(sort_backup_1,relpath,data_file))
 		try:
 			backup_size_dict[data_file] = os.path.getsize(backup_path)
 			backup_mtime_dict[data_file] = os.path.getmtime(backup_path)
@@ -106,7 +113,7 @@ def check_data_processing(probe_type, npx_directory, local_sort_dir, raw_backup_
 		except FileNotFoundError as E:
 			pass
 
-		network_path = os.path.join(sort_backup_2,relpath,data_file)
+		network_path = get_path(os.path.join(sort_backup_2,relpath,data_file))
 		try:
 			network_size_dict[data_file] = os.path.getsize(network_path)
 			network_mtime_dict[data_file] = os.path.getmtime(network_path)
@@ -311,8 +318,8 @@ def safe_delete_npx(local_npx_dir, backup_npx_dir):
 		print("WARNING: Raw directory not deleted, probably non-empty")
 
 def safe_delete_file(local_dir, backup_dir, relpath, data_file):
-	local_path = os.path.join(local_dir,relpath,data_file)
-	backup_path = os.path.join(backup_dir,relpath,data_file)
+	local_path = get_path(os.path.join(local_dir,relpath,data_file))
+	backup_path = get_path(os.path.join(backup_dir,relpath,data_file))
 	try:
 		if os.path.getsize(local_path)==os.path.getsize(backup_path) and not os.path.samefile(local_path, backup_path):
 			os.remove(local_path)		
@@ -327,6 +334,8 @@ def copy_a_file(local_dir, lims_upload_location, relpath, data_file):
 	session_dir = os.path.split(local_dir)[1]
 	print(session_dir)
 	lims_upload_path = os.path.join(lims_upload_location, session_dir, relpath)
+	full_path = get_path(os.path.join(lims_upload_path, data_file))
+	data_file = os.path.split(full_path)[1] #necessary to get the right probe depth filename
 	command_string = "robocopy "+ local_path +" "+lims_upload_path +' '+data_file+r" /xc /xn /xo"
 	try:
 		subprocess.check_call(command_string)
@@ -377,7 +386,7 @@ def make_files(probe_type):
 	          "cluster_KSLabel.tsv":data_file_params('spikes',False,'sorting'),
 	          "channel_map.npy":data_file_params('spikes',True,'sorting'),
 	          "params.py":data_file_params('spikes',True,'sorting'),
-	      "probe_depth.png":data_file_params("empty",False,'depth estimation'),
+	      "probe_depth_*.png":data_file_params("empty",True,'depth estimation'),
 	      r"continuous\Neuropix-{}-100.0\continuous.dat".format(probe_type):data_file_params('empty',False,'extraction'),
 	      "residuals.dat":data_file_params('spikes',False,'median subtraction'),
 	      "pc_features.npy":data_file_params('spikes',False,'sorting'),
