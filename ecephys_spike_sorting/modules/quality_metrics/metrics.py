@@ -397,7 +397,8 @@ def calculate_silhouette_score(spike_clusters,
                 X = all_pcs[inds, :]
                 labels = cluster_labels[inds]
 
-                if len(labels) > 2:
+                # len(np.unique(labels))=1 Can happen if total_spikes is low:
+                if (len(labels) > 2) and (len(np.unique(labels)) > 1):
                     scores_1d.append(silhouette_score(X, labels))
                 else:
                     scores_1d.append(np.nan)
