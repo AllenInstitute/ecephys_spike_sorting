@@ -34,5 +34,6 @@ setup(
         'xmljson',
         'xarray',
         'scikit-learn',
+        'joblib'
     ],
 )
