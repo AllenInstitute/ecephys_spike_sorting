@@ -202,6 +202,44 @@ def XYCoord10(meta, elecInd, showPlot):
     return(xCoord, yCoord)
 
 
+# Return x y coords for electrode index for NP1.0 or 3A
+#
+def XYCoordUHD(meta, elecInd, showPlot):
+    nElec = 384;    # per shank; pattern repeats for the four shanks
+    vSep = 6;      # in um
+    hSep = 6;
+
+    elecPos = np.zeros((nElec,2), dtype='float')
+    
+    # fill in x and y values
+    for i in range(0, 8):
+        ind = np.arange(i, nElec, step=8, dtype='int')
+        elecPos[ind,0] = i*hSep             # i = 0 for site 0,8,16..., i = 1 for sites 1,9,17...
+        rowind = ind/8;
+        rowind = rowind.astype('int')
+        elecPos[ind,1] = rowind*vSep
+    
+
+    xCoord = elecPos[elecInd, 0]
+    yCoord = elecPos[elecInd, 1]
+
+    if showPlot:
+        # single shank probe. Plot only lowest selected electrode
+        
+        fig = plt.figure(figsize=(2,12))
+        
+        # plot all positions   
+        marker_style = dict(c='w', edgecolor = 'k', linestyle='None', marker='s', s=20)                 
+        plt.scatter(elecPos[:,0], elecPos[:,1], **marker_style)
+
+        # plot selected position
+        marker_style = dict(c='b', edgecolor='b', linestyle='None', marker='s', s=15)
+        plt.scatter(xCoord, yCoord, **marker_style)
+
+        plt.show()
+
+    return(xCoord, yCoord)
+
 # Return shank and electrode number for NP2.0 probes
 # Index into these with original (acquired) channel IDs.
 #
@@ -432,37 +470,38 @@ def MetaToCoords(metaFullPath, outType, badChan= np.zeros((0), dtype = 'int'), d
         
     print(pType)
     
-    if pType <= 1:  
+    if pType <= 1 or pType == 1100:  
         # Neuropixels 1.0 or 3A probe
         
         # Get indices of electrodes
         [elecInd, connected] = NP10_ElecInd(meta)
-        
-
-        
+             
         # Get saved channels
         chans = OriginalChans(meta)     #inludes SY channel
         [AP,LF,SY] = ChannelCountsIM(meta)    
         chans = chans[0:AP]    
-        
+
         # Trim elecInd, connected, and shankind to include only saved channels
         elecInd = elecInd[chans]
         shankInd = np.zeros(elecInd.size, dtype='int')
         connected = connected[chans]
-        
+
         # Channels identified as noisy by kilosort helper indexed
         # according to position in the file
         # since these can include the SYNC channel, remove any from
         # list that are outside the range of AP channels
         badChan = badChan[badChan < AP]
         connected[badChan] = 0
-        
+
         # Get XY coords for saved channels
-        [xCoord, yCoord] = XYCoord10(meta, elecInd, showPlot)
+        if pType <= 1:
+            [xCoord, yCoord] = XYCoord10(meta, elecInd, showPlot)
+        else:
+            [xCoord, yCoord] = XYCoordUHD(meta, elecInd, showPlot)
 
     else:
         # Neuropixels type 21 (single shank) or 24 (four shank)
-        
+    
         # Get indices of all electrodes from the imro table
         [elecInd, shankInd, bankMask, connected] = NP20_ElecInd(meta)
 
