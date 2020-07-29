@@ -64,9 +64,17 @@ def run_kilosort(args):
                                             MaskChannels = np.where(mask == False)[0])
         # end of Open Ephys block    
     
-     
-    shutil.copyfile(os.path.join(args['directories']['ecephys_directory'],'modules','kilosort_helper','kilosort2_master_file.m'),
-            os.path.join(args['kilosort_helper_params']['matlab_home_directory'],'kilosort2_master_file.m'))
+
+# copy the msster fle to the same directory that contains the channel map and config file
+    master_fullpath = os.path.join(os.path.join(args['kilosort_helper_params']['master_file_path'],args['kilosort_helper_params']['master_file_name']))
+        
+    shutil.copyfile(master_fullpath,
+            os.path.join(args['kilosort_helper_params']['matlab_home_directory'],args['kilosort_helper_params']['master_file_name']))
+    
+# will cd to home directory before calling, so call is master_file_name without extension    
+    master_call = os.path.splitext(args['kilosort_helper_params']['master_file_name'])[0]
+        
+    
     if args['kilosort_helper_params']['kilosort_version'] == 1:
     
         matlab_file_generator.create_config(args['kilosort_helper_params']['matlab_home_directory'], 
@@ -100,6 +108,8 @@ def run_kilosort(args):
     KS_dir = args['kilosort_helper_params']['kilosort_repository'].replace('\\','/')
     NPY_dir = args['kilosort_helper_params']['npy_matlab_repository'].replace('\\','/')
     home_dir = args['kilosort_helper_params']['matlab_home_directory'].replace('\\','/')
+    
+
             
     if args['kilosort_helper_params']['kilosort_version'] == 1:    
         eng.addpath(eng.genpath(KS_dir))
@@ -110,7 +120,7 @@ def run_kilosort(args):
         eng.addpath(eng.genpath(KS_dir))
         eng.addpath(eng.genpath(NPY_dir))
         eng.addpath(home_dir)
-        eng.kilosort2_master_file(nargout=0)
+        eng.run(master_call, nargout=0)
 
     # if the phy output directory is different from the data directory, change
     # the default dat_path in params.py to be the relative path from the phy

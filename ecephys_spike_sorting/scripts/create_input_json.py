@@ -52,6 +52,15 @@ def createInputJson(output_file,
     tPrime_path=r'C:\Users\labadmin\Documents\jic\TPrimeApp\TPrime'
     cWaves_path=r'C:\Users\labadmin\Documents\jic\C_Waves'
     
+    # set paths to KS2 master file to run; these should be appropriate for the
+    # kilosort repository specified above
+    # default inside the ecephys pipeline are:
+    #       master_file_path = os.path.join(ecephys_directory,'modules','kilosort_helper')
+    #       master_file_name = 'kilosort2_master_file.m'          
+    master_file_path = os.path.join(ecephys_directory,'modules','kilosort_helper')
+    master_file_name = 'kilosort2_master_file.m'    
+    
+     
     # for config files and kilosort working space
     kilosort_output_tmp = r'D:\kilosort_datatemp' 
     
@@ -145,6 +154,8 @@ def createInputJson(output_file,
     fproc_forward_slash = fproc.replace('\\','/')
     fproc_str = "'" + fproc_forward_slash + "'"
     
+
+    
     dictionary = \
     {
 
@@ -218,6 +229,8 @@ def createInputJson(output_file,
             "matlab_home_directory": kilosort_output_tmp,
             "kilosort_repository" : kilosort_repository,
             "npy_matlab_repository" : npy_matlab_repository,
+            "master_file_path" : master_file_path,
+            "master_file_name" : master_file_name,
             "kilosort_version" : 2,
             "spikeGLX_data" : True,
             "ks_make_copy": ks_make_copy,

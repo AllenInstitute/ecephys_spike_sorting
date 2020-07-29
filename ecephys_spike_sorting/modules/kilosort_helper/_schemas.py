@@ -56,6 +56,8 @@ class KilosortHelperParameters(DefaultSchema):
     matlab_home_directory = InputDir(help='Location from which Matlab files can be copied and run.')
     kilosort_repository = InputDir(help='Local directory for the Kilosort source code repository.')
     npy_matlab_repository = InputDir(help='Local directory for the npy_matlab repo for writing phy output')
+    master_file_path = InputDir(help='local directory for kilosort master file')
+    master_file_name = String(required=False, default='kilosort2_master_file.m', help='Name of kilosort master file to run, including extension')
     
     kilosort_params = Nested(KilosortParameters, required=False, help='Parameters used to auto-generate a Kilosort config file')
     kilosort2_params = Nested(Kilosort2Parameters, required=False, help='Parameters used to auto-generate a Kilosort2 config file')
