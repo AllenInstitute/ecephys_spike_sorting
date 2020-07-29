@@ -441,13 +441,16 @@ def get_repo_commit_date_and_hash(repo_location):
     """
 
     if os.path.exists(repo_location):
-        repo = Repo(repo_location)
-        headcommit = repo.head.commit
-        commit_date = time.strftime("%a, %d %b %Y %H:%M", time.gmtime(headcommit.committed_date))
-        commit_hash = headcommit.hexsha
+        try:
+            repo = Repo(repo_location)
+            headcommit = repo.head.commit
+            commit_date = time.strftime("%a, %d %b %Y %H:%M", time.gmtime(headcommit.committed_date))
+            commit_hash = headcommit.hexsha
+        except:
+            commit_date = 'repository not available'
+            commit_hash = 'repository not available'
     else:
-        commit_date = 'repository not available'
-        commit_hash = 'repository not available'
+        print('Invalid path to kilosort.')
 
     return commit_date, commit_hash
 
