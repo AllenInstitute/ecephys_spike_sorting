@@ -11,12 +11,14 @@ Computes quality metrics for sorted units. Similar to the `mean_waveforms` modul
 | ISI violations     |![](images/isi_viol.png)  | Rate of refractory-period violations               |                  |
 | Amplitude cutoff   |![](images/amp_cut.png)   | Estimate of miss rate based on amplitude histogram |                  |
 | Isolation distance |![](images/isol_dist.png) | Distance to nearest cluster in Mahalanobis space   | Schmitzer-Torbert et al. (2005) _Neuroscience_ **131**, 1-11 |
-| L-ratio            |                          |                                                    |         "         |
+| L-ratio<sup>1</sup>            |                          | The Mahalanobis distance and chi-squared inverse cdf (given the assumption that the spikes in the cluster distribute normally in each dimension) are used to find the probability of cluster membership for each spike.                                                    |         "         |
 | _d'_               |![](images/d_prime.png)   | Classification accuracy based on LDA               | Hill et al. (2011) _J Neurosci_ **31**, 8699-9705 |
 | Nearest-neighbors  |![](images/nn_overlap.png)| Non-parametric estimate of unit contamination      | Chung et al. (2017) _Neuron_ **95**, 1381-1394 |
 | Silhouette score  |                           | Standard metric for cluster overlap      |         |
 | Maximum drift     |                           | Maximum change in spike depth throughout recording    |         |
 | Cumulative drift  |                           | Cumulative change in spike depth throughout recording |         |
+
+<sup>1</sup> algorithm updated on Aug 11, 2020 to fix normalization factor
 
 ### A Note on Calculations
 
