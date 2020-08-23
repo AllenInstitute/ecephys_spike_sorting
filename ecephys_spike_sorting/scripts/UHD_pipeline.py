@@ -209,6 +209,7 @@ for spec in run_specs:
         #kilosort2 params specific to UHD probes
         whiteningRange = 256;
         nNeighbors = 64;
+        minfr_goodchannels = 0.01;
 
         print(data_directory)
         print(continuous_file)
@@ -229,7 +230,8 @@ for spec in run_specs:
                                        extracted_data_directory = catGT_dest,
                                        event_ex_param_str = event_ex_param_str,
                                        whiteningRange = whiteningRange,
-                                       nNeighbors = nNeighbors                                 
+                                       nNeighbors = nNeighbors,
+                                       minfr_goodchannels =  minfr_goodchannels
                                        )   
 
         # copy json file to data directory as record of the input parameters (and gfix edit rates)  
