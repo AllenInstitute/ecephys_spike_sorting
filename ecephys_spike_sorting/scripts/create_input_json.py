@@ -57,9 +57,8 @@ def createInputJson(output_file,
     # default inside the ecephys pipeline are:
     #       master_file_path = os.path.join(ecephys_directory,'modules','kilosort_helper')
     #       master_file_name = 'kilosort2_master_file.m'          
-    master_file_path = os.path.join(ecephys_directory,'modules','kilosort_helper')
-    master_file_name = 'kilosort2_master_file.m'    
-    
+    master_file_path = os.path.join(ecephys_directory,'modules','kilosort_helper')    
+    master_file_name = 'kilosort2_master_file.m'   
      
     # for config files and kilosort working space
     kilosort_output_tmp = r'D:\kilosort_datatemp' 
