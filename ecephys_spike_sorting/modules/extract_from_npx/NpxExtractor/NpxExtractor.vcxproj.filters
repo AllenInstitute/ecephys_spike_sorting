@@ -1,0 +1,167 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Resource Files\npy-c++">
+      <UniqueIdentifier>{57209ed2-cfae-4bec-8d89-235cc1ae6894}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="JuceLibraryCode">
+      <UniqueIdentifier>{36e0fcf8-622a-4c7c-8ef8-3c6a47018711}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\neuropix-api">
+      <UniqueIdentifier>{ace5e34d-c29a-47b3-a866-2850da722cb6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="npy-c++\NpyFile.h">
+      <Filter>Resource Files\npy-c++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugin-GUI\JuceLibraryCode\AppConfig.h">
+      <Filter>JuceLibraryCode</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugin-GUI\JuceLibraryCode\BinaryData.h">
+      <Filter>JuceLibraryCode</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugin-GUI\JuceLibraryCode\JuceHeader.h">
+      <Filter>JuceLibraryCode</Filter>
+    </ClInclude>
+    <ClInclude Include="NpxExtractor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="neuropix-api\NeuropixAPI.h">
+      <Filter>Resource Files\neuropix-api</Filter>
+    </ClInclude>
+    <ClInclude Include="neuropix-api\NeuropixAPI_private.h">
+      <Filter>Resource Files\neuropix-api</Filter>
+    </ClInclude>
+    <ClInclude Include="NpxExtractorPXI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NpxExtractor3a.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="npy-c++\NpyFile.cpp">
+      <Filter>Resource Files\npy-c++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugin-GUI\JuceLibraryCode\BinaryData.cpp">
+      <Filter>JuceLibraryCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugin-GUI\JuceLibraryCode\juce_audio_basics.cpp">
+      <Filter>JuceLibraryCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugin-GUI\JuceLibraryCode\juce_audio_devices.cpp">
+      <Filter>JuceLibraryCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugin-GUI\JuceLibraryCode\juce_audio_formats.cpp">
+      <Filter>JuceLibraryCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugin-GUI\JuceLibraryCode\juce_audio_processors.cpp">
+      <Filter>JuceLibraryCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugin-GUI\JuceLibraryCode\juce_audio_utils.cpp">
+      <Filter>JuceLibraryCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugin-GUI\JuceLibraryCode\juce_core.cpp">
+      <Filter>JuceLibraryCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugin-GUI\JuceLibraryCode\juce_cryptography.cpp">
+      <Filter>JuceLibraryCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugin-GUI\JuceLibraryCode\juce_data_structures.cpp">
+      <Filter>JuceLibraryCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugin-GUI\JuceLibraryCode\juce_events.cpp">
+      <Filter>JuceLibraryCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugin-GUI\JuceLibraryCode\juce_graphics.cpp">
+      <Filter>JuceLibraryCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugin-GUI\JuceLibraryCode\juce_gui_basics.cpp">
+      <Filter>JuceLibraryCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugin-GUI\JuceLibraryCode\juce_gui_extra.cpp">
+      <Filter>JuceLibraryCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugin-GUI\JuceLibraryCode\juce_opengl.cpp">
+      <Filter>JuceLibraryCode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugin-GUI\JuceLibraryCode\juce_video.cpp">
+      <Filter>JuceLibraryCode</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NpxExtractor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NpxExtractorPXI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NpxExtractor3a.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\plugin-GUI\JuceLibraryCode\juce_audio_basics.mm">
+      <Filter>JuceLibraryCode</Filter>
+    </None>
+    <None Include="..\..\plugin-GUI\JuceLibraryCode\juce_audio_devices.mm">
+      <Filter>JuceLibraryCode</Filter>
+    </None>
+    <None Include="..\..\plugin-GUI\JuceLibraryCode\juce_audio_formats.mm">
+      <Filter>JuceLibraryCode</Filter>
+    </None>
+    <None Include="..\..\plugin-GUI\JuceLibraryCode\juce_audio_processors.mm">
+      <Filter>JuceLibraryCode</Filter>
+    </None>
+    <None Include="..\..\plugin-GUI\JuceLibraryCode\juce_audio_utils.mm">
+      <Filter>JuceLibraryCode</Filter>
+    </None>
+    <None Include="..\..\plugin-GUI\JuceLibraryCode\juce_core.mm">
+      <Filter>JuceLibraryCode</Filter>
+    </None>
+    <None Include="..\..\plugin-GUI\JuceLibraryCode\juce_cryptography.mm">
+      <Filter>JuceLibraryCode</Filter>
+    </None>
+    <None Include="..\..\plugin-GUI\JuceLibraryCode\juce_data_structures.mm">
+      <Filter>JuceLibraryCode</Filter>
+    </None>
+    <None Include="..\..\plugin-GUI\JuceLibraryCode\juce_events.mm">
+      <Filter>JuceLibraryCode</Filter>
+    </None>
+    <None Include="..\..\plugin-GUI\JuceLibraryCode\juce_graphics.mm">
+      <Filter>JuceLibraryCode</Filter>
+    </None>
+    <None Include="..\..\plugin-GUI\JuceLibraryCode\juce_gui_basics.mm">
+      <Filter>JuceLibraryCode</Filter>
+    </None>
+    <None Include="..\..\plugin-GUI\JuceLibraryCode\juce_gui_extra.mm">
+      <Filter>JuceLibraryCode</Filter>
+    </None>
+    <None Include="..\..\plugin-GUI\JuceLibraryCode\juce_opengl.mm">
+      <Filter>JuceLibraryCode</Filter>
+    </None>
+    <None Include="..\..\plugin-GUI\JuceLibraryCode\juce_video.mm">
+      <Filter>JuceLibraryCode</Filter>
+    </None>
+  </ItemGroup>
+</Project>

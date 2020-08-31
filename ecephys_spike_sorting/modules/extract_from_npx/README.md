@@ -1,14 +1,14 @@
 Extract from NPX
 ==============
-Converts continuous data from raw NPX format (75% compression ratio) to .dat files required for spike sorting and other downstream analysis.
+Converts continuous data from raw NPX/NPX2 format (75% compression ratio) to .dat files required for spike sorting and other downstream analysis.
 
-Reads event times from the NPX file and writes them as .npy files.
+Reads event times from the NPX/NPX2 file and writes them as .npy files.
 
 Converts the settings.xml file for an experiment into a JSON file with parameters such as sample rate and bit volts for each channel.
 
 Dependencies
 -------------
-The NpxExtractor executable (Windows only) can be found [here](https://github.com/open-ephys-GUI-binaries/open-ephys/tree/neuropix/Tools/NpxExtractor).
+The NpxExtractor executable (Windows only) can be found in the `NpxExtractor\Release` folder.
 
 Running
 -------
@@ -23,7 +23,7 @@ See the `_schemas.py` file for detailed information about the contents of the in
 
 Input data
 ----------
-- **NPX file** : Written by Open Ephys (https://github.com/open-ephys-gui-binaries/open-ephys/tree/neuropix). Contains all of the data recorded from one or more Neuropixels probes.
+- **NPX file** : Written by Open Ephys (https://github.com/open-ephys/plugin-GUI). Contains all of the data recorded from one or more Neuropixels probes.
 - **settings.xml** : Written by Open Ephys. Contains information about the signal chain that was used for the experiment.
 
 
