@@ -12,7 +12,7 @@ install:
   - pip install pytest-cov
   - pip install coveralls
   - pip install codecov
-script: pytest --cov=cluster_quality tests/
+script: pytest --cov=ecephys_spike_sorting tests/
 after_success:
   - codecov
   - coveralls
