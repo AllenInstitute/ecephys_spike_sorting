@@ -54,7 +54,6 @@ install:
       conda install virtualenv;
     fi
   - pip install pipenv
-  - pipenv --update
   - pipenv --python ${TEST_PYTHON_VERSION}
   - pipenv install --dev
   - pipenv run pip install .
