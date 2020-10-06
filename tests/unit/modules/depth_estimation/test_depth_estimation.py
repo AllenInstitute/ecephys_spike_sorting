@@ -2,10 +2,10 @@ import pytest
 import numpy as np
 import os
 
-from ecephys_spike_sorting.modules.depth_estimation.depth_estimation import compute_offset_and_surface_channel
-import ecephys_spike_sorting.common.utils as utils
+#from ecephys_spike_sorting.modules.depth_estimation.depth_estimation import compute_offset_and_surface_channel
+#import ecephys_spike_sorting.common.utils as utils
 
-DATA_DIR = os.environ.get('ECEPHYS_SPIKE_SORTING_DATA', False)
+#DATA_DIR = os.environ.get('ECEPHYS_SPIKE_SORTING_DATA', False)
 
 def test_depth_estimation():
 
@@ -32,13 +32,13 @@ def test_depth_estimation():
 	params['nfft'] = 4096
 	params['skip_s_per_pass'] = 100
 
-	raw_data_file = os.path.join(DATA_DIR, 'continuous_ap_pre.dat')
-	rawData = np.memmap(raw_data_file, dtype='int16', mode='r')
-	data = np.reshape(rawData, (int(rawData.size/384), 384))
+	#aw_data_file = os.path.join(DATA_DIR, 'continuous_ap_pre.dat')
+	#rawData = np.memmap(raw_data_file, dtype='int16', mode='r')
+	#data = np.reshape(rawData, (int(rawData.size/384), 384))
 
-	raw_data_file_lfp = os.path.join(DATA_DIR, 'continuous_lfp_pre.dat')
-	rawDataLfp = np.memmap(raw_data_file_lfp, dtype='int16', mode='r')
-	data_lfp = np.reshape(rawDataLfp, (int(rawDataLfp.size/384), 384))
+	#aw_data_file_lfp = os.path.join(DATA_DIR, 'continuous_lfp_pre.dat')
+	#rawDataLfp = np.memmap(raw_data_file_lfp, dtype='int16', mode='r')
+	#data_lfp = np.reshape(rawDataLfp, (int(rawDataLfp.size/384), 384))
 
-	info = compute_offset_and_surface_channel(data, data_lfp, \
-                ephys_params, params)
+	#info = compute_offset_and_surface_channel(data, data_lfp, \
+    #            ephys_params, params)
