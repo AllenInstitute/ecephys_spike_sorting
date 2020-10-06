@@ -15,6 +15,8 @@ def test_automerging():
 	params['merge_threshold'] = 2.5
 	params['distance_to_compare'] = 5
 
+	pass
+
 	#spike_times, spike_clusters, amplitudes, \
 	# templates, channel_map, cluster_ids, cluster_quality \
 	#= utils.load_kilosort_data(DATA_DIR, sample_rate, convert_to_seconds=True)
