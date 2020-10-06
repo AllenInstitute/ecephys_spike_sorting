@@ -270,7 +270,8 @@ def calculate_pc_metrics_one_cluster(cluster_peak_channels, idx, cluster_id,clus
 
     all_pcs = np.reshape(all_pcs, (all_pcs.shape[0], pc_features.shape[1]*channels_to_use.size))
     if ((all_pcs.shape[0] > 10)
-            and (cluster_id in all_labels)
+            and not (all_labels == cluster_id).all()  # Not all labels are this cluster
+            and (sum(all_labels == cluster_id) > 20)  # No fewer than 20 spikes in this cluster
             and (len(channels_to_use) > 0)):
         isolation_distance, l_ratio = mahalanobis_metrics(all_pcs, all_labels, cluster_id)
 
