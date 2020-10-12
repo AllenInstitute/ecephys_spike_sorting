@@ -178,8 +178,12 @@ def get_noise_channels(raw_data_file, num_channels, sample_rate, bit_volts, nois
     if end_index > num_samples:
         print('noise interval larger than total number of samples')
         end_index = num_samples
+        
+    uplim = 10000/(sample_rate/2);
+    if uplim > 1:
+        uplim = 0.99;
     
-    b, a = butter(3, [10/(sample_rate/2), 10000/(sample_rate/2)], btype='band')
+    b, a = butter(3, [10/(sample_rate/2), uplim], btype='band')
 
     D = data[start_index:end_index, :] * bit_volts
     

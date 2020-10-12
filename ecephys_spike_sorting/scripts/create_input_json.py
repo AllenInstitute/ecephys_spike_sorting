@@ -46,7 +46,7 @@ def createInputJson(output_file,
 
     # hard coded paths to code on your computer and system
     ecephys_directory = r'D:\ecephys_fork\ecephys_spike_sorting\ecephys_spike_sorting'
-    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS2_040920\Kilosort2'
+    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS2_MP_082520\Kilosort2'
     npy_matlab_repository = r'C:\Users\labadmin\Documents\jic\npy-matlab-master'
     catGTPath = r'C:\Users\labadmin\Documents\jic\CatGT'
     tPrime_path=r'C:\Users\labadmin\Documents\jic\TPrimeApp\TPrime'
@@ -55,10 +55,10 @@ def createInputJson(output_file,
     # set paths to KS2 master file to run; these should be appropriate for the
     # kilosort repository specified above
     # default inside the ecephys pipeline are:
-    #       master_file_path = os.path.join(ecephys_directory,'modules','kilosort_helper')
-    #       master_file_name = 'kilosort2_master_file.m'          
-    master_file_path = os.path.join(ecephys_directory,'modules','kilosort_helper')    
-    master_file_name = 'kilosort2_master_file.m'   
+    master_file_path = os.path.join(ecephys_directory,'modules','kilosort_helper')
+    master_file_name = 'kilosort2_master_file.m'          
+    # master_file_path = r'D:\ecephys_fork\ecephys_spike_sorting\ecephys_spike_sorting\scripts'
+    # master_file_name = 'KS2ds_tracking_master_file.m' 
      
     # for config files and kilosort working space
     kilosort_output_tmp = r'D:\kilosort_datatemp' 
@@ -312,7 +312,7 @@ def createInputJson(output_file,
                 "tPrime_path" : tPrime_path,
                 "sync_period" : sync_period,
                 "toStream_sync_params" : toStream_sync_params,
-                "niStream_sync_params" : niStream_sync_params,
+                "ni_sync_params" : niStream_sync_params,
                 "toStream_path_3A" : toStream_path_3A,
                 "fromStream_list_3A" : fromStream_list_3A
                 },  

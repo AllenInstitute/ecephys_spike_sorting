@@ -20,7 +20,7 @@ json_directory = r'D:\ecephys_fork\json_files'
  
 run_paths = [												
 
-             r'D:\CB112_20191014_b37\anm_112_20191014_stripe_bottomrow37_g0_tcat.imec0.ap.bin'
+             r'C:\sampleRate_test\SC026\SC026_080619_20m_g0.imec0.ap.bin'
 ]
 
 
@@ -52,7 +52,7 @@ for path in run_paths:
         os.mkdir(kilosort_output_parent)
         
     # output subdirectory
-    outputName = 'imec' + prbStr + '_csbseed_' + str(run_seed) + '_ks2'
+    outputName = 'imec' + prbStr + '_ks2'
     
     kilosort_output_dir = os.path.join(kilosort_output_parent, outputName)
 
@@ -92,4 +92,3 @@ for path in run_paths:
 	
 
 
-    

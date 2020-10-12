@@ -27,7 +27,7 @@ logName = 'SC024_log.csv'
 
 # Raw data directory = npx_directory
 # run_specs = name, gate, trigger and probes to process
-npx_directory = r'D:\ecephys_fork\test_data\SC_trial'
+npx_directory = r'E:\NP2.0data\SC024_092319\NP1.0'
 
 # Each run_spec is a list of 4 strings:
 #   undecorated run name (no g/t specifier, the run field in CatGT)
@@ -38,7 +38,7 @@ npx_directory = r'D:\ecephys_fork\test_data\SC_trial'
 #   probes to process, as a string, e.g. '0', '0,3', '0:3'
 
 run_specs = [										
-						['SC024_092319_NP1.0_Midbrain', '0', '0,4', '0,1']
+						['SC024_092319_NP1.0_Midbrain', '0', '0,199', '0']
 ]
 
 # ------------------
@@ -47,7 +47,7 @@ run_specs = [
 # Set to an existing directory; all output will be written here.
 # Output will be in the standard SpikeGLX directory structure:
 # run_folder/probe_folder/*.bin
-catGT_dest = r'D:\ecephys_fork\test_data\SC_trial\SC024'
+catGT_dest = r'C:\sampleRate_test\SC024'
 
 # ------------
 # CatGT params
@@ -61,7 +61,7 @@ catGT_stream_string = '-ap -ni'
 # Note 1: directory naming in this script requires -prb_fld and -out_prb_fld
 # Note 2: this command line includes specification of edge extraction
 # see CatGT readme for details
-catGT_cmd_string = '-prb_fld -out_prb_fld -aphipass=300 -aplopass=9000 -gbldmx -gfix=0,0.10,0.02 -SY=0,384,6,500 -SY=1,384,6,500 -XA=0,1,3,500 -XA=1,3,3,0 -XD=4,1,50 -XD=4,2,1.7 -XD=4,3,5'
+catGT_cmd_string = '-prb_fld -out_prb_fld -aphipass=300 -gbldmx -gfix=0,0.10,0.02 -SY=0,384,6,500 -SY=1,384,6,500 -XA=0,1,3,500 -XA=1,3,3,0 -XD=4,1,50 -XD=4,2,1.7 -XD=4,3,5'
 
 # ----------------------
 # psth_events parameters

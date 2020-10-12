@@ -149,6 +149,8 @@ In **create_input_json.py**, be sure to set these paths for your system:
 
 - npy_matlab_repository
 
+- master_file_path, master_file_name: leave set to default to use version in kilosort helper module; if you need to customize how you run KS2 (e.g. to run the datashift branch) set these to point to your own master file. Master files to run the datashift branch are included in the scripts folder.
+
 - catGTPath: contains the CatGT.exe file
 
 - cWaves_path: contains the C_Waves.exe file
