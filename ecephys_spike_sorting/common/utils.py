@@ -545,9 +545,23 @@ def getSortResults(output_dir):
 
     templates = np.load(os.path.join(output_dir, 'templates.npy'))
     channel_map = np.load(os.path.join(output_dir, 'channel_map.npy'))
-
+    channel_map = np.squeeze(channel_map)
+    
+    # read in inverse of whitening matrix
+    w_inv = np.load((os.path.join(output_dir, 'whitening_mat_inv.npy')))
     nTemplate = templates.shape[0]
-    peak_channels = np.squeeze(channel_map[np.argmax(np.max(templates,1) - np.min(templates,1),1)])
+    
+    # initialize peak_channels array
+    peak_channels = np.zeros([nTemplate,],'uint32')
+    
+    # for each template (nt x nchan), multiply the the transpose (nchan x nt) by inverse of 
+    # the whitening matrix (nchan x nchan); get max and min along tthe time axis (1)
+    # to find the peak channel
+    for i in np.arange(0,nTemplate):
+        currT = templates[i,:].T
+        curr_unwh = np.matmul(w_inv, currT)
+        currdiff = np.max(curr_unwh,1) - np.min(curr_unwh,1)
+        peak_channels[i] = channel_map[np.argmax(currdiff)]
 
     clus_Table = np.zeros((nTemplate, 2), dtype='uint32')
     clus_Table[unqLabel, 0] = labelCounts

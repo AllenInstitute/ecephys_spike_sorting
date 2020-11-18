@@ -180,7 +180,7 @@ def get_noise_channels(raw_data_file, num_channels, sample_rate, bit_volts, nois
         end_index = num_samples
         
     uplim = 10000/(sample_rate/2);
-    if uplim > 1:
+    if uplim >= 1:
         uplim = 0.99;
     
     b, a = butter(3, [10/(sample_rate/2), uplim], btype='band')

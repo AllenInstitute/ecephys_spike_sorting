@@ -62,6 +62,8 @@ def remove_double_counted_spikes(spike_times, spike_clusters, spike_templates,
 
     peak_chan_idx = np.squeeze(np.argmax(np.max(templates,1) - np.min(templates,1),1))
 
+    # to accomdate case where matlab writes out chan map as (1,nchan) instead of (nchan,1)
+    channel_map = np.squeeze(channel_map);
     peak_channels = np.squeeze(channel_map[peak_chan_idx])
     
     num_clusters = peak_channels.size;
