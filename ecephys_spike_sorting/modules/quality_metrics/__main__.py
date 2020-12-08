@@ -29,7 +29,7 @@ def calculate_quality_metrics(args):
                     include_pcs = True)
 
         metrics = calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, channel_pos, pc_features, pc_feature_ind, args['quality_metrics_params'])
-    
+
     except FileNotFoundError:
         
         execution_time = time.time() - start
@@ -39,6 +39,7 @@ def calculate_quality_metrics(args):
         return {"execution_time" : execution_time,
             "quality_metrics_output_file" : None} 
 
+
     output_file = args['cluster_metrics']['cluster_metrics_file']
 
     if os.path.exists(args['waveform_metrics']['waveform_metrics_file']):
@@ -47,6 +48,8 @@ def calculate_quality_metrics(args):
                      suffixes=('_quality_metrics','_waveform_metrics'))
 
     print("Saving data...")
+   
+
     metrics.to_csv(output_file)
 
     execution_time = time.time() - start

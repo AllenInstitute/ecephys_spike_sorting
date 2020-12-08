@@ -293,6 +293,10 @@ def calculate_pc_metrics(spike_clusters,
                 all_labels = np.concatenate((all_labels, labels),0)
             
         all_pcs = np.reshape(all_pcs, (all_pcs.shape[0], pc_features.shape[1]*channels_to_use.size))
+        
+        num_pcs = all_pcs.shape[0];
+        num_pcs_str = 'cluster_id: ' + repr(cluster_id) + '; num pcs: ' + repr(num_pcs)
+        print(num_pcs_str)
 
         if all_pcs.shape[0] > 10:
 

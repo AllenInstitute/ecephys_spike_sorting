@@ -57,6 +57,10 @@ def calculate_mean_waveforms(args):
                     args['ephys_params']['sample_rate'], \
                     convert_to_seconds = False)
                 
+        # read in inverse of whitening matrix
+        w_inv = np.load((os.path.join(args['directories']['kilosort_output_directory'], 'whitening_mat_inv.npy')))
+        
+                
         mean_waveform_fullpath = os.path.join(dest, 'mean_waveforms.npy')
         snr_fullpath = os.path.join(dest, 'cluster_snr.npy')
                 
@@ -68,6 +72,7 @@ def calculate_mean_waveforms(args):
                     args['ephys_params']['bit_volts'], \
                     args['ephys_params']['sample_rate'], \
                     args['ephys_params']['vertical_site_spacing'], \
+                    w_inv, \
                     args['mean_waveform_params'])
                 
         metrics.to_csv(args['waveform_metrics']['waveform_metrics_file'])      
