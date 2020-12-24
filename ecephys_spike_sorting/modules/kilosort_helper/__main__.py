@@ -20,6 +20,7 @@ from ...common.utils import read_probe_json, get_repo_commit_date_and_hash, rms,
 def run_kilosort(args):
 
     print('ecephys spike sorting: kilosort helper module')
+    print('singleMain branch')
 
     commit_date, commit_time = get_repo_commit_date_and_hash(args['kilosort_helper_params']['kilosort_repository'])
 
