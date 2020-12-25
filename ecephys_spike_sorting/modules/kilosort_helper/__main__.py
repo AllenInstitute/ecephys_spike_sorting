@@ -67,14 +67,12 @@ def run_kilosort(args):
     
 
 # copy the msster fle to the same directory that contains the channel map and config file
-    master_fullpath = os.path.join(os.path.join(args['kilosort_helper_params']['master_file_path'],args['kilosort_helper_params']['master_file_name']))
+#    master_fullpath = os.path.join(os.path.join(args['kilosort_helper_params']['master_file_path'],args['kilosort_helper_params']['master_file_name']))
         
-    shutil.copyfile(master_fullpath,
-            os.path.join(args['kilosort_helper_params']['matlab_home_directory'],args['kilosort_helper_params']['master_file_name']))
-    
-# will cd to home directory before calling, so call is master_file_name without extension    
-    master_call = os.path.splitext(args['kilosort_helper_params']['master_file_name'])[0]
-        
+#    shutil.copyfile(master_fullpath,
+#            os.path.join(args['kilosort_helper_params']['matlab_home_directory'],args['kilosort_helper_params']['master_file_name']))
+    shutil.copyfile(os.path.join(args['directories']['ecephys_directory'],'modules','kilosort_helper','main_KS2_KS25.m'),
+        os.path.join(args['kilosort_helper_params']['matlab_home_directory'],'main_KS2_KS25.m'))
     
     if args['kilosort_helper_params']['kilosort_version'] == 1:
     
@@ -120,8 +118,14 @@ def run_kilosort(args):
     else:
         eng.addpath(eng.genpath(KS_dir))
         eng.addpath(eng.genpath(NPY_dir))
-        eng.addpath(home_dir)
-        eng.run(master_call, nargout=0)
+        eng.addpath(home_dir)      
+        eng.main_KS2_KS25(args['kilosort_helper_params']['kilosort2_params']['KSver'], \
+                          args['kilosort_helper_params']['kilosort2_params']['remDup'], \
+                          args['kilosort_helper_params']['kilosort2_params']['finalSplits'], \
+                          args['kilosort_helper_params']['kilosort2_params']['labelGood'], \
+                          args['kilosort_helper_params']['kilosort2_params']['saveRez'], \
+                          nargout=0)
+        
 
     # if the phy output directory is different from the data directory, change
     # the default dat_path in params.py to be the relative path from the phy

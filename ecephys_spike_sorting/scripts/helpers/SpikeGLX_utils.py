@@ -134,6 +134,8 @@ def ParseTrigStr(trigger_string, prb_folder):
 def ParseTcatName(tcat_name):
     
     parts_list = tcat_name.split('.')
+    # remove tcat from first part of name
+    parts_list[0] = parts_list[0][0:len(parts_list[0])-5]
     baseName = parts_list[0] + '_' + parts_list[1]
     return baseName
 

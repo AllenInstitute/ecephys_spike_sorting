@@ -15,6 +15,12 @@ class Kilosort2Parameters(DefaultSchema):
 
     trange = String(required=False, default='[0 Inf]', help='Time range in seconds to process')
     fproc = String(required=False, default="fullfile('D:\kilosort_datatemp', 'temp_wh.dat')", help='Processed data file on a fast ssd')
+    
+    KSver = String(required=False, default='2.5', help='kilsort version: 2.0 (tracking) or 2.5(data shift correction)')
+    remDup = Int(required=False, default=0, help='KS2 remove duplicates')
+    finalSplits = Int(required=False, default=1, help='KS2 final splits by SVD')
+    labelGood = Int(required=False, default=1, help='KS2 noise cluster detection')
+    saveRez = Int(required=False, default=1, help='KS2 save rez.mat file')
   
     chanMap = String(required=False, default="'chanMap.mat'", help='path to channel map .mat file')
     fshigh = Int(required=False, default=150, help='frequency for high pass filtering')
@@ -56,9 +62,7 @@ class KilosortHelperParameters(DefaultSchema):
     matlab_home_directory = InputDir(help='Location from which Matlab files can be copied and run.')
     kilosort_repository = InputDir(help='Local directory for the Kilosort source code repository.')
     npy_matlab_repository = InputDir(help='Local directory for the npy_matlab repo for writing phy output')
-    master_file_path = InputDir(help='local directory for kilosort master file')
-    master_file_name = String(required=False, default='kilosort2_master_file.m', help='Name of kilosort master file to run, including extension')
-    
+   
     kilosort_params = Nested(KilosortParameters, required=False, help='Parameters used to auto-generate a Kilosort config file')
     kilosort2_params = Nested(Kilosort2Parameters, required=False, help='Parameters used to auto-generate a Kilosort2 config file')
 
