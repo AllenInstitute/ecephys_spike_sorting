@@ -21,6 +21,8 @@ def metrics_from_file(mean_waveform_fullpath,
                       sample_rate, 
                       site_spacing, 
                       w_inv,
+                      site_x,
+                      site_y,
                       params):
                      
     
@@ -37,7 +39,9 @@ def metrics_from_file(mean_waveform_fullpath,
     clusterIDs : all unique cluster ids
     cluster_quality : 'noise' or 'good'
     sample_rate : Hz
-    site_spacing : m
+    site_spacing : um (now unused)
+    w_inv : inverse of the whitening matrix used in KS2
+    site_x, site_y: x and y coordinates of all channels, in um
 
     Outputs:
     -------
@@ -114,7 +118,7 @@ def metrics_from_file(mean_waveform_fullpath,
                                                                      upsampling_factor,
                                                                      spread_threshold,
                                                                      site_range,
-                                                                     site_spacing,                                                                     
+                                                                     site_x, site_y                                                                    
                                                                      )])
 
 

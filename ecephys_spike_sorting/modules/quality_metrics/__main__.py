@@ -3,6 +3,7 @@ import os
 import logging
 import time
 
+
 import numpy as np
 import pandas as pd
 
@@ -39,7 +40,7 @@ def calculate_quality_metrics(args):
         return {"execution_time" : execution_time,
             "quality_metrics_output_file" : None} 
 
-
+    
     output_file = args['cluster_metrics']['cluster_metrics_file']
 
     if os.path.exists(args['waveform_metrics']['waveform_metrics_file']):

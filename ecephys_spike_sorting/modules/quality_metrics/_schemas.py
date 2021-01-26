@@ -7,7 +7,7 @@ from ...common.schemas import EphysParams, Directories, WaveformMetricsFile, Clu
 class QualityMetricsParams(DefaultSchema):
     isi_threshold = Float(required=False, default=0.0015, help='Maximum time (in seconds) for ISI violation')
     min_isi = Float(required=False, default=0.00, help='Minimum time (in seconds) for ISI violation')
-    num_channels_to_compare = Int(required=False, default=13, help='Number of channels to use for computing PC metrics; must be odd')
+    max_radius_um = Int(required=False, default=68, help='Maximum radius for computing PC metrics, in um')
     max_spikes_for_unit = Int(required=False, default=500, help='Number of spikes to subsample for computing PC metrics')
     max_spikes_for_nn = Int(required=False, default=10000, help='Further subsampling for NearestNeighbor calculation')
     n_neighbors = Int(required=False, default=4, help='Number of neighbors to use for NearestNeighbor calculation')

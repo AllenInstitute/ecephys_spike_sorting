@@ -1,8 +1,10 @@
-import os, io, json, glob, sys
+import os, io, json, sys
 
 if sys.platform == 'linux':
     import pwd
 from helpers import SpikeGLX_utils
+
+import numpy as np
 
 def create_samba_directory(samba_server, samba_share):
 
@@ -28,8 +30,11 @@ def createInputJson(output_file,
                     trigger_string='0,0',
                     probe_string='0',
                     catGT_stream_string = '-ap',
-                    catGT_cmd_string = '-prb_fld -out_prb_fld -aphipass=300 -gbldmx -gfix=0.40,0.10,0.02',
-                    catGT_gfix_edits = 0,
+                    catGT_car_mode = 'gbldmx',
+                    catGT_loccar_min_um = 40,
+                    catGT_loccar_max_um = 160,
+                    catGT_cmd_string = '-prb_fld -out_prb_fld -aphipass=300-gfix=0.40,0.10,0.02',
+                    catGT_extract_string = '',
                     noise_template_use_rf = True,
                     event_ex_param_str = 'XD=4,1,50',
                     sync_period = 1.0,
@@ -37,11 +42,18 @@ def createInputJson(output_file,
                     niStream_sync_params = 'XA=0,1,3,500',
                     toStream_path_3A = None,
                     fromStream_list_3A = None,
-                    minfr_goodchannels = 0.1,
-                    whiteningRange = 32,
-                    CSBseed = 1,
-                    LTseed = 1,
-                    nNeighbors = 32
+                    ks_remDup = 0,                   
+                    ks_finalSplits = 1,
+                    ks_labelGood = 1,
+                    ks_saveRez = 1,
+                    ks_minfr_goodchannels = 0.1,                  
+                    ks_whiteningRadius_um = 163,
+                    ks_Th = '[10,4]',
+                    ks_CSBseed = 1,
+                    ks_LTseed = 1,
+                    ks_templateRadius_um = 163,
+                    c_Waves_snr_um = 160,
+                    qm_isi_thresh = 1.5/1000
                     ):
 
     # hard coded paths to code on your computer and system
@@ -52,9 +64,9 @@ def createInputJson(output_file,
     KS2ver = '2.0'
     
     npy_matlab_repository = r'C:\Users\labadmin\Documents\jic\npy-matlab-master'
-    catGTPath = r'C:\Users\labadmin\Documents\jic\CatGT'
-    tPrime_path=r'C:\Users\labadmin\Documents\jic\TPrimeApp\TPrime'
-    cWaves_path=r'C:\Users\labadmin\Documents\jic\C_Waves'
+    catGTPath = r'C:\Users\labadmin\Documents\jic\CatGT-win'
+    tPrime_path=r'C:\Users\labadmin\Documents\jic\TPrime-win'
+    cWaves_path=r'C:\Users\labadmin\Documents\jic\C_Waves-win'
     
      
     # for config files and kilosort working space
@@ -143,7 +155,33 @@ def createInputJson(output_file,
             continuous_file = os.path.join(kilosort_output_directory, 'continuous.dat')
             
 
-        
+    # geometry params by probe type. expand the dictoionaries to add types
+    # vertical probe pitch vs probe type
+    vpitch = {'3A': 20, 'NP1': 20, 'NP21': 15, 'NP24': 15, 'NP1100': 6}  
+    hpitch = {'3A': 32, 'NP1': 32, 'NP21': 32, 'NP24': 32, 'NP1100': 6} 
+    nColumn = {'3A': 2, 'NP1': 2, 'NP21': 2, 'NP24': 2, 'NP1100': 8} 
+    
+    
+    # CatGT needs the inner and outer redii for local common average referencing
+    # specified in sites
+    catGT_loccar_min_sites = int(round(catGT_loccar_min_um/vpitch.get(probe_type)))
+    catGT_loccar_max_sites = int(round(catGT_loccar_max_um/vpitch.get(probe_type)))
+    # print('loccar min: ' + repr(catGT_loccar_min_sites))
+    
+    # whiteningRange is the number of sites used for whitening in KIlosort
+    # preprocessing. Calculate the number of sites within the user-specified
+    # whitening radius for this probe geometery
+    # for a Np 1.0 probe, 163 um => 32 sites
+    nrows = np.sqrt((np.square(ks_whiteningRadius_um) - np.square(hpitch.get(probe_type))))/vpitch.get(probe_type)
+    ks_whiteningRange = int(round(2*nrows*nColumn.get(probe_type)))
+    
+    # nNeighbors is the number of sites kilosort includes in a template.
+    # Calculate the number of sites within that radisu.
+    nrows = np.sqrt((np.square(ks_templateRadius_um) - np.square(hpitch.get(probe_type))))/vpitch.get(probe_type)
+    ks_nNeighbors = int(round(2*nrows*nColumn.get(probe_type)))
+    # print('ks_nNeighbors: ' + repr(ks_nNeighbors))
+    
+    c_waves_radius_sites = int(round(c_Waves_snr_um/vpitch.get(probe_type)))
 
     # Create string designating temporary output file for KS2 (gets inserted into KS2 config.m file)
     fproc = os.path.join(kilosort_output_tmp,'temp_wh.dat') # full path for temp whitened data file
@@ -233,15 +271,15 @@ def createInputJson(output_file,
             "kilosort2_params" :
             {
                 "KSver" : KS2ver,
-                "remDup" : 0,
-                "finalSplits" : 1,
-                "labelGood" : 1,
-                "saveRez" : 1,
+                "remDup" : ks_remDup,       #these are expressed as int rather than Bool for matlab compatability
+                "finalSplits" : ks_finalSplits,
+                "labelGood" : ks_labelGood,
+                "saveRez" : ks_saveRez,
                 "fproc" : fproc_str,
                 "chanMap" : "'chanMap.mat'",
                 "fshigh" : 150,
-                "minfr_goodchannels" : minfr_goodchannels,
-                "Th" : '[10 4]',
+                "minfr_goodchannels" : ks_minfr_goodchannels,
+                "Th" : ks_Th,
                 "lam" : 10,
                 "AUCsplit" : 0.9,
                 "minFR" : 1/50.,
@@ -249,10 +287,10 @@ def createInputJson(output_file,
                 "sigmaMask" : 30,
                 "ThPre" : 8,
                 "gain" : uVPerBit,
-                "CSBseed" : CSBseed,
-                "LTseed" : LTseed,
-                "whiteningRange" : whiteningRange,
-                "nNeighbors" : nNeighbors
+                "CSBseed" : ks_CSBseed,
+                "LTseed" : ks_LTseed,
+                "whiteningRange" : ks_whiteningRange,
+                "nNeighbors" : ks_nNeighbors
             }
         },
 
@@ -275,7 +313,7 @@ def createInputJson(output_file,
             "site_range" : 16,    
             "cWaves_path" : cWaves_path,
             "use_C_Waves" : True,
-            "snr_radius" : 8
+            "snr_radius" : c_waves_radius_sites       
         },
             
 
@@ -286,7 +324,7 @@ def createInputJson(output_file,
         },
 
         "quality_metrics_params" : {
-            "isi_threshold" : 0.0015,
+            "isi_threshold" : qm_isi_thresh,
             "min_isi" : 0.000166,
             "num_channels_to_compare" : 13,
             "max_spikes_for_unit" : 500,
@@ -303,9 +341,12 @@ def createInputJson(output_file,
             "probe_string" : probe_string,
             "trigger_string": trigger_string,
             "stream_string" : catGT_stream_string,
+            "car_mode" : catGT_car_mode,
+            "loccar_inner" : catGT_loccar_min_sites,
+            "loccar_outer": catGT_loccar_max_sites,
             "cmdStr" : catGT_cmd_string,
-            "catGTPath" : catGTPath,
-            "gfix_edits": catGT_gfix_edits
+            "extract_string" : catGT_extract_string,
+            "catGTPath" : catGTPath
         },
 
         "tPrime_helper_params" : {

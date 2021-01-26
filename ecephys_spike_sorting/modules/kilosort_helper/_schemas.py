@@ -1,6 +1,6 @@
 from argschema import ArgSchema, ArgSchemaParser 
 from argschema.schemas import DefaultSchema
-from argschema.fields import Nested, InputDir, String, Float, Dict, Int, Boolean, NumpyArray
+from argschema.fields import Nested, InputDir, String, Float, Dict, Int, Bool, NumpyArray
 from ...common.schemas import EphysParams, Directories, CommonFiles
 
 class KilosortParameters(DefaultSchema):
@@ -54,8 +54,8 @@ class KilosortHelperParameters(DefaultSchema):
 
     kilosort_version = Int(required=True, default=2, help='Kilosort version to use (1 or 2)')
     
-    spikeGLX_data = Boolean(required=True, default=False, help='If true, use SpikeGLX metafile to build chanMap')
-    ks_make_copy = Boolean(required=False, default=False, help='If true, make a copy of the original KS output')
+    spikeGLX_data = Bool(required=True, default=False, help='If true, use SpikeGLX metafile to build chanMap')
+    ks_make_copy = Bool(required=False, default=False, help='If true, make a copy of the original KS output')
 
     surface_channel_buffer = Int(required=False, default=15, help='Number of channels above brain surface to include in spike sorting')
 

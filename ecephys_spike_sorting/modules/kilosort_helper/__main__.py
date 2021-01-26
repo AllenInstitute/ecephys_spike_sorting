@@ -35,6 +35,7 @@ def run_kilosort(args):
                               args['ephys_params']['num_channels'],
                               args['ephys_params']['sample_rate'],
                               args['ephys_params']['bit_volts'])
+     
     
     if args['kilosort_helper_params']['spikeGLX_data']:
        # SpikeGLX data, will build KS chanMap based on the metadata file plus 
@@ -107,8 +108,8 @@ def run_kilosort(args):
     KS_dir = args['kilosort_helper_params']['kilosort_repository'].replace('\\','/')
     NPY_dir = args['kilosort_helper_params']['npy_matlab_repository'].replace('\\','/')
     home_dir = args['kilosort_helper_params']['matlab_home_directory'].replace('\\','/')
+      
     
-
             
     if args['kilosort_helper_params']['kilosort_version'] == 1:    
         eng.addpath(eng.genpath(KS_dir))
