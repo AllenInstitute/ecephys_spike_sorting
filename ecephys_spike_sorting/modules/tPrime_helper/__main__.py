@@ -43,19 +43,16 @@ def call_TPrime(args):
 
     toStream_params = args['tPrime_helper_params']['toStream_sync_params']
     ni_sync_params = args['tPrime_helper_params']['ni_sync_params']
-    catGTcmd = args['catGT_helper_params']['cmdStr']
     
-
     sync_period = args['tPrime_helper_params']['sync_period']
 
-    catGTcmd_parts = catGTcmd.split(' -') # not space to avoid splitting on negative parameter values
-    # remove empty strings
-    catGTcmd_parts = [idx for idx in catGTcmd_parts if len(idx) > 0]
-    ni_tag = 'X'
-    imec_tag = 'S'
-    ni_ex_list = [idx for idx in catGTcmd_parts if idx[0].lower() == ni_tag.lower()]
-    im_ex_list = [idx for idx in catGTcmd_parts if idx[0].lower() == imec_tag.lower()]
-    
+    ni_ex_list = args['tPrime_helper_params']['ni_ex_list']
+    ni_ex_list = ni_ex_list.split(' -')
+    ni_ex_list = [idx for idx in ni_ex_list if len(idx) > 0]
+    im_ex_list = args['tPrime_helper_params']['im_ex_list']
+    im_ex_list = im_ex_list.split(' -')
+    im_ex_list = [idx for idx in im_ex_list if len(idx) > 0]
+
 
     toStream_type, toStream_prb, toStream_ex_name = catGT_ex_params_from_str(toStream_params)
 

@@ -37,6 +37,8 @@ def createInputJson(output_file,
                     catGT_extract_string = '',
                     noise_template_use_rf = True,
                     event_ex_param_str = 'XD=4,1,50',
+                    tPrime_im_ex_list = 'SY=0,384,6,500',
+                    tPrime_ni_ex_list = 'XA=0,1,3,500',
                     sync_period = 1.0,
                     toStream_sync_params = 'SY=0,384,6,500',
                     niStream_sync_params = 'XA=0,1,3,500',
@@ -46,6 +48,7 @@ def createInputJson(output_file,
                     ks_finalSplits = 1,
                     ks_labelGood = 1,
                     ks_saveRez = 1,
+                    ks_copy_fproc = 0,
                     ks_minfr_goodchannels = 0.1,                  
                     ks_whiteningRadius_um = 163,
                     ks_Th = '[10,4]',
@@ -60,8 +63,9 @@ def createInputJson(output_file,
     ecephys_directory = r'D:\ecephys_fork\ecephys_spike_sorting\ecephys_spike_sorting'
     
     # location of kilosor respository and KS2 version
-    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS20_release'
-    KS2ver = '2.0'
+    #kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS20_release'
+    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS2_MP_111720\Kilosort'
+    KS2ver = '2.5'
     
     npy_matlab_repository = r'C:\Users\labadmin\Documents\jic\npy-matlab-master'
     catGTPath = r'C:\Users\labadmin\Documents\jic\CatGT-win'
@@ -275,6 +279,7 @@ def createInputJson(output_file,
                 "finalSplits" : ks_finalSplits,
                 "labelGood" : ks_labelGood,
                 "saveRez" : ks_saveRez,
+                "copy_fproc" : ks_copy_fproc,
                 "fproc" : fproc_str,
                 "chanMap" : "'chanMap.mat'",
                 "fshigh" : 150,
@@ -351,6 +356,8 @@ def createInputJson(output_file,
 
         "tPrime_helper_params" : {
                 "tPrime_path" : tPrime_path,
+                "im_ex_list" : tPrime_im_ex_list,
+                "ni_ex_list" : tPrime_ni_ex_list,
                 "sync_period" : sync_period,
                 "toStream_sync_params" : toStream_sync_params,
                 "ni_sync_params" : niStream_sync_params,

@@ -21,6 +21,7 @@ class Kilosort2Parameters(DefaultSchema):
     finalSplits = Int(required=False, default=1, help='KS2 final splits by SVD')
     labelGood = Int(required=False, default=1, help='KS2 noise cluster detection')
     saveRez = Int(required=False, default=1, help='KS2 save rez.mat file')
+    copy_fproc = Int(required=False, default=1, help='Copy processed binary to output directory')
   
     chanMap = String(required=False, default="'chanMap.mat'", help='path to channel map .mat file')
     fshigh = Int(required=False, default=150, help='frequency for high pass filtering')

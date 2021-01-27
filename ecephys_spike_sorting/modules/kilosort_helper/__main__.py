@@ -20,7 +20,7 @@ from ...common.utils import read_probe_json, get_repo_commit_date_and_hash, rms,
 def run_kilosort(args):
 
     print('ecephys spike sorting: kilosort helper module')
-    print('singleMain branch')
+    print('singleMain version')
 
     commit_date, commit_time = get_repo_commit_date_and_hash(args['kilosort_helper_params']['kilosort_repository'])
 
@@ -128,12 +128,30 @@ def run_kilosort(args):
                           nargout=0)
         
 
-    # if the phy output directory is different from the data directory, change
-    # the default dat_path in params.py to be the relative path from the phy
-    # output to the binary file
+    # set dat_path in params.py
+    #    if the user has not requested a copy of the procecess temp_wh file
+    # set to relative path to the original input binary; set the number of channels
+    # to number of channels in the input
+    #    if the user has rquested a copy of the processed temp_wh, copy that file
+    # to the input directory and set dat_path to point to it. Set the number of 
+    # channls in the processed file
     dat_dir, dat_name = os.path.split(input_file)
-
-    fix_phy_params(output_dir, dat_dir, args['ephys_params']['sample_rate'])
+    
+    copy_fproc = args['kilosort_helper_params']['kilosort2_params']['copy_fproc']
+  
+    if copy_fproc:
+        fproc_path_str = args['kilosort_helper_params']['kilosort2_params']['fproc']
+        # trim quotes off string sent to matlab
+        fproc_path = fproc_path_str[1:len(fproc_path_str)-1]
+        fp_dir, fp_name = os.path.split(fproc_path)
+        shutil.copy(fproc_path, os.path.join(dat_dir, fp_name))
+        cm_path = os.path.join(output_dir, 'channel_map.npy')
+        cm = np.load(cm_path)
+        chan_phy_binary = cm.size
+        fix_phy_params(output_dir, dat_dir, fp_name, chan_phy_binary, args['ephys_params']['sample_rate'])
+    else:
+        chan_phy_binary = args['ephys_params']['num_channels']
+        fix_phy_params(output_dir, dat_dir, dat_name, chan_phy_binary, args['ephys_params']['sample_rate'])                
 
     # make a copy of the channel map to the data directory
     # see above: destFullPath specifiee destination for chanMap.mat
@@ -206,12 +224,19 @@ def get_noise_channels(raw_data_file, num_channels, sample_rate, bit_volts, nois
 
     return above_median < noise_threshold
 
-def fix_phy_params(output_dir, dat_path, sample_rate):
-    # write a new params.py file with the relative path to the binary file
-    # first make a copy of the original
+def fix_phy_params(output_dir, dat_path, dat_name, chan_phy_binary, sample_rate):
+
+    # write a new params.py file. 
+    # dat_path will be set to a relative path from output_dir to
+    # dat_path/dat_name
+    # sample rate will be written out to sufficient digits to be used
+    
     shutil.copy(os.path.join(output_dir,'params.py'), os.path.join(output_dir,'old_params.py'))
     
     relPath = os.path.relpath(dat_path, output_dir)
+    new_path = os.path.join(relPath, dat_name)
+    new_path = new_path.replace('\\','/')
+    
     paramLines = list()
     
     with open(os.path.join(output_dir,'old_params.py'), 'r') as f:
@@ -219,12 +244,9 @@ def fix_phy_params(output_dir, dat_path, sample_rate):
         
         while currLine != '':  # The EOF char is an empty string
             if 'dat_path' in currLine:
-                dat_path = currLine.split()[2]
-                lp = int(len(dat_path))
-                dat_path = dat_path[1:lp-1]     #trim off quotes
-                new_path = os.path.join(relPath,dat_path)
-                new_path = new_path.replace('\\','/')
                 currLine = "dat_path = '" + new_path + "'\n"
+            elif 'n_channels_dat' in currLine:
+                currLine = "n_channels_dat = " + repr(chan_phy_binary) + "\n"
             elif 'sample_rate' in currLine:
                 currLine = (f'sample_rate = {sample_rate:.12f}\n')
             paramLines.append(currLine)           
