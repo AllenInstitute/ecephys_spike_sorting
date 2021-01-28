@@ -627,9 +627,9 @@ def mahalanobis_metrics(all_pcs, all_labels, this_unit_id):
                        pcs_for_other_units,
                        'mahalanobis', VI = VI)[0])
     
-#    mahalanobis_self = np.sort(cdist(mean_value,
-                             pcs_for_this_unit,
-                             'mahalanobis', VI = VI)[0])
+##    mahalanobis_self = np.sort(cdist(mean_value,
+#                             pcs_for_this_unit,
+#                             'mahalanobis', VI = VI)[0])
     
     n = np.min([pcs_for_this_unit.shape[0], pcs_for_other_units.shape[0]]) # number of spikes
 

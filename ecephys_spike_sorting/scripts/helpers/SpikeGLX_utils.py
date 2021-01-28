@@ -49,14 +49,13 @@ def GetTrialRange(prb, gate, prb_folder):
     return minIndex, maxIndex
 
     
-def EphysParams(ap_band_file):
-    # assume metadata file is in same directory as binary, Constuct metadata path
-    
+def EphysParams(metaFullPath):
+    # get ephys params from metadata at meta full path    
     # read metadata
     
-    metaName, binExt = os.path.splitext(ap_band_file)
-    metaFullPath = Path(metaName + '.meta')
-    meta = SGLXMeta.readMeta(metaFullPath)
+    #first create Path object from string
+    metaPath = Path(metaFullPath)
+    meta = SGLXMeta.readMeta(metaPath)
     
     if 'imDatPrb_type' in meta:
         pType = (meta['imDatPrb_type'])

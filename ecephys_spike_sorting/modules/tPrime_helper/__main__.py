@@ -430,7 +430,7 @@ def main():
     mod = ArgSchemaParser(schema_type=InputParameters,
                           output_schema_type=OutputParameters)
 
-    if mod.args['ephys_params']['probe_type'] == '3A':
+    if mod.args['tPrime_helper_params']['tPrime_3A']:
         output = call_TPrime_3A(mod.args)
     else:
         output = call_TPrime(mod.args)

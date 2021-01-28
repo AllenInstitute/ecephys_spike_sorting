@@ -21,11 +21,12 @@ def createInputJson(output_file,
                     npx_directory=None, 
                     continuous_file = None,
                     spikeGLX_data=True,
+                    input_meta_path=None,
                     extracted_data_directory=None,
                     kilosort_output_directory=None,
                     ks_make_copy=False,
                     probe_type='3A',
-                    catGT_run_name=None,
+                    catGT_run_name='test',
                     gate_string='0',
                     trigger_string='0,0',
                     probe_string='0',
@@ -42,6 +43,7 @@ def createInputJson(output_file,
                     sync_period = 1.0,
                     toStream_sync_params = 'SY=0,384,6,500',
                     niStream_sync_params = 'XA=0,1,3,500',
+                    tPrime_3A = False,
                     toStream_path_3A = None,
                     fromStream_list_3A = None,
                     ks_remDup = 0,                   
@@ -89,7 +91,7 @@ def createInputJson(output_file,
 
     #default ephys params. For spikeGLX, these get replaced by values read from metadata
     sample_rate = 30000
-    num_channels = 384    
+    num_channels = 385    
     reference_channels = [191]
     uVPerBit = 2.34375
     acq_system = 'PXI'
@@ -105,58 +107,18 @@ def createInputJson(output_file,
         # clusters will act on phy output in the kilosort output directory
         #
         # 
-        if continuous_file is not None:
-            probe_type, sample_rate, num_channels, uVPerBit = SpikeGLX_utils.EphysParams(continuous_file)  
+        if input_meta_path is not None:
+            probe_type, sample_rate, num_channels, uVPerBit = SpikeGLX_utils.EphysParams(input_meta_path)  
             print('SpikeGLX params read from meta')
             print('probe type: {:s}, sample_rate: {:.5f}, num_channels: {:d}, uVPerBit: {:.4f}'.format\
                   (probe_type, sample_rate, num_channels, uVPerBit))
         print('kilosort output directory: ' + kilosort_output_directory )
-        # set Open Ephys specific dictionary keys; can't be null and still 
-        # pass argshema parser, even when unused
-        settings_json = npx_directory
-        probe_json = npx_directory
-        settings_xml = npx_directory
+
         
     else:
-    # Data from Open Ephys; these params are sent manually from script
-    
-        if probe_type == '3A':
-            acq_system = '3a'
-            reference_channels = [36, 75, 112, 151, 188, 227, 264, 303, 340, 379]
-            uVPerBit = 2.34375      # for AP gain = 500
-        elif (probe_type =='NP1' or probe_type =='3B2'):
-            acq_system = 'PXI'
-            reference_channels = [191] 
-            uVPerBit = 2.34375      # for AP gain = 500
-        elif (probe_type == 'NP21' or probe_type == 'NP24'):
-            acq_system = 'PXI'
-            reference_channels = [127]
-            uVPerBit = 0.763      # for AP gain = 80, fixed in 2.0
-        else:
-            raise Exception('Unknown probe type')
+       print('currently only supporting spikeGLX data')
         
-        if npx_directory is not None:
-            settings_xml = os.path.join(npx_directory, 'settings.xml')
-            if extracted_data_directory is None:
-                extracted_data_directory = npx_directory + '_sorted'
-            probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
-            settings_json = os.path.join(extracted_data_directory, 'open-ephys.json')
-        else:
-            if extracted_data_directory is not None:
-                probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
-                settings_json = os.path.join(extracted_data_directory, 'open-ephys.json')
-                settings_xml = None
-            else:
-                settings_xml = None
-                settings_json = None
-                probe_json = None
-                extracted_data_directory = kilosort_output_directory
-    
-        if kilosort_output_directory is None:
-            kilosort_output_directory = os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.0')
-    
-        if continuous_file is None:
-            continuous_file = os.path.join(kilosort_output_directory, 'continuous.dat')
+
             
 
     # geometry params by probe type. expand the dictoionaries to add types
@@ -206,8 +168,8 @@ def createInputJson(output_file,
         },
 
         "common_files": {
-            "settings_json" : settings_json,
-            "probe_json" : probe_json,
+            "settings_json" : npx_directory,
+            "probe_json" : npx_directory,
         },
 
         "waveform_metrics" : {
@@ -234,7 +196,7 @@ def createInputJson(output_file,
 
         "extract_from_npx_params" : {
             "npx_directory": npx_directory,
-            "settings_xml": settings_xml,
+            "settings_xml": npx_directory,
             "npx_extractor_executable": r"C:\Users\svc_neuropix\Documents\GitHub\npxextractor\Release\NpxExtractor.exe",
             "npx_extractor_repo": r"C:\Users\svc_neuropix\Documents\GitHub\npxextractor"
         },
@@ -361,13 +323,14 @@ def createInputJson(output_file,
                 "sync_period" : sync_period,
                 "toStream_sync_params" : toStream_sync_params,
                 "ni_sync_params" : niStream_sync_params,
+                "tPrime_3A" : tPrime_3A,
                 "toStream_path_3A" : toStream_path_3A,
                 "fromStream_list_3A" : fromStream_list_3A
-                },  
+        },  
                 
         "psth_events": {
                 "event_ex_param_str": event_ex_param_str
-                }
+         }
         
     }
 
