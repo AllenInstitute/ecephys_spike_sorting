@@ -43,18 +43,16 @@ def call_TPrime(args):
 
     toStream_params = args['tPrime_helper_params']['toStream_sync_params']
     ni_sync_params = args['tPrime_helper_params']['ni_sync_params']
-    catGTcmd = args['catGT_helper_params']['cmdStr']
-
-    exe_path = os.path.join(args['tPrime_helper_params']['tPrime_path'], 'TPrime.exe')
+    
     sync_period = args['tPrime_helper_params']['sync_period']
 
-    catGTcmd_parts = catGTcmd.split('-')
-    # remove empty strings
-    catGTcmd_parts = [idx for idx in catGTcmd_parts if len(idx) > 0]
-    ni_tag = 'X'
-    imec_tag = 'S'
-    ni_ex_list = [idx for idx in catGTcmd_parts if idx[0].lower() == ni_tag.lower()]
-    im_ex_list = [idx for idx in catGTcmd_parts if idx[0].lower() == imec_tag.lower()]
+    ni_ex_list = args['tPrime_helper_params']['ni_ex_list']
+    ni_ex_list = ni_ex_list.split(' -')
+    ni_ex_list = [idx for idx in ni_ex_list if len(idx) > 0]
+    im_ex_list = args['tPrime_helper_params']['im_ex_list']
+    im_ex_list = im_ex_list.split(' -')
+    im_ex_list = [idx for idx in im_ex_list if len(idx) > 0]
+
 
     toStream_type, toStream_prb, toStream_ex_name = catGT_ex_params_from_str(toStream_params)
 
@@ -66,10 +64,19 @@ def call_TPrime(args):
     c_type, c_prb, ni_sync_ex_name = catGT_ex_params_from_str(ni_sync_params)
 
     if toStream_type == 'SY':
-        # toStream is a probe stream  
-        # build a path to it
+        
+        # toStream is a probe stream sync pulse
+        # need to get the file name from the directory in case user used the  
+        # -1 option to specify the last channel in the file 
         prb_dir = prb_dir_prefix + str(toStream_prb)
-        c_name = run_name + '_tcat.imec' + str(toStream_prb) + '.' + toStream_ex_name + '.txt'
+        match_str = run_name + '_tcat.imec' + str(toStream_prb) + '.ap.SY_*_6_*.txt'
+        file_list = os.listdir(os.path.join(run_directory,prb_dir))
+        flt_list = fnmatch.filter(file_list,match_str)
+        if len(flt_list) != 1:
+            print('No edge file or multiple files for toStream found\n' )
+            return              
+        c_name = flt_list[0]
+        
         toStream_path = os.path.join(run_directory, prb_dir, c_name)
         
         # convert events in the toStream to sec; they will not be adjusted
@@ -82,7 +89,7 @@ def call_TPrime(args):
         if not bNPY:
             spike_times_sec_to_npy(toStream_events_sec)
 
-        # remove the toStream the list of im extraction params
+        # remove the toStream from the list of im extraction params
         matchI = [i for i, value in enumerate(im_ex_list) if toStream_params in value]
         del im_ex_list[matchI[0]]
 
@@ -93,10 +100,20 @@ def call_TPrime(args):
 
         for ex_str in im_ex_list:
             # get params
-            c_type, c_prb, c_ex_name = catGT_ex_params_from_str(ex_str)          
-            # build file name for this fromStream
+            c_type, c_prb, c_ex_name = catGT_ex_params_from_str(ex_str) 
+            
+            # These are imec SYNC channels
+            # need to get the file name from the directory in case user used the  
+            # -1 option to specify the last channel in the file 
             prb_dir = prb_dir_prefix + str(c_prb)
-            c_name = run_name + '_tcat.imec' + str(c_prb) + '.' + c_ex_name + '.txt'
+            match_str = run_name + '_tcat.imec' + str(c_prb) + '.ap.SY_*_6_*.txt'
+            file_list = os.listdir(os.path.join(run_directory,prb_dir))
+            flt_list = fnmatch.filter(file_list,match_str)
+            if len(flt_list) != 1:
+                print('No edge file or multiple files for toStream found\n' )
+                return              
+            c_name = flt_list[0]
+             
             from_list.append(os.path.join(run_directory, prb_dir, c_name))
             c_index = len(from_stream_index)
             # build path to spike times npy file
@@ -150,10 +167,20 @@ def call_TPrime(args):
         # loop over all SY files
         for ex_str in im_ex_list:
             # get params
-            c_type, c_prb, c_ex_name = catGT_ex_params_from_str(ex_str)  
-            # build file name for this fromStream
-            prb_dir = prb_dir_prefix + str(c_prb)
-            c_name = run_name + '_tcat.imec' + str(c_prb) + '.' + c_ex_name + '.txt'
+            c_type, c_prb, c_ex_name = catGT_ex_params_from_str(ex_str)
+            
+            # These are imec SYNC channels
+            # need to get the file name from the directory in case user used the  
+            # -1 option to specify the last channel in the file 
+            prb_dir = prb_dir_prefix + str(toStream_prb)
+            match_str = run_name + '_tcat.imec' + str(toStream_prb) + '.ap.SY_*_6_*.txt'
+            file_list = os.listdir(os.path.join(run_directory,prb_dir))
+            flt_list = fnmatch.filter(file_list,match_str)
+            if len(flt_list) != 1:
+                print('No edge file or multiple files for toStream found\n' )
+                return              
+            c_name = flt_list[0]
+           
             from_list.append(os.path.join(run_directory, prb_dir, c_name))
             c_index = len(from_stream_index)
             # build path to spike times npy file
@@ -178,8 +205,12 @@ def call_TPrime(args):
     print('output files')
     for op in out_list:
         print(op)
+        
+    # path to the 'runit.bat' executable that calls TPrime.
+    # Essential in linux where TPrime executable is only callable through runit
+    exe_path = os.path.join(args['tPrime_helper_params']['tPrime_path'], 'runit.bat')
 
-    # Print out paths for help with debugging
+    # Print out command for help with debugging
     tcmd = exe_path + ' -syncperiod=' + repr(sync_period) + \
         ' -tostream=' + toStream_path
 
@@ -189,11 +220,12 @@ def call_TPrime(args):
     for i, ep in enumerate(events_list):
         tcmd = tcmd + ' -events=' + repr(from_stream_index[i]) + ',' + ep + ',' + out_list[i]
 
-    # write out batch file to call TPrime
-    bat_path = os.path.join(run_directory, run_name + '_TPrime.bat')
+    # write out file to record the TPrime command for a record
+    bat_path = os.path.join(run_directory, run_name + '_TPrime_cmd.txt')
     with open(bat_path, 'w') as batfile:
         batfile.write(tcmd)
 
+        
     # make the TPrime call
     subprocess.call(tcmd)
 
@@ -281,7 +313,7 @@ def call_TPrime_3A(args):
     for op in out_list:
         print(op)
 
-    exe_path = os.path.join(args['tPrime_helper_params']['tPrime_path'], 'TPrime.exe')
+    exe_path = os.path.join(args['tPrime_helper_params']['tPrime_path'], 'runit')
     sync_period = args['tPrime_helper_params']['sync_period']
 
     tcmd = exe_path + ' -syncperiod=' + repr(sync_period) + \
@@ -398,7 +430,7 @@ def main():
     mod = ArgSchemaParser(schema_type=InputParameters,
                           output_schema_type=OutputParameters)
 
-    if mod.args['ephys_params']['probe_type'] == '3A':
+    if mod.args['tPrime_helper_params']['tPrime_3A']:
         output = call_TPrime_3A(mod.args)
     else:
         output = call_TPrime(mod.args)

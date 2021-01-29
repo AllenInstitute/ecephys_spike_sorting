@@ -2,6 +2,7 @@
 import numpy as np
 import os
 import json
+from datetime import datetime
 from pathlib import Path
 from tkinter import Tk
 from tkinter import filedialog
@@ -14,10 +15,12 @@ from tkinter import filedialog
 #
 def addEntry(modules, jsondir, session_id, logFullPath):
 
-    log_entry = ['None'] * 8
+    log_entry = ['None'] * 9
     sep = ','
 
     log_entry[0] = session_id
+    now = datetime.now()
+    log_entry[1] = now.strftime("%m/%d/%Y, %H:%M:%S")
 
     if 'kilosort_helper' in modules:
         jsonName = session_id + '-kilosort_helper-output.json'
@@ -25,9 +28,9 @@ def addEntry(modules, jsondir, session_id, logFullPath):
         print(jsonFile)
         with open(jsonFile) as currJson:
             modData = json.load(currJson)
-        log_entry[1] = repr(modData['nTot'])
-        log_entry[2] = repr(modData['nTemplate'])
-        log_entry[3] = '{:.2f}'.format(modData['execution_time'])
+        log_entry[2] = repr(modData['nTot'])
+        log_entry[3] = repr(modData['nTemplate'])
+        log_entry[4] = '{:.2f}'.format(modData['execution_time'])
 
     if 'kilosort_postprocessing' in modules:
         jsonName = session_id + '-kilosort_postprocessing-output.json'
@@ -35,7 +38,7 @@ def addEntry(modules, jsondir, session_id, logFullPath):
         print(jsonFile)
         with open(jsonFile) as currJson:
             modData = json.load(currJson)
-        log_entry[4] = '{:.2f}'.format(modData['execution_time'])
+        log_entry[5] = '{:.2f}'.format(modData['execution_time'])
 
     if 'noise_templates' in modules:
         jsonName = session_id + '-noise_templates-output.json'
@@ -43,7 +46,7 @@ def addEntry(modules, jsondir, session_id, logFullPath):
         print(jsonFile)
         with open(jsonFile) as currJson:
             modData = json.load(currJson)
-        log_entry[5] = '{:.2f}'.format(modData['execution_time'])
+        log_entry[6] = '{:.2f}'.format(modData['execution_time'])
 
     if 'mean_waveforms' in modules:
         jsonName = session_id + '-mean_waveforms-output.json'
@@ -51,7 +54,7 @@ def addEntry(modules, jsondir, session_id, logFullPath):
         print(jsonFile)
         with open(jsonFile) as currJson:
             modData = json.load(currJson)
-        log_entry[6] = '{:.2f}'.format(modData['execution_time'])
+        log_entry[7] = '{:.2f}'.format(modData['execution_time'])
 
     if 'quality_metrics' in modules:
         jsonName = session_id + '-quality_metrics-output.json'
@@ -59,7 +62,7 @@ def addEntry(modules, jsondir, session_id, logFullPath):
         print(jsonFile)
         with open(jsonFile) as currJson:
             modData = json.load(currJson)
-        log_entry[7] = '{:.2f}'.format(modData['execution_time'])
+        log_entry[8] = '{:.2f}'.format(modData['execution_time'])
 
     log_entry_str = sep.join(log_entry)
     with open(logFullPath, 'a') as log:
@@ -69,7 +72,7 @@ def addEntry(modules, jsondir, session_id, logFullPath):
 # write header to file
 def writeHeader(logFullPath):
     with open(logFullPath, 'w') as log:
-        log.write('session_id,ntot,nTemplate,KS2_time,KS_postprocess_time,noise_template_time,mean_waveform_time,QC_time\n')
+        log.write('session_id,date_run,time_run,ntot,nTemplate,KS2_time,KS_postprocess_time,noise_template_time,mean_waveform_time,QC_time\n')
 
 
 # For testing, prompt user for kilosort_helper-out.json,

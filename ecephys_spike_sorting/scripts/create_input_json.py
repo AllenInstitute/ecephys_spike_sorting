@@ -1,8 +1,10 @@
-import os, io, json, glob, sys
+import os, io, json, sys
 
 if sys.platform == 'linux':
     import pwd
 from helpers import SpikeGLX_utils
+
+import numpy as np
 
 def create_samba_directory(samba_server, samba_share):
 
@@ -19,46 +21,59 @@ def createInputJson(output_file,
                     npx_directory=None, 
                     continuous_file = None,
                     spikeGLX_data=True,
+                    input_meta_path=None,
                     extracted_data_directory=None,
                     kilosort_output_directory=None,
                     ks_make_copy=False,
                     probe_type='3A',
-                    catGT_run_name=None,
+                    catGT_run_name='test',
                     gate_string='0',
                     trigger_string='0,0',
                     probe_string='0',
                     catGT_stream_string = '-ap',
-                    catGT_cmd_string = '-prb_fld -out_prb_fld -aphipass=300 -gbldmx -gfix=0.40,0.10,0.02',
-                    catGT_gfix_edits = 0,
+                    catGT_car_mode = 'gbldmx',
+                    catGT_loccar_min_um = 40,
+                    catGT_loccar_max_um = 160,
+                    catGT_cmd_string = '-prb_fld -out_prb_fld -aphipass=300-gfix=0.40,0.10,0.02',
+                    catGT_extract_string = '',
                     noise_template_use_rf = True,
                     event_ex_param_str = 'XD=4,1,50',
+                    tPrime_im_ex_list = 'SY=0,384,6,500',
+                    tPrime_ni_ex_list = 'XA=0,1,3,500',
                     sync_period = 1.0,
                     toStream_sync_params = 'SY=0,384,6,500',
                     niStream_sync_params = 'XA=0,1,3,500',
+                    tPrime_3A = False,
                     toStream_path_3A = None,
                     fromStream_list_3A = None,
-                    minfr_goodchannels = 0.1,
-                    whiteningRange = 32,
-                    CSBseed = 1,
-                    LTseed = 1,
-                    nNeighbors = 32
+                    ks_remDup = 0,                   
+                    ks_finalSplits = 1,
+                    ks_labelGood = 1,
+                    ks_saveRez = 1,
+                    ks_copy_fproc = 0,
+                    ks_minfr_goodchannels = 0.1,                  
+                    ks_whiteningRadius_um = 163,
+                    ks_Th = '[10,4]',
+                    ks_CSBseed = 1,
+                    ks_LTseed = 1,
+                    ks_templateRadius_um = 163,
+                    c_Waves_snr_um = 160,
+                    qm_isi_thresh = 1.5/1000
                     ):
 
     # hard coded paths to code on your computer and system
     ecephys_directory = r'D:\ecephys_fork\ecephys_spike_sorting\ecephys_spike_sorting'
-    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS2_MP_082520\Kilosort2'
-    npy_matlab_repository = r'C:\Users\labadmin\Documents\jic\npy-matlab-master'
-    catGTPath = r'C:\Users\labadmin\Documents\jic\CatGT'
-    tPrime_path=r'C:\Users\labadmin\Documents\jic\TPrimeApp\TPrime'
-    cWaves_path=r'C:\Users\labadmin\Documents\jic\C_Waves'
     
-    # set paths to KS2 master file to run; these should be appropriate for the
-    # kilosort repository specified above
-    # default inside the ecephys pipeline are:
-    master_file_path = os.path.join(ecephys_directory,'modules','kilosort_helper')
-    master_file_name = 'kilosort2_master_file.m'          
-    # master_file_path = r'D:\ecephys_fork\ecephys_spike_sorting\ecephys_spike_sorting\scripts'
-    # master_file_name = 'KS2ds_tracking_master_file.m' 
+    # location of kilosor respository and KS2 version
+    #kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS20_release'
+    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS2_MP_111720\Kilosort'
+    KS2ver = '2.5'
+    
+    npy_matlab_repository = r'C:\Users\labadmin\Documents\jic\npy-matlab-master'
+    catGTPath = r'C:\Users\labadmin\Documents\jic\CatGT-win'
+    tPrime_path=r'C:\Users\labadmin\Documents\jic\TPrime-win'
+    cWaves_path=r'C:\Users\labadmin\Documents\jic\C_Waves-win'
+    
      
     # for config files and kilosort working space
     kilosort_output_tmp = r'D:\kilosort_datatemp' 
@@ -76,7 +91,7 @@ def createInputJson(output_file,
 
     #default ephys params. For spikeGLX, these get replaced by values read from metadata
     sample_rate = 30000
-    num_channels = 384    
+    num_channels = 385    
     reference_channels = [191]
     uVPerBit = 2.34375
     acq_system = 'PXI'
@@ -92,61 +107,47 @@ def createInputJson(output_file,
         # clusters will act on phy output in the kilosort output directory
         #
         # 
-        if continuous_file is not None:
-            probe_type, sample_rate, num_channels, uVPerBit = SpikeGLX_utils.EphysParams(continuous_file)  
+        if input_meta_path is not None:
+            probe_type, sample_rate, num_channels, uVPerBit = SpikeGLX_utils.EphysParams(input_meta_path)  
             print('SpikeGLX params read from meta')
             print('probe type: {:s}, sample_rate: {:.5f}, num_channels: {:d}, uVPerBit: {:.4f}'.format\
                   (probe_type, sample_rate, num_channels, uVPerBit))
         print('kilosort output directory: ' + kilosort_output_directory )
-        # set Open Ephys specific dictionary keys; can't be null and still 
-        # pass argshema parser, even when unused
-        settings_json = npx_directory
-        probe_json = npx_directory
-        settings_xml = npx_directory
-        
-    else:
-    # Data from Open Ephys; these params are sent manually from script
-    
-        if probe_type == '3A':
-            acq_system = '3a'
-            reference_channels = [36, 75, 112, 151, 188, 227, 264, 303, 340, 379]
-            uVPerBit = 2.34375      # for AP gain = 500
-        elif (probe_type =='NP1' or probe_type =='3B2'):
-            acq_system = 'PXI'
-            reference_channels = [191] 
-            uVPerBit = 2.34375      # for AP gain = 500
-        elif (probe_type == 'NP21' or probe_type == 'NP24'):
-            acq_system = 'PXI'
-            reference_channels = [127]
-            uVPerBit = 0.763      # for AP gain = 80, fixed in 2.0
-        else:
-            raise Exception('Unknown probe type')
-        
-        if npx_directory is not None:
-            settings_xml = os.path.join(npx_directory, 'settings.xml')
-            if extracted_data_directory is None:
-                extracted_data_directory = npx_directory + '_sorted'
-            probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
-            settings_json = os.path.join(extracted_data_directory, 'open-ephys.json')
-        else:
-            if extracted_data_directory is not None:
-                probe_json = os.path.join(extracted_data_directory, 'probe_info.json')
-                settings_json = os.path.join(extracted_data_directory, 'open-ephys.json')
-                settings_xml = None
-            else:
-                settings_xml = None
-                settings_json = None
-                probe_json = None
-                extracted_data_directory = kilosort_output_directory
-    
-        if kilosort_output_directory is None:
-            kilosort_output_directory = os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.0')
-    
-        if continuous_file is None:
-            continuous_file = os.path.join(kilosort_output_directory, 'continuous.dat')
-            
 
         
+    else:
+       print('currently only supporting spikeGLX data')
+        
+
+            
+
+    # geometry params by probe type. expand the dictoionaries to add types
+    # vertical probe pitch vs probe type
+    vpitch = {'3A': 20, 'NP1': 20, 'NP21': 15, 'NP24': 15, 'NP1100': 6}  
+    hpitch = {'3A': 32, 'NP1': 32, 'NP21': 32, 'NP24': 32, 'NP1100': 6} 
+    nColumn = {'3A': 2, 'NP1': 2, 'NP21': 2, 'NP24': 2, 'NP1100': 8} 
+    
+    
+    # CatGT needs the inner and outer redii for local common average referencing
+    # specified in sites
+    catGT_loccar_min_sites = int(round(catGT_loccar_min_um/vpitch.get(probe_type)))
+    catGT_loccar_max_sites = int(round(catGT_loccar_max_um/vpitch.get(probe_type)))
+    # print('loccar min: ' + repr(catGT_loccar_min_sites))
+    
+    # whiteningRange is the number of sites used for whitening in KIlosort
+    # preprocessing. Calculate the number of sites within the user-specified
+    # whitening radius for this probe geometery
+    # for a Np 1.0 probe, 163 um => 32 sites
+    nrows = np.sqrt((np.square(ks_whiteningRadius_um) - np.square(hpitch.get(probe_type))))/vpitch.get(probe_type)
+    ks_whiteningRange = int(round(2*nrows*nColumn.get(probe_type)))
+    
+    # nNeighbors is the number of sites kilosort includes in a template.
+    # Calculate the number of sites within that radisu.
+    nrows = np.sqrt((np.square(ks_templateRadius_um) - np.square(hpitch.get(probe_type))))/vpitch.get(probe_type)
+    ks_nNeighbors = int(round(2*nrows*nColumn.get(probe_type)))
+    # print('ks_nNeighbors: ' + repr(ks_nNeighbors))
+    
+    c_waves_radius_sites = int(round(c_Waves_snr_um/vpitch.get(probe_type)))
 
     # Create string designating temporary output file for KS2 (gets inserted into KS2 config.m file)
     fproc = os.path.join(kilosort_output_tmp,'temp_wh.dat') # full path for temp whitened data file
@@ -167,8 +168,8 @@ def createInputJson(output_file,
         },
 
         "common_files": {
-            "settings_json" : settings_json,
-            "probe_json" : probe_json,
+            "settings_json" : npx_directory,
+            "probe_json" : npx_directory,
         },
 
         "waveform_metrics" : {
@@ -195,7 +196,7 @@ def createInputJson(output_file,
 
         "extract_from_npx_params" : {
             "npx_directory": npx_directory,
-            "settings_xml": settings_xml,
+            "settings_xml": npx_directory,
             "npx_extractor_executable": r"C:\Users\svc_neuropix\Documents\GitHub\npxextractor\Release\NpxExtractor.exe",
             "npx_extractor_repo": r"C:\Users\svc_neuropix\Documents\GitHub\npxextractor"
         },
@@ -228,8 +229,6 @@ def createInputJson(output_file,
             "matlab_home_directory": kilosort_output_tmp,
             "kilosort_repository" : kilosort_repository,
             "npy_matlab_repository" : npy_matlab_repository,
-            "master_file_path" : master_file_path,
-            "master_file_name" : master_file_name,
             "kilosort_version" : 2,
             "spikeGLX_data" : True,
             "ks_make_copy": ks_make_copy,
@@ -237,11 +236,17 @@ def createInputJson(output_file,
 
             "kilosort2_params" :
             {
+                "KSver" : KS2ver,
+                "remDup" : ks_remDup,       #these are expressed as int rather than Bool for matlab compatability
+                "finalSplits" : ks_finalSplits,
+                "labelGood" : ks_labelGood,
+                "saveRez" : ks_saveRez,
+                "copy_fproc" : ks_copy_fproc,
                 "fproc" : fproc_str,
                 "chanMap" : "'chanMap.mat'",
                 "fshigh" : 150,
-                "minfr_goodchannels" : minfr_goodchannels,
-                "Th" : '[10 4]',
+                "minfr_goodchannels" : ks_minfr_goodchannels,
+                "Th" : ks_Th,
                 "lam" : 10,
                 "AUCsplit" : 0.9,
                 "minFR" : 1/50.,
@@ -249,10 +254,10 @@ def createInputJson(output_file,
                 "sigmaMask" : 30,
                 "ThPre" : 8,
                 "gain" : uVPerBit,
-                "CSBseed" : CSBseed,
-                "LTseed" : LTseed,
-                "whiteningRange" : whiteningRange,
-                "nNeighbors" : nNeighbors
+                "CSBseed" : ks_CSBseed,
+                "LTseed" : ks_LTseed,
+                "whiteningRange" : ks_whiteningRange,
+                "nNeighbors" : ks_nNeighbors
             }
         },
 
@@ -275,7 +280,7 @@ def createInputJson(output_file,
             "site_range" : 16,    
             "cWaves_path" : cWaves_path,
             "use_C_Waves" : True,
-            "snr_radius" : 8
+            "snr_radius" : c_waves_radius_sites       
         },
             
 
@@ -286,7 +291,7 @@ def createInputJson(output_file,
         },
 
         "quality_metrics_params" : {
-            "isi_threshold" : 0.0015,
+            "isi_threshold" : qm_isi_thresh,
             "min_isi" : 0.000166,
             "num_channels_to_compare" : 13,
             "max_spikes_for_unit" : 500,
@@ -303,23 +308,29 @@ def createInputJson(output_file,
             "probe_string" : probe_string,
             "trigger_string": trigger_string,
             "stream_string" : catGT_stream_string,
+            "car_mode" : catGT_car_mode,
+            "loccar_inner" : catGT_loccar_min_sites,
+            "loccar_outer": catGT_loccar_max_sites,
             "cmdStr" : catGT_cmd_string,
-            "catGTPath" : catGTPath,
-            "gfix_edits": catGT_gfix_edits
+            "extract_string" : catGT_extract_string,
+            "catGTPath" : catGTPath
         },
 
         "tPrime_helper_params" : {
                 "tPrime_path" : tPrime_path,
+                "im_ex_list" : tPrime_im_ex_list,
+                "ni_ex_list" : tPrime_ni_ex_list,
                 "sync_period" : sync_period,
                 "toStream_sync_params" : toStream_sync_params,
                 "ni_sync_params" : niStream_sync_params,
+                "tPrime_3A" : tPrime_3A,
                 "toStream_path_3A" : toStream_path_3A,
                 "fromStream_list_3A" : fromStream_list_3A
-                },  
+        },  
                 
         "psth_events": {
                 "event_ex_param_str": event_ex_param_str
-                }
+         }
         
     }
 

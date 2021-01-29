@@ -123,6 +123,7 @@ def findDisabled(meta):
 #
 def NP10_ElecInd(meta):
     # Works for 3A and 3B data
+    # also works for type 1100 probes, which are the single bank UHD
     # First number in each imro entry = channel index
     # Second number = bank index
     # The 3B imro table has an additional field for the

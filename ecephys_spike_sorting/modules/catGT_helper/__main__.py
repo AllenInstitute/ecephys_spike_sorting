@@ -15,8 +15,21 @@ def run_CatGT(args):
     print('ecephys spike sorting: CatGT helper module')
 
     catGTPath = args['catGT_helper_params']['catGTPath']
-    catGTexe_fullpath = catGTPath.replace('\\', '/') + "/CatGT"
+    catGTexe_fullpath = catGTPath.replace('\\', '/') + "/runit.bat"
     # print('path to CatGT exe: ' + catGTexe_fullpath )
+    
+    # common average referencing
+    car_mode = args['catGT_helper_params']['car_mode']
+    if car_mode == 'loccar':
+        inner_site = args['catGT_helper_params']['loccar_inner']
+        outer_site = args['catGT_helper_params']['loccar_outer']
+        car_str = ' -loccar=' + repr(inner_site) + ',' + repr(outer_site)
+    elif car_mode == 'gbldmx':
+        car_str = ' -gbldmx'
+    elif car_mode == 'None' or car_mode == 'none':
+        car_str = ''
+        
+
     
     cmd_parts = list()
     
@@ -27,6 +40,7 @@ def run_CatGT(args):
     cmd_parts.append('-t=' + args['catGT_helper_params']['trigger_string'])
     cmd_parts.append('-prb=' + args['catGT_helper_params']['probe_string'])
     cmd_parts.append(args['catGT_helper_params']['stream_string'])
+    cmd_parts.append(car_str)
     cmd_parts.append(args['catGT_helper_params']['cmdStr'])
     cmd_parts.append('-dest=' + args['directories']['extracted_data_directory'])
     
@@ -41,10 +55,54 @@ def run_CatGT(args):
     subprocess.call(catGT_cmd)
 
     execution_time = time.time() - start
+    
+    # copy CatGT log file, which will be in the directory with the calling 
+    # python scripte, to the destination directory
+    logPath = os.getcwd()
+    logName = 'CatGT.log'
+   
+         
+    catgt_runName = 'catgt_' + args['catGT_helper_params']['run_name'] + '_g' + args['catGT_helper_params']['gate_string']
+    
+    # build name for log copy
+    catgt_logName = catgt_runName
+    if 'ap' in args['catGT_helper_params']['stream_string']:
+        prb_title = ParseProbeStr(args['catGT_helper_params']['probe_string'])
+        catgt_logName = catgt_logName + '_prb' + prb_title
+    if 'ni' in args['catGT_helper_params']['stream_string']:
+        catgt_logName = catgt_logName + '_ni'
+    catgt_logName = catgt_logName + '_CatGT.log'
+    
+    
+    catgt_runDir = os.path.join(args['directories']['extracted_data_directory'],catgt_runName)
+    shutil.copyfile(os.path.join(logPath,logName), \
+                    os.path.join(catgt_runDir,catgt_logName))
+    
 
     print('total time: ' + str(np.around(execution_time,2)) + ' seconds')
     
     return {"execution_time" : execution_time} # output manifest
+
+
+def ParseProbeStr(probe_string):
+    
+    # from a probe_string in a CatGT command line
+    # create a title for the log file which inludes all the 
+    # proceessed probes
+    
+    str_list = probe_string.split(',')
+    prb_title = ''
+    for substr in str_list:
+        if (substr.find(':') > 0):
+            # split at colon
+            subsplit = substr.split(':')
+            for i in range( int(subsplit[0]), int(subsplit[1]) + 1):
+                prb_title = prb_title + '_' + str(i)
+        else:
+            # just append this string
+            prb_title = prb_title + '_' + substr
+
+    return prb_title
 
 
 def main():

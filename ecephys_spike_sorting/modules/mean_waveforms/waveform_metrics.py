@@ -96,7 +96,7 @@ def calculate_waveform_metrics_from_avg(avg_waveform,
                                         upsampling_factor, 
                                         spread_threshold,
                                         site_range,
-                                        site_spacing):
+                                        site_x, site_y):
 
     """
     Calculate metrics for an array of waveforms for a single cluster.
@@ -126,8 +126,7 @@ def calculate_waveform_metrics_from_avg(avg_waveform,
         Threshold for computing spread of 2D waveform
     site_range : float
         Number of sites to use for 2D waveform metrics
-    site_spacing : float
-        Average vertical distance between sites (m)
+    site_x, site_y : channel positions in um
 
     Outputs:
     -------
@@ -142,8 +141,12 @@ def calculate_waveform_metrics_from_avg(avg_waveform,
     epoch_name = 'complete_session'
     
     # all metric calculations are restricted to the channesl in the map
-    mean_2D_waveform = np.squeeze(avg_waveform[channel_map, :])
-    local_peak = np.argmin(np.abs(channel_map - peak_channel))
+    # jic removed this -- we need to sample all channels for 2D calculations
+    # moreover, this is assumed in the stnadard Allen calculation
+    # mean_2D_waveform = np.squeeze(avg_waveform[channel_map, :])
+    # local_peak = np.argmin(np.abs(channel_map - peak_channel))
+    mean_2D_waveform = avg_waveform
+    local_peak = peak_channel
 
     num_samples = mean_2D_waveform.shape[1]
     new_sample_count = int(num_samples * upsampling_factor)
@@ -162,7 +165,7 @@ def calculate_waveform_metrics_from_avg(avg_waveform,
         mean_1D_waveform, timestamps)
 
     amplitude, spread, velocity_above, velocity_below = calculate_2D_features(
-        mean_2D_waveform, timestamps, local_peak, spread_threshold, site_range, site_spacing)
+        mean_2D_waveform, timestamps, local_peak, site_x, site_y, spread_threshold, site_range)
 
     data = [[cluster_id, epoch_name, peak_channel, snr, duration, halfwidth, PT_ratio, repolarization_slope,
               recovery_slope, amplitude, spread, velocity_above, velocity_below]]
@@ -365,7 +368,7 @@ def calculate_waveform_recovery_slope(waveform, timestamps, window=20):
 # ==========================================================
 
 
-def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold = 0.12, site_range=16, site_spacing=10e-6):
+def calculate_2D_features(waveform, timestamps, peak_channel, site_x, site_y, spread_threshold = 0.12, site_range=16):
     
     """ 
     Compute features of 2D waveform (channels x samples)
@@ -377,7 +380,7 @@ def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold =
     peak_channel : int
     spread_threshold : float
     site_range: int
-    site_spacing : float
+    site_x, site_y : float
 
     Outputs:
     --------
@@ -389,11 +392,54 @@ def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold =
     """
 
     assert site_range % 2 == 0 # must be even
+    
+    # sample sites that are in the same "column" as the peak channel
+    # first find nn with y ~= y_peak
+    # x = x_peak or x_nn. For NP 1.0, this will select either the 
+    # two left or two right hand columns.
+    
+    dist = np.sqrt(( pow((site_x - site_x[peak_channel]),2) + pow((site_y - site_y[peak_channel]),2)))
+    ydiff = ( site_y != site_y[peak_channel])
+    n_channel = site_x.size
+    min_dist = 1e6   # a value larger than the  distance to nn
+    x_nn = -1
+    amp_nn = 0
+    x_peak = site_x[peak_channel]
+    
+    for i in range(n_channel):
+        if ydiff[i] and dist[i] <= min_dist:  #only consider nn at diff y
+            min_dist = dist[i]
+            # to break ties between columns at the same distance, pick nn with
+            # largest amplitude
+            currAmp = np.max(waveform[i,:]) - np.min(waveform[i,:])
+            if currAmp > amp_nn:
+                x_nn = site_x[i]
+            
+    # select among sites with x = x_peak and x_nn for sites to sample
+    inCol = (site_x == x_peak) | (site_x == x_nn)   
+    sort_dist_ind = np.argsort(dist)
+    sites_to_sample = np.zeros(site_range+1, dtype='int32')
+    
+    nfound = 0
+    i = 0
+    # walk over all sites in order of distance from the peak_channel, add to
+    # list of channels to sample
+    while nfound < site_range and i < n_channel:
+        curr_chan = sort_dist_ind[i]
+        if inCol[curr_chan]:
+            sites_to_sample[nfound] = curr_chan
+            nfound = nfound + 1           
+            # print('site, dist: ' + repr(curr_chan) + ',' + repr(dist[curr_chan]))
+        i = i+1
+            
+    
+    # original implentation for NP 1.0, assuming all sites in one bank, pick 
+    # even or odd sites 
+    # sites_to_sample = np.arange(-site_range, site_range+1, 2) + peak_channel
+    # sites_to_sample = sites_to_sample[(sites_to_sample > 0) * (sites_to_sample < waveform.shape[0])]
 
-    sites_to_sample = np.arange(-site_range, site_range+1, 2) + peak_channel
-
-    sites_to_sample = sites_to_sample[(sites_to_sample > 0) * (sites_to_sample < waveform.shape[0])]
-
+    # take only as many sites as we "found"
+    sites_to_sample = sites_to_sample[0:nfound]
     wv = waveform[sites_to_sample, :]
 
     #smoothed_waveform = np.zeros((wv.shape[0]-1,wv.shape[1]))
@@ -416,16 +462,26 @@ def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold =
     
     if len(points_above_thresh) > 1:
         points_above_thresh = points_above_thresh[isnot_outlier(points_above_thresh)]
+        
+    yDist = site_y[sites_to_sample] - site_y[peak_channel]
+    yDist = yDist[points_above_thresh]
+    
+    numpts = yDist.size
+    # debug print to understand what sites are selected
+#    for i in range(numpts):
+#        print('i, ydist:' + repr(i) + ', ' + repr(yDist[i]))
+    spread = np.max(yDist) - np.min(yDist)
 
-    spread = len(points_above_thresh) * site_spacing * 1e6
-
-    channels = sites_to_sample - peak_channel
-    channels = channels[points_above_thresh]
+    # original channel based calculation of spread
+    
+    # spread = len(points_above_thresh) * site_spacing * 1e6
+    # channels = sites_to_sample - peak_channel
+    # channels = channels[points_above_thresh]
 
     trough_times = timestamps[trough_idx] - timestamps[trough_idx[max_chan]]
     trough_times = trough_times[points_above_thresh]
 
-    velocity_above, velocity_below = get_velocity(channels, trough_times, site_spacing)
+    velocity_above, velocity_below = get_velocity(yDist, trough_times)
  
     return amplitude, spread, velocity_above, velocity_below
 
@@ -437,19 +493,17 @@ def calculate_2D_features(waveform, timestamps, peak_channel, spread_threshold =
 # ==========================================================
 
 
-def get_velocity(channels, times, distance_between_channels = 10e-6):
+def get_velocity(yDist, times):
     
     """
     Calculate slope of trough time above and below soma.
 
     Inputs:
     -------
-    channels : np.ndarray
-        Channel index relative to soma
+    yDist : np.ndarray
+        distance of site to soma, in um
     times : np.ndarray
         Trough time relative to peak channel
-    distance_between_channels : float
-        Distance between channels (m)
 
     Outputs:
     --------
@@ -459,19 +513,19 @@ def get_velocity(channels, times, distance_between_channels = 10e-6):
         Inverse of velocity of spike propagation below the soma (s / m)
 
     """
-
-    above_soma = channels >= 0
-    below_soma = channels <= 0
+    
+    above_soma = yDist >= 0
+    below_soma = yDist <= 0
 
     if np.sum(above_soma) > 1:
-        slope_above, intercept, r_value, p_value, std_err = linregress(channels[above_soma], times[above_soma])
-        velocity_above = slope_above / distance_between_channels
+        slope_above, intercept, r_value, p_value, std_err = linregress(yDist[above_soma], times[above_soma])
+        velocity_above = slope_above * 1e6     #convert slope to s / m
     else:
         velocity_above = np.nan
 
     if np.sum(below_soma) > 1:
-        slope_below, intercept, r_value, p_value, std_err = linregress(channels[below_soma], times[below_soma])
-        velocity_below = slope_below / distance_between_channels
+        slope_below, intercept, r_value, p_value, std_err = linregress(yDist[below_soma], times[below_soma])
+        velocity_below = slope_below * 1e6     #convert slope to s / m
     else:
         velocity_below = np.nan
 

@@ -19,30 +19,43 @@ def GetFirstTrialPath(catGT_run_name, gate_string, trigger_string, probe_string 
 
     return firstTrialPath
 
-def GetTrialRange(prb_folder):
+def GetTrialRange(prb, gate, prb_folder):
     tFiles = os.listdir(prb_folder)
     minIndex =  sys.maxsize
     maxIndex = 0
+    searchStr = '_g' + gate + '_t'
     for tName in tFiles:
         if (fnmatch.fnmatch(tName,'*.ap.bin')):
-            parts = tName.split('_')
-            tparts = parts[2].split('.')
-            tInd = int(tparts[0][1:])
+            
+            gPos = tName.find(searchStr)
+            tStart = gPos + len(searchStr)
+            tEnd = tName.find('.', tStart)
+            
+            if gPos > 0 and tEnd > 0:
+                try:
+                    tInd = int(tName[tStart:tEnd])
+                except ValueError:
+                    print('Error parsing trials for probe folder: ' + prb_folder + '\n')
+                    return -1, -1
+            else:
+                print('Error parsing trials for probe folder: ' + prb_folder + '\n')
+                return -1, -1
+            
             if tInd > maxIndex:
                 maxIndex = tInd
             if tInd < minIndex:
                 minIndex = tInd
+                
     return minIndex, maxIndex
 
     
-def EphysParams(ap_band_file):
-    # assume metadata file is in same directory as binary, Constuct metadata path
-    
+def EphysParams(metaFullPath):
+    # get ephys params from metadata at meta full path    
     # read metadata
     
-    metaName, binExt = os.path.splitext(ap_band_file)
-    metaFullPath = Path(metaName + '.meta')
-    meta = SGLXMeta.readMeta(metaFullPath)
+    #first create Path object from string
+    metaPath = Path(metaFullPath)
+    meta = SGLXMeta.readMeta(metaPath)
     
     if 'imDatPrb_type' in meta:
         pType = (meta['imDatPrb_type'])
@@ -106,7 +119,7 @@ def ParseProbeStr(probe_string):
 
     return prb_list
 
-def ParseTrigStr(trigger_string, prb_folder):
+def ParseTrigStr(trigger_string, prb, gate, prb_folder):
     
     str_list = trigger_string.split(',')
     first_trig_str = str_list[0]
@@ -114,7 +127,7 @@ def ParseTrigStr(trigger_string, prb_folder):
     
     if last_trig_str.find('end') >= 0 or first_trig_str.find('start') >= 0 :
         # get the full range from the directory
-        minInd, maxInd = GetTrialRange(prb_folder)
+        minInd, maxInd = GetTrialRange(prb, gate, prb_folder)
 
     if first_trig_str.find('start') >= 0:
         first_trig = minInd
@@ -134,6 +147,8 @@ def ParseTrigStr(trigger_string, prb_folder):
 def ParseTcatName(tcat_name):
     
     parts_list = tcat_name.split('.')
+    # remove tcat from first part of name
+    parts_list[0] = parts_list[0][0:len(parts_list[0])-5]
     baseName = parts_list[0] + '_' + parts_list[1]
     return baseName
 
@@ -176,7 +191,8 @@ def ParseCatGTLog(logPath, run_name, gate_string, prb_list):
     # order the returned gfix_edits matching the probe order specified 
     # in prb_list
     for i in range(0,len(prb_list)):
-        gfix_edits[i] = gfound[pfound.index(prb_list[i])]
+        if prb_list[i] in pfound:
+            gfix_edits[i] = gfound[pfound.index(prb_list[i])]
      
     return gfix_edits
 
