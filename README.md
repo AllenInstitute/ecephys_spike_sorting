@@ -15,7 +15,7 @@ https://github.com/AllenInstitute/ecephys_spike_sorting
 
 ## Overview
 
-The general outline of the pipeline is preprocessing, spike sorting by [Kilosort2](https://github.com/MouseLand/Kilosort2) , followed by cleanup and calculation of QC metrics. The original version from the Allen used preprocessing specifically for data saved using the [Open Ephys GUI](https://github.com/open-ephys/plugin-gui). This version is designed to run with data collected using [SpikeGLX](http://billkarsh.github.io/SpikeGLX), and its associated tools (CatGT, TPrime, and C_Waves). The identification of noise clusters and calculation of QC metrics is unchanged from the original code.
+The general outline of the pipeline is preprocessing, spike sorting by either [Kilosort2.5](https://github.com/MouseLand/Kilosort2) or {Kilosort 2.0] (https://github.com/MouseLand/Kilosort/releases/tag/v2.0) , followed by cleanup and calculation of QC metrics. The original version from the Allen used preprocessing specifically for data saved using the [Open Ephys GUI](https://github.com/open-ephys/plugin-gui). This version is designed to run with data collected using [SpikeGLX](http://billkarsh.github.io/SpikeGLX), and its associated tools (CatGT, TPrime, and C_Waves). The identification of noise clusters is unchanged from the original code. Calculation of QC metrics has been updated to work with any Neuropixels probe type, rather than assuming NP 1.0 site geomtery.
 
 The spikeGLX_pipeline.py script implements this pipeline: 
 
@@ -141,15 +141,15 @@ After completing the install, close the command window and reopen as a normal us
 
 Parameters are set in two files. Values that are constant across runs—like paths to code, parameters for sorting, etc – are set in **create_input_json.py**. Parameters that need to be set per run (run names, which triggers and probes to process…) are set in script files.
 
-In **create_input_json.py**, be sure to set these paths for your system:
+In **create_input_json.py**, be sure to set these paths and parameters for your system:
 
 - ecephys_directory: parent directory that contains the modules directory
 
 - kilosort_repository
 
-- npy_matlab_repository
+- KS2ver -- needs to be set to '2.5' or '2.0', and be correct for the repository
 
-- master_file_path, master_file_name: leave set to default to use version in kilosort helper module; if you need to customize how you run KS2 (e.g. to run the datashift branch) set these to point to your own master file. Master files to run the datashift branch are included in the scripts folder.
+- npy_matlab_repository
 
 - catGTPath: contains the CatGT.exe file
 
@@ -157,15 +157,18 @@ In **create_input_json.py**, be sure to set these paths for your system:
 
 - tPrimePath: contains the TPrime.exe file
 
-- kilosort_output_temp: for the KS2 residual file, also temporary copies of the config and master file
+- kilosort_output_temp: for the kilosort residual file, also temporary copies of the config and master file. With kilosort 2.5, this "temporary" file -- which has been drift corrected-- may be used for manual curation in phy. If you want it to be kept available, set the parameter ks_copy_fproc=1; then a copy will be made with the kilosort output and the params.py adjusted automatically.
 
 Other “mostly constant” parameters in **create_input_json.py**:
 
-- Kilosort2 parameters
+- Most Kilosort2 parameters. 
 
-- kilosort post processing params
+- kilosort post processing params 
 
 - quality metrics params
+
+Read through the parameter list for **create_input_json.py** to see which parameters are already passed in and therefore settable per run from a calling pipeline script. These currently include the threhold parameter for Kilosort, switches to include postprocessing steps within Kilosort, and radii (in um) to define the extent of templates and regions for calculating quality metrics. These 
+
 
 ### Running scripts
 
@@ -175,11 +178,11 @@ The scripts generate a command line to run specific modules using parameters sto
 
 There are two example scripts for running with SpikeGLX data:
 
-**spikeGLX_pipeline.py**
-Runs CatGT followed by other modules run on the extracted data. The CatGT log file is parsed to extract the (gfix edits/sec) metric. Currently this is simply written to the command window, but the value could be logged or processing stopped/skipped for bad values. Finally runs TPrime. See comments in the script file for parameter details.
+**sglx_multi_run_pipeline.py**
+Meant to process multiple SpikeGLX runs, especially with multiple probes. The threshold for kilosort and the refractory period for the quality metrics are set per probe by specifying a brain region parameter for each probe. A first pass through all the probes in a run generates json parameters files for CatGt and sorting+post processing, and a second loop actually calls the processing. Finally runs TPrime. See comments in the script file for parameter details.
 
-**spikeGLX_noCatGT_pipeline.py**
-Runs modules on data that has already been processed, in particular, doesn’t require the CatGT output to be in the run_folder/probe_folder hierarchy. 
+**sglx_filelist_pipeline.py**
+Meant for running sorting/postprocessing modules on collections of preprocessed data, independent of the standard SpikeGLX run structure.
 
 For either script, edit to set the destination for the json_files, and the location of the input run files. Edit the list of modules to include those you want to run. For the full pipeline script, you also need to set the CatGT and TPrime parameters.
 
