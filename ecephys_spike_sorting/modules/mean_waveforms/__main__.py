@@ -69,8 +69,9 @@ def calculate_mean_waveforms(args):
         # load the channel map associated with this kilosort run; in kilosort_helper
         # a copy is made next to the data file
         input_file = args['ephys_params']['ap_band_file']
-        dat_dir, dat_name = os.path.split(input_file)
-        chanMapMat = os.path.join(dat_dir,'chanMap.mat')
+        dat_dir, dat_fname = os.path.split(input_file)
+        dat_name, dat_ext = os.path.splitext(dat_fname)
+        chanMapMat = os.path.join(dat_dir, (dat_name +'_chanMap.mat'))
         site_x = np.squeeze(loadmat(chanMapMat)['xcoords'])
         site_y = np.squeeze(loadmat(chanMapMat)['ycoords'])
         

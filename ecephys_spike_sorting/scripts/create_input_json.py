@@ -67,7 +67,7 @@ def createInputJson(output_file,
     # location of kilosor respository and KS2 version
     #kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS20_release'
     kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS2_MP_111720\Kilosort'
-    KS2ver = '2.5'
+    KS2ver = '2.5'      # must equal either '2.5' or '2.0', and match the kiilosort_repository
     
     npy_matlab_repository = r'C:\Users\labadmin\Documents\jic\npy-matlab-master'
     catGTPath = r'C:\Users\labadmin\Documents\jic\CatGT-win'

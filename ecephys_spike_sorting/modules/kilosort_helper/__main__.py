@@ -146,18 +146,23 @@ def run_kilosort(args):
         # trim quotes off string sent to matlab
         fproc_path = fproc_path_str[1:len(fproc_path_str)-1]
         fp_dir, fp_name = os.path.split(fproc_path)
-        shutil.copy(fproc_path, os.path.join(dat_dir, fp_name))
+        # make a new name for the processed file based on the original
+        # binary and metadata files
+        fp_save_name = metaName + '_ksproc.bin'
+        shutil.copy(fproc_path, os.path.join(dat_dir, fp_save_name))
         cm_path = os.path.join(output_dir, 'channel_map.npy')
         cm = np.load(cm_path)
         chan_phy_binary = cm.size
-        fix_phy_params(output_dir, dat_dir, fp_name, chan_phy_binary, args['ephys_params']['sample_rate'])
+        fix_phy_params(output_dir, dat_dir, fp_save_name, chan_phy_binary, args['ephys_params']['sample_rate'])
     else:
         chan_phy_binary = args['ephys_params']['num_channels']
         fix_phy_params(output_dir, dat_dir, dat_name, chan_phy_binary, args['ephys_params']['sample_rate'])                
 
     # make a copy of the channel map to the data directory
-    # see above: destFullPath specifiee destination for chanMap.mat
-    shutil.copy(destFullPath, os.path.join(dat_dir, 'chanMap.mat'))
+    # named according to the binary and meta file
+    # alredy have path to chanMap = destFullPath
+    cm_save_name = metaName + '_chanMap.mat'
+    shutil.copy(destFullPath, os.path.join(dat_dir, cm_save_name))
 
     if args['kilosort_helper_params']['ks_make_copy']:
         # get the kilsort output directory name
