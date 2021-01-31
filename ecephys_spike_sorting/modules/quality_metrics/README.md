@@ -22,6 +22,10 @@ Computes quality metrics for sorted units. Similar to the `mean_waveforms` modul
 
 For metrics based on waveform principal components (isolation distance, L-ratio, _d'_, and nearest neighbors hit rate and false alarm rate), it is typical to compute the metrics for all pairs of units and report the "worst-case" value. We have found that this tends to under- or over-estimate the degree of contamination when there are large firing rate differences between pairs of units that are being compared. Instead, we compute metrics by sub-selecting spikes from _all_ other units on the same set of channels, which seems to give a more accurate picture of isolation quality. We would appreciate feedback on whether this approach makes sense.
 
+The regions over which templates are compared and units are considered "close" are set by the parameter 'max_radius_um' in create_input_json. It is set by default to 68 um, which is equivalent to 13 sites on a NP 1.0 probe.
+
+The %false positive metric derived from ISI violations has been amended from the original to NOT assume that the fraction of false positve spikes << 1. In this case, the fraction of false positives is the root of a quadratic equation -- when there is no real root (at high fracton false positives) the output fraction of false positives is set to 1.0.
+
 
 ## Running
 

@@ -21,6 +21,10 @@ variance = (1/(N-degrees of freedom))*sum(residuals^2)
 
 residuals = channel x sample array of (raw data - mean)
 
+The variance and residuals are calculated only over the first 15 points in the waveform -- this gives a measure of noise that is independent of the variation in amplitude and shape of the spikes included in the cluster.
+
+The radius of the disk, given in number of sites, is an input parameter to C_Waves. **create_input_json.py** takes as a parameter the radius specified in um (c_Waves_snr_um) and translates it into sites for the probe type read in the SpikeGLX meta file. 
+
 The C_Waves implementation is very efficient. It is turned on in **create_input_json.py** by setting:
 
 ```
@@ -38,7 +42,7 @@ Metrics are computed for every waveform, and include features of the 1D peak-cha
 
 ![2D waveform](images/2d_waveform.png "2D waveform")
 
-**Example 2D waveform**: Signals from channels along one edge of the probe are smoothed with a moving average to create the 2D waveform. Green dots indicate the location of the waveform trough on each channel.
+**Example 2D waveform**: Signals from channels along one column of the probe are smoothed with a moving average to create the 2D waveform. Green dots indicate the location of the waveform trough on each channel.
 
 ![2D features](images/2d_waveform_features.png "2D waveform features")
 
