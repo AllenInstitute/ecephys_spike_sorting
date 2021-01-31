@@ -76,7 +76,7 @@ modules = [
             'noise_templates',
             #'psth_events',
             'mean_waveforms',
-            #'quality_metrics'
+            'quality_metrics'
 			]
 
 json_directory = r'D:\ecephys_fork\json_files'

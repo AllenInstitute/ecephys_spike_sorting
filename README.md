@@ -2,7 +2,7 @@
 
 ![ecephys_spike_sorting_icon](icon.png)
 
-Modules for processing **e**xtra**c**ellular **e**lectro**phys**iology data from Neuropixels probes, originally developed at the Allen Institute for Brain Science. This fork includes additions for running with SpikeGLX data, including integration of CatGT (preprocessing) and TPrime (synchronization across data streams).
+Modules for processing **e**xtra**c**ellular **e**lectro**phys**iology data from Neuropixels probes, originally developed at the Allen Institute for Brain Science. This fork has been modified to run with SpikeGLX data, including integration of CatGT (preprocessing), C_Waves(calculation of SNR and mean waveforms) and TPrime (synchronization across data streams).
 
 Code including modifications for SpikeGLX
 https://github.com/jenniferColonell/ecephys_spike_sorting
@@ -167,7 +167,7 @@ Other “mostly constant” parameters in **create_input_json.py**:
 
 - quality metrics params
 
-Read through the parameter list for **create_input_json.py** to see which parameters are already passed in and therefore settable per run from a calling pipeline script. These currently include the threhold parameter for Kilosort, switches to include postprocessing steps within Kilosort, and radii (in um) to define the extent of templates and regions for calculating quality metrics. These 
+Read through the parameter list for **create_input_json.py** to see which parameters are already passed in and therefore settable per run from a calling pipeline script. These currently include the threshold parameter for Kilosort, switches to include postprocessing steps within Kilosort, and radii (in um) to define the extent of templates and regions for calculating quality metrics. These radii are converted to sites in **create_input_json.py** using the probe type read from the metadata.
 
 
 ### Running scripts
