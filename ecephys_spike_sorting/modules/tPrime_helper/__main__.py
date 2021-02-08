@@ -1,6 +1,6 @@
 from argschema import ArgSchemaParser
 import os
-import logging
+import sys
 import subprocess
 import time
 import shutil
@@ -208,8 +208,13 @@ def call_TPrime(args):
         
     # path to the 'runit.bat' executable that calls TPrime.
     # Essential in linux where TPrime executable is only callable through runit
-    exe_path = os.path.join(args['tPrime_helper_params']['tPrime_path'], 'runit.bat')
-
+    if (sys.platform.startswith,'win'):
+        exe_path = os.path.join(args['tPrime_helper_params']['tPrime_path'], 'runit.bat')
+    elif (sys.platform.startwith, 'linux'):
+        exe_path = os.path.join(args['tPrime_helper_params']['tPrime_path'], 'runit.sh')
+    else:
+        print('unknown system, cannot run TPrime')   
+        
     # Print out command for help with debugging
     tcmd = exe_path + ' -syncperiod=' + repr(sync_period) + \
         ' -tostream=' + toStream_path

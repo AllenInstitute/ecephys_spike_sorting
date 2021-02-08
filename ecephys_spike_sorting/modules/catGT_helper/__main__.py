@@ -1,6 +1,6 @@
 from argschema import ArgSchemaParser
 import os
-import logging
+import sys
 import subprocess
 import time
 import shutil
@@ -15,9 +15,14 @@ def run_CatGT(args):
     print('ecephys spike sorting: CatGT helper module')
 
     catGTPath = args['catGT_helper_params']['catGTPath']
-    catGTexe_fullpath = catGTPath.replace('\\', '/') + "/runit.bat"
-    # print('path to CatGT exe: ' + catGTexe_fullpath )
-    
+    if (sys.platform.startswith,'win'):
+        # build windows command line
+        catGTexe_fullpath = catGTPath.replace('\\', '/') + "/runit.bat"
+    elif (sys.platform.startwith, 'linux'):
+        catGTexe_fullpath = catGTPath.replace('\\', '/') + "/runit.sh"
+    else:
+        print('unknown system, cannot run CatGt')
+   
     # common average referencing
     car_mode = args['catGT_helper_params']['car_mode']
     if car_mode == 'loccar':
