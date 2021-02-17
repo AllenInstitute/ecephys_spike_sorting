@@ -17,7 +17,7 @@ from create_input_json import createInputJson
 # -------------------------------
 # Full path to log file
 # If this file exists, new run data is appended to it
-logFullPath = r'D:\ecephys_fork\test_data\test_no_preprocess\pipeline_log.csv'
+logFullPath = r'D:\ecephys_fork\test_data\file_list_test\pipeline_log.csv'
 
 # brain region specific params
 # can add a new brain region by adding the key and value for each param
