@@ -21,7 +21,7 @@ def run_kilosort(args):
 
     print('ecephys spike sorting: kilosort helper module')
 
-    print('master branch -- single main KS2/KS25')
+    print('master branch -- single main KS2/KS25/KS3')
 
 
     commit_date, commit_time = get_repo_commit_date_and_hash(args['kilosort_helper_params']['kilosort_repository'])
@@ -74,8 +74,8 @@ def run_kilosort(args):
         
 #    shutil.copyfile(master_fullpath,
 #            os.path.join(args['kilosort_helper_params']['matlab_home_directory'],args['kilosort_helper_params']['master_file_name']))
-    shutil.copyfile(os.path.join(args['directories']['ecephys_directory'],'modules','kilosort_helper','main_KS2_KS25.m'),
-        os.path.join(args['kilosort_helper_params']['matlab_home_directory'],'main_KS2_KS25.m'))
+    shutil.copyfile(os.path.join(args['directories']['ecephys_directory'],'modules','kilosort_helper','main_KS2_KS25_KS3.m'),
+        os.path.join(args['kilosort_helper_params']['matlab_home_directory'],'main_KS2_KS25_KS3.m'))
     
     if args['kilosort_helper_params']['kilosort_version'] == 1:
     
@@ -122,7 +122,7 @@ def run_kilosort(args):
         eng.addpath(eng.genpath(KS_dir))
         eng.addpath(eng.genpath(NPY_dir))
         eng.addpath(home_dir)      
-        eng.main_KS2_KS25(args['kilosort_helper_params']['kilosort2_params']['KSver'], \
+        eng.main_KS2_KS25_KS3(args['kilosort_helper_params']['kilosort2_params']['KSver'], \
                           args['kilosort_helper_params']['kilosort2_params']['remDup'], \
                           args['kilosort_helper_params']['kilosort2_params']['finalSplits'], \
                           args['kilosort_helper_params']['kilosort2_params']['labelGood'], \

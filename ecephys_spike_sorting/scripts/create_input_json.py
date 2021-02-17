@@ -58,16 +58,22 @@ def createInputJson(output_file,
                     ks_LTseed = 1,
                     ks_templateRadius_um = 163,
                     c_Waves_snr_um = 160,
-                    qm_isi_thresh = 1.5/1000
+                    qm_isi_thresh = 1.5/1000                    
                     ):
 
     # hard coded paths to code on your computer and system
     ecephys_directory = r'D:\ecephys_fork\ecephys_spike_sorting\ecephys_spike_sorting'
     
-    # location of kilosor respository and KS2 version
-    #kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS20_release'
-    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS2_MP_111720\Kilosort'
-    KS2ver = '2.5'      # must equal either '2.5' or '2.0', and match the kiilosort_repository
+    # location of kilosor respository and kilosort version
+
+    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS20_release'
+    KS2ver = '2.0'      # must equal '3.0', '2.5' or '2.0', and match the kiilosort_repository
+    
+    # KS 3.0 does not yet output pcs.
+    if KS2ver == '3.0':
+        include_pcs = False  # set to false for KS2ver = '3.0'
+    else:
+        include_pcs = True
     
     npy_matlab_repository = r'C:\Users\labadmin\Documents\jic\npy-matlab-master'
     catGTPath = r'C:\Users\labadmin\Documents\jic\CatGT-win'
@@ -266,7 +272,8 @@ def createInputJson(output_file,
             "within_unit_overlap_window" : 0.000333,
             "between_unit_overlap_window" : 0.000333,
             "between_unit_dist_um" : 42,
-            "deletion_mode" : 'lowAmpCluster'
+            "deletion_mode" : 'lowAmpCluster',
+            "include_pcs" : include_pcs
         },
 
         "mean_waveform_params" : {
@@ -299,7 +306,8 @@ def createInputJson(output_file,
             "n_neighbors" : 4,
             'n_silhouette' : 10000,
             "drift_metrics_interval_s" : 51,
-            "drift_metrics_min_spikes_per_interval" : 10
+            "drift_metrics_min_spikes_per_interval" : 10,
+            "include_pcs" : include_pcs
         },
         
         "catGT_helper_params" : {

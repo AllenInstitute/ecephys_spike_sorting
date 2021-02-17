@@ -20,14 +20,30 @@ def run_postprocessing(args):
     #print(args['directories'].keys())
 
     start = time.time()
-
-    spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, \
-    channel_pos, clusterIDs, cluster_quality, cluster_amplitude, pc_features, pc_feature_ind, template_features = \
-                load_kilosort_data(args['directories']['kilosort_output_directory'], \
-                    args['ephys_params']['sample_rate'], \
-                    convert_to_seconds = False,
-                    use_master_clock = False,
-                    include_pcs = True)
+    
+    include_pcs = args['ks_postprocessing_params']['include_pcs']
+    
+    if include_pcs:
+        spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, \
+        channel_pos, clusterIDs, cluster_quality, cluster_amplitude, pc_features, pc_feature_ind, template_features = \
+                    load_kilosort_data(args['directories']['kilosort_output_directory'], \
+                        args['ephys_params']['sample_rate'], \
+                        convert_to_seconds = False, \
+                        use_master_clock = False, \
+                        include_pcs = include_pcs )
+    else:
+        spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, \
+        channel_pos, clusterIDs, cluster_quality, cluster_amplitude = \
+                    load_kilosort_data(args['directories']['kilosort_output_directory'], \
+                        args['ephys_params']['sample_rate'], \
+                        convert_to_seconds = False, \
+                        use_master_clock = False, \
+                        include_pcs = include_pcs )
+        # empty arrays to stand in for the missing variables
+        pc_features = []
+        pc_feature_ind = []
+        template_features = []
+        
 
     spike_times, spike_clusters, spike_templates, amplitudes, pc_features, \
     template_features, overlap_matrix, overlap_summary = \
@@ -53,8 +69,11 @@ def run_postprocessing(args):
     np.save(os.path.join(output_dir, 'amplitudes.npy'), amplitudes)
     np.save(os.path.join(output_dir, 'spike_clusters.npy'), spike_clusters)
     np.save(os.path.join(output_dir, 'spike_templates.npy'), spike_templates)
-    np.save(os.path.join(output_dir, 'pc_features.npy'), pc_features)
-    np.save(os.path.join(output_dir, 'template_features.npy'), template_features)
+    
+    if args['ks_postprocessing_params']['include_pcs']:
+        np.save(os.path.join(output_dir, 'pc_features.npy'), pc_features)
+        np.save(os.path.join(output_dir, 'template_features.npy'), template_features)
+        
     np.save(os.path.join(output_dir, 'overlap_matrix.npy'), overlap_matrix)
     np.save(os.path.join(output_dir, 'overlap_summary.npy'), overlap_summary)
 

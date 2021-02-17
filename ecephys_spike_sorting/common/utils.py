@@ -314,7 +314,6 @@ def load_kilosort_data(folder,
     if include_pcs:
         pc_features = load(folder, 'pc_features.npy')
         pc_feature_ind = load(folder, 'pc_feature_ind.npy')
-        print("loading template_features")
         template_features = load(folder, 'template_features.npy') 
 
                 

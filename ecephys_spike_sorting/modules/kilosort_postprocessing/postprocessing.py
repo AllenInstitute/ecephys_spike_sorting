@@ -37,6 +37,7 @@ def remove_double_counted_spikes(spike_times, spike_clusters, spike_templates,
         'within_unit_overlap_window' : time window for removing overlapping spikes
         'between_unit_overlap_window' : time window for removing overlapping spikes
         'between_unit_channel_distance' : number of channels over which to search for overlapping spikes
+        'include_pcs' : whether to update files pc_features and template_features. Should be 'true' unless these files are absent
     epochs : list of Epoch objects
         contains information on Epoch start and stop times
 
@@ -59,6 +60,7 @@ def remove_double_counted_spikes(spike_times, spike_clusters, spike_templates,
         Matrix indicating number of spikes removed for each pair of clusters
 
     """
+    include_pcs = params['include_pcs']
 
     peak_chan_idx = np.squeeze(np.argmax(np.max(templates,1) - np.min(templates,1),1))
 
@@ -102,7 +104,8 @@ def remove_double_counted_spikes(spike_times, spike_clusters, spike_templates,
                                                                         amplitudes, 
                                                                         pc_features, 
                                                                         template_features, 
-                                                                        spikes_to_remove)
+                                                                        spikes_to_remove,
+                                                                        include_pcs)
 
     print('Removing between-unit overlapping spikes...')
 
@@ -142,7 +145,8 @@ def remove_double_counted_spikes(spike_times, spike_clusters, spike_templates,
                                                                          amplitudes, 
                                                                          pc_features, 
                                                                          template_features, 
-                                                                         np.unique(spikes_to_remove))
+                                                                         np.unique(spikes_to_remove),
+                                                                         include_pcs)
 #   build overlap summary 
     overlap_summary = np.zeros((num_clusters, 5), dtype=int )
     for idx1, unit_id1 in enumerate(unit_list[order]):
@@ -255,7 +259,7 @@ def find_between_unit_overlap(spike_train1, spike_train2, amp1, amp2, overlap_wi
     return spikes_to_remove1, spikes_to_remove2
 
 
-def remove_spikes(spike_times, spike_clusters, spike_templates, amplitudes, pc_features, template_features, spikes_to_remove):
+def remove_spikes(spike_times, spike_clusters, spike_templates, amplitudes, pc_features, template_features, spikes_to_remove, include_pcs):
 
     """
     Removes spikes from Kilosort outputs
@@ -274,6 +278,7 @@ def remove_spikes(spike_times, spike_clusters, spike_templates, amplitudes, pc_f
         Pre-computed PCs for blocks of channels around each spike
     spikes_to_remove : numpy.ndarray
         Indices of spikes to remove
+    include_pcs : update pc_features and template_features. Should be true unless that output is absent.
 
     Outputs:
     --------
@@ -289,8 +294,11 @@ def remove_spikes(spike_times, spike_clusters, spike_templates, amplitudes, pc_f
     spike_clusters = np.delete(spike_clusters, spikes_to_remove, 0)
     spike_templates = np.delete(spike_templates, spikes_to_remove, 0)
     amplitudes = np.delete(amplitudes, spikes_to_remove, 0)
-    pc_features = np.delete(pc_features, spikes_to_remove, 0)
-    template_features = np.delete(template_features, spikes_to_remove, 0)
+    
+    if include_pcs:
+        pc_features = np.delete(pc_features, spikes_to_remove, 0)
+        template_features = np.delete(template_features, spikes_to_remove, 0)
+    # otherwise, just returns the input pc_fearures and template_features arrays
 
     return spike_times, spike_clusters, spike_templates, amplitudes, pc_features, template_features
 

@@ -25,8 +25,16 @@ from create_input_json import createInputJson
 # can add new parameters -- any that are taken by create_input_json --
 # by adding a new dictionary with entries for each region and setting the 
 # according to the new dictionary in the loop to that created json files.
-ksTh_dict = {'default':'[10,4]', 'cortex':'[10,4]', 'medulla':'[10,4]', 'thalamus':'[10,4]'}
+
+
 refPerMS_dict = {'default': 2.0, 'cortex': 2.0, 'medulla': 1.5, 'thalamus': 1.0}
+
+# threhold values appropriate for KS2, KS2.5
+ksTh_dict = {'default':'[10,4]', 'cortex':'[10,4]', 'medulla':'[10,4]', 'thalamus':'[10,4]'}
+# threshold values appropriate for KS3.0
+# ksTh_dict = {'default':'[9,9]', 'cortex':'[9,9]', 'medulla':'[9,9]', 'thalamus':'[9,9]'}
+
+
 
 # -----------
 # Input data
@@ -60,7 +68,7 @@ run_specs = [
 # Set to an existing directory; all output will be written here.
 # Output will be in the standard SpikeGLX directory structure:
 # run_folder/probe_folder/*.bin
-catGT_dest = r'D:\ecephys_fork\test_data\SC_10trial\SC024_KS25'
+catGT_dest = r'D:\ecephys_fork\test_data\SC_10trial\SC024_KS20'
 
 # ------------
 # CatGT params

@@ -16,7 +16,7 @@ from ...common.epoch import Epoch
 from ...common.utils import printProgressBar, get_spike_depths
 
 
-def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, channel_pos, pc_features, pc_feature_ind, params, epochs = None):
+def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, channel_pos, templates, pc_features, pc_feature_ind, params, epochs = None):
 
     """ Calculate metrics for all units on one probe
 
@@ -32,6 +32,8 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, chan
         Original data channel for pc_feature_ind array
     channel_pos : numpy.ndarray (num_channels x 2)
         Original data channel positions in um
+    templates : numpy.ndarray (num_units, num_timepoints, num_channels]
+        Templates to which the spikes are assigned
     pc_features : numpy.ndarray (num_spikes x num_pcs x num_channels)
         Pre-computed PCs for blocks of channels around each spike
     pc_feature_ind : numpy.ndarray (num_units x num_channels)
@@ -57,8 +59,10 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, chan
     
 #   define a short epoch for testing
     # epochs = [Epoch('test',0,10)]
+    
+    include_pcs = params['include_pcs']
 
-    [total_units, dummy] = pc_feature_ind.shape
+    [total_units, dummy, dummy] = templates.shape
     total_epochs = len(epochs)
 
     for epoch in epochs:
@@ -77,8 +81,10 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, chan
         print("Calculating amplitude cutoff")
         amplitude_cutoff = calculate_amplitude_cutoff(spike_clusters[in_epoch], amplitudes[in_epoch], total_units)
         
-        print("Calculating PC-based metrics")
-        isolation_distance, l_ratio, d_prime, nn_hit_rate, nn_miss_rate = calculate_pc_metrics(spike_clusters[in_epoch], 
+        if include_pcs:
+        
+            print("Calculating PC-based metrics")
+            isolation_distance, l_ratio, d_prime, nn_hit_rate, nn_miss_rate = calculate_pc_metrics(spike_clusters[in_epoch], 
                                                                                                 total_units,
                                                                                                 pc_features[in_epoch,:,:],
                                                                                                 pc_feature_ind,
@@ -88,17 +94,17 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, chan
                                                                                                 params['max_spikes_for_nn'],
                                                                                                 params['n_neighbors'])
   
-        print("Calculating silhouette score")
-        nSpikes = spike_times[in_epoch].size
-        the_silhouette_score = calculate_silhouette_score(spike_clusters[in_epoch], 
+            print("Calculating silhouette score")
+            nSpikes = spike_times[in_epoch].size
+            the_silhouette_score = calculate_silhouette_score(spike_clusters[in_epoch], 
                                                        total_units,
                                                        pc_features[in_epoch,:,:],
                                                        pc_feature_ind,
                                                        min(nSpikes, params['n_silhouette']))
 
 
-        print("Calculating drift metrics")
-        max_drift, cumulative_drift = calculate_drift_metrics(spike_times[in_epoch],
+            print("Calculating drift metrics")
+            max_drift, cumulative_drift = calculate_drift_metrics(spike_times[in_epoch],
                                                        spike_clusters[in_epoch], 
                                                        total_units,
                                                        pc_features[in_epoch,:,:],
@@ -106,7 +112,18 @@ def calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, chan
                                                        channel_pos,
                                                        params['drift_metrics_interval_s'],
                                                        params['drift_metrics_min_spikes_per_interval'])
-
+        else:
+            # fill in empty arrays for dataframe            
+            isolation_distance = np.zeros((total_units,))
+            l_ratio = np.zeros((total_units,))
+            d_prime = np.zeros((total_units,))
+            nn_hit_rate = np.zeros((total_units,))
+            nn_miss_rate = np.zeros((total_units,))
+            the_silhouette_score = np.zeros((total_units,))
+            max_drift = np.zeros((total_units,))
+            cumulative_drift = np.zeros((total_units,))
+            
+            
         cluster_ids = np.arange(total_units)
 
         epoch_name = [epoch.name] * len(cluster_ids)
