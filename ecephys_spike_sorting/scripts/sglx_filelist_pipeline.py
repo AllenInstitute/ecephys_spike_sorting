@@ -44,8 +44,8 @@ npx_directory = r'D:\ecephys_fork\test_data\SC_10trial'
 # for each recording, specfiy a full path the the binary and a brain region
 
 recording_specs = [									
-				[r'D:\ecephys_fork\test_data\file_list_test\SC011_022319_g0_tcat.imec3.ap.bin', 'default' ],
-                [r'D:\ecephys_fork\test_data\file_list_test\SC024_092319_NP1.0_Midbrain_g0_tcat.imec0.ap.bin', 'default' ]              
+				[r'D:\ecephys_fork\test_data\file_list_test\SC011_022319_g0_tcat.imec3.ap.bin', ['default'] ],
+                [r'D:\ecephys_fork\test_data\file_list_test\SC024_092319_NP1.0_Midbrain_g0_tcat.imec0.ap.bin', ['default'] ]              
 ]
 
 

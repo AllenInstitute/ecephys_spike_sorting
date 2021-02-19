@@ -30,9 +30,9 @@ from create_input_json import createInputJson
 refPerMS_dict = {'default': 2.0, 'cortex': 2.0, 'medulla': 1.5, 'thalamus': 1.0}
 
 # threhold values appropriate for KS2, KS2.5
-ksTh_dict = {'default':'[10,4]', 'cortex':'[10,4]', 'medulla':'[10,4]', 'thalamus':'[10,4]'}
+#ksTh_dict = {'default':'[10,4]', 'cortex':'[10,4]', 'medulla':'[10,4]', 'thalamus':'[10,4]'}
 # threshold values appropriate for KS3.0
-# ksTh_dict = {'default':'[9,9]', 'cortex':'[9,9]', 'medulla':'[9,9]', 'thalamus':'[9,9]'}
+ksTh_dict = {'default':'[9,9]', 'cortex':'[9,9]', 'medulla':'[9,9]', 'thalamus':'[9,9]'}
 
 
 
@@ -59,7 +59,7 @@ npx_directory = r'D:\ecephys_fork\test_data\SC_10trial'
 #           these strings must match a key in the param dictionaries above.
 
 run_specs = [									
-						['SC024_092319_NP1.0_Midbrain', '0', '0,9', '0,1', ('cortex', 'medulla') ]
+						['SC024_092319_NP1.0_Midbrain', '0', '0,9', '0,1', ['cortex', 'medulla'] ]
 ]
 
 # ------------------
@@ -68,7 +68,7 @@ run_specs = [
 # Set to an existing directory; all output will be written here.
 # Output will be in the standard SpikeGLX directory structure:
 # run_folder/probe_folder/*.bin
-catGT_dest = r'D:\ecephys_fork\test_data\SC_10trial\SC024_KS20'
+catGT_dest = r'D:\ecephys_fork\test_data\SC_10trial\SC024_KS3'
 
 # ------------
 # CatGT params
@@ -287,6 +287,7 @@ for spec in run_specs:
         # get region specific parameters
         ks_Th = ksTh_dict.get(spec[4][i])
         refPerMS = refPerMS_dict.get(spec[4][i])
+        print( 'ks_Th: ' + repr(ks_Th) + ' ,refPerMS: ' + repr(refPerMS))
 
         info = createInputJson(module_input_json[i], npx_directory=npx_directory, 
 	                                   continuous_file = continuous_file,
