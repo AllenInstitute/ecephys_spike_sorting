@@ -59,7 +59,7 @@ npx_directory = r'D:\ecephys_fork\test_data\SC_10trial'
 #           these strings must match a key in the param dictionaries above.
 
 run_specs = [									
-						['SC024_092319_NP1.0_Midbrain', '0', '0,9', '0,1', ['cortex', 'medulla'] ]
+						['SC024_092319_NP1.0_Midbrain', '0', 'start,end', '0,1', ['cortex', 'medulla'] ]
 ]
 
 # ------------------
