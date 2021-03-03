@@ -1,13 +1,13 @@
+import matlab.engine   # on some systems, the matlab engine must be loaded first
+
 from argschema import ArgSchemaParser
 import os
-import logging
-import subprocess
 import time
 import shutil
 
 import numpy as np
 
-import matlab.engine
+
 
 from pathlib import Path
 
