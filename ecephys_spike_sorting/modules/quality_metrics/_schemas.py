@@ -18,6 +18,9 @@ class QualityMetricsParams(DefaultSchema):
 
     quality_metrics_output_file = String(required=True, help='CSV file where metrics will be saved')
 
+    include_pc_metrics = Boolean(required=False, default=True, help='Compute features that require principal components')
+
+
 class InputParameters(ArgSchema):
     
     quality_metrics_params = Nested(QualityMetricsParams)

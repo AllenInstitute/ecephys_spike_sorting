@@ -43,6 +43,7 @@ def calculate_metrics(spike_times,
         Original data channel for pc_feature_ind array
     pc_features : numpy.ndarray (num_spikes x num_pcs x num_channels)
         Pre-computed PCs for blocks of channels around each spike
+        If 'None', PC-based metrics will not be computed
     pc_feature_ind : numpy.ndarray (num_units x num_channels)
         Channel indices of PCs for each unit
     epochs : list of Epoch objects
@@ -73,25 +74,6 @@ def calculate_metrics(spike_times,
 
         in_epoch = (spike_times > epoch.start_time) * (spike_times < epoch.end_time)
 
-        print("Calculating silhouette score")
-        the_silhouette_score = calculate_silhouette_score(spike_clusters[in_epoch],
-                                                        spike_templates[in_epoch],
-                                                       total_units,
-                                                       pc_features[in_epoch,:,:],
-                                                       pc_feature_ind,
-                                                       params['n_silhouette'])
-
-        print("Calculating drift metrics")
-        max_drift, cumulative_drift = calculate_drift_metrics(spike_times[in_epoch],
-                                                       spike_clusters[in_epoch],
-                                                       spike_templates[in_epoch],
-                                                       total_units,
-                                                       pc_features[in_epoch,:,:],
-                                                       pc_feature_ind,
-                                                       params['drift_metrics_interval_s'],
-                                                       params['drift_metrics_min_spikes_per_interval'])
-
-
         print("Calculating isi violations")
         isi_viol = calculate_isi_violations(spike_times[in_epoch], spike_clusters[in_epoch], total_units, params['isi_threshold'], params['min_isi'])
 
@@ -104,24 +86,45 @@ def calculate_metrics(spike_times,
         print("Calculating amplitude cutoff")
         amplitude_cutoff = calculate_amplitude_cutoff(spike_clusters[in_epoch], amplitudes[in_epoch], total_units)
 
+        if pc_features is not None:
 
-        print("Calculating PC-based metrics")
-        isolation_distance, l_ratio, d_prime, nn_hit_rate, nn_miss_rate = calculate_pc_metrics(spike_clusters[in_epoch],
-                                                                                                spike_templates[in_epoch],
-                                                                                                total_units,
-                                                                                                pc_features[in_epoch,:,:],
-                                                                                                pc_feature_ind,
-                                                                                                params['num_channels_to_compare'],
-                                                                                                params['max_spikes_for_unit'],
-                                                                                                params['max_spikes_for_nn'],
-                                                                                                params['n_neighbors'])
+            print("Calculating PC-based metrics")
+            isolation_distance, l_ratio, d_prime, nn_hit_rate, nn_miss_rate = calculate_pc_metrics(spike_clusters[in_epoch],
+                                                                                                    spike_templates[in_epoch],
+                                                                                                    total_units,
+                                                                                                    pc_features[in_epoch,:,:],
+                                                                                                    pc_feature_ind,
+                                                                                                    params['num_channels_to_compare'],
+                                                                                                    params['max_spikes_for_unit'],
+                                                                                                    params['max_spikes_for_nn'],
+                                                                                                    params['n_neighbors'])
 
+
+
+            print("Calculating silhouette score")
+            the_silhouette_score = calculate_silhouette_score(spike_clusters[in_epoch],
+                                                        spike_templates[in_epoch],
+                                                       total_units,
+                                                       pc_features[in_epoch,:,:],
+                                                       pc_feature_ind,
+                                                       params['n_silhouette'])
+
+            print("Calculating drift metrics")
+            max_drift, cumulative_drift = calculate_drift_metrics(spike_times[in_epoch],
+                                                       spike_clusters[in_epoch],
+                                                       spike_templates[in_epoch],
+                                                       total_units,
+                                                       pc_features[in_epoch,:,:],
+                                                       pc_feature_ind,
+                                                       params['drift_metrics_interval_s'],
+                                                       params['drift_metrics_min_spikes_per_interval'])
 
         cluster_ids = np.unique(spike_clusters)
 
         epoch_name = [epoch.name] * len(cluster_ids)
 
-        metrics = pd.concat((metrics, pd.DataFrame(data= OrderedDict((('cluster_id', cluster_ids),
+        if pc_features is not None:
+            metrics = pd.concat((metrics, pd.DataFrame(data= OrderedDict((('cluster_id', cluster_ids),
                                 ('firing_rate' , firing_rate),
                                 ('presence_ratio' , presence_ratio),
                                 ('isi_viol' , isi_viol),
@@ -131,9 +134,18 @@ def calculate_metrics(spike_times,
                                 ('d_prime' , d_prime),
                                 ('nn_hit_rate' , nn_hit_rate),
                                 ('nn_miss_rate' , nn_miss_rate),
-                                ('silhouette_score', the_silhouette_score),
+                                ('silhouette_score', silhouette_score),
                                 ('max_drift', max_drift),
                                 ('cumulative_drift', cumulative_drift),
+                                ('epoch_name' , epoch_name),
+                                )))))
+
+        else:
+            metrics = pd.concat((metrics, pd.DataFrame(data= OrderedDict((('cluster_id', cluster_ids),
+                                ('firing_rate' , firing_rate),
+                                ('presence_ratio' , presence_ratio),
+                                ('isi_viol' , isi_viol),
+                                ('amplitude_cutoff' , amplitude_cutoff),
                                 ('epoch_name' , epoch_name),
                                 )))))
 
