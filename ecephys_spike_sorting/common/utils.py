@@ -191,7 +191,11 @@ def read_cluster_group_tsv(filename):
 
     info = pd.read_csv(filename, sep='\t')
     cluster_ids = info['cluster_id'].values.astype('int')
-    cluster_quality = info['group'].values
+    
+    try:
+        cluster_quality = info['group'].values
+    except KeyError:
+        cluster_quality = info['KSLabel'].values
 
     return cluster_ids, cluster_quality
 
