@@ -15,10 +15,10 @@ def run_CatGT(args):
     print('ecephys spike sorting: CatGT helper module')
 
     catGTPath = args['catGT_helper_params']['catGTPath']
-    if (sys.platform.startswith,'win'):
+    if sys.platform.startswith('win'):
         # build windows command line
         catGTexe_fullpath = catGTPath.replace('\\', '/') + "/runit.bat"
-    elif (sys.platform.startwith, 'linux'):
+    elif sys.platform.starstwith('linux'):
         catGTexe_fullpath = catGTPath.replace('\\', '/') + "/runit.sh"
     else:
         print('unknown system, cannot run CatGt')

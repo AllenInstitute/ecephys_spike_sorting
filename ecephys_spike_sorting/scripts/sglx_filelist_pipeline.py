@@ -151,8 +151,8 @@ for i, spec in enumerate(recording_specs):
 
     
     # get region specific parameters
-    ks_Th = ksTh_dict.get(spec[1])
-    refPerMS = refPerMS_dict.get(spec[1])
+    ks_Th = ksTh_dict.get(spec[1][0])
+    refPerMS = refPerMS_dict.get(spec[1][0])
 
     info = createInputJson(module_input_json[i], npx_directory=npx_directory,
                                    continuous_file = continuous_file,

@@ -34,9 +34,9 @@ def calculate_mean_waveforms(args):
         
         # path to the 'runit.bat' executable that calls C_Waves.
         # Essential in linux where C_Waves executable is only callable through runit
-        if (sys.platform.startswith,'win'):
+        if sys.platform.startswith('win'):
             exe_path = os.path.join(args['mean_waveform_params']['cWaves_path'], 'runit.bat')
-        elif (sys.platform.startswith, 'linux'):
+        elif sys.platform.startswith('linux'):
             exe_path = os.path.join(args['mean_waveform_params']['cWaves_path'], 'runit.sh')
         else:
             print('unknown system, cannot run C_Waves')

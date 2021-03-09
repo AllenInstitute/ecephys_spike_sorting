@@ -52,7 +52,7 @@ def check_template(template, times):
 
 
 def make_actual_channel_locations(min_chan, max_chan):
-    actual_channel_locations = np.zeros((max_chan-min_chan,2))
+    actual_channel_locations = np.zeros((max_chan-min_chan,2),dtype=int)
     xlocations = [16, 48, 0, 32]
     for i in range(min_chan,max_chan):
         actual_channel_locations[i,0] = xlocations[i%4]

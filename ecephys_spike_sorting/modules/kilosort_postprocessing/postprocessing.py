@@ -76,7 +76,7 @@ def remove_double_counted_spikes(spike_times, spike_clusters, spike_templates,
     
     sorted_unit_list = unit_list[order]
 
-    overlap_matrix = np.zeros((num_clusters, num_clusters))
+    overlap_matrix = np.zeros((num_clusters, num_clusters), dtype = 'int')
     
 
     within_unit_overlap_samples = int(params['within_unit_overlap_window'] * sample_rate)
@@ -84,7 +84,7 @@ def remove_double_counted_spikes(spike_times, spike_clusters, spike_templates,
 
     print('Removing within-unit overlapping spikes...')
 
-    spikes_to_remove = np.zeros((0,))
+    spikes_to_remove = np.zeros((0,), dtype = 'int')
 
     for idx1, unit_id1 in enumerate(sorted_unit_list):
 
@@ -109,7 +109,7 @@ def remove_double_counted_spikes(spike_times, spike_clusters, spike_templates,
 
     print('Removing between-unit overlapping spikes...')
 
-    spikes_to_remove = np.zeros((0,))
+    spikes_to_remove = np.zeros((0,), dtype = 'int')
 
     for idx1, unit_id1 in enumerate(sorted_unit_list):
 
@@ -217,7 +217,7 @@ def find_between_unit_overlap(spike_train1, spike_train2, amp1, amp2, overlap_wi
 
     spike_train = np.concatenate( (spike_train1, spike_train2) )
     original_inds = np.concatenate( (np.arange(len(spike_train1)), np.arange(len(spike_train2)) ) )
-    cluster_ids = np.concatenate( (np.zeros((len(spike_train1),)), np.ones((len(spike_train2),))) )
+    cluster_ids = np.concatenate( (np.zeros((len(spike_train1),), dtype = 'int'), np.ones((len(spike_train2),),dtype = 'int')) )
 
     order = np.argsort(spike_train)
     sorted_train = spike_train[order]

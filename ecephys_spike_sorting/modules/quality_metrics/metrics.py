@@ -303,7 +303,7 @@ def calculate_pc_metrics(spike_clusters,
             channels_to_use = np.where(chan_dist < max_radius_um)[0]
     
     
-            spike_counts = np.zeros(units_for_channel.shape)
+            spike_counts = np.zeros(units_for_channel.shape, dtype = 'int')
     
             for idx2, cluster_id2 in enumerate(units_for_channel):
                 spike_counts[idx2] = np.sum(spike_clusters == cluster_id2)
@@ -315,8 +315,8 @@ def calculate_pc_metrics(spike_clusters,
             else:
                 relative_counts = spike_counts
                 
-            all_pcs = np.zeros((0, pc_features.shape[1], channels_to_use.size))
-            all_labels = np.zeros((0,))
+            all_pcs = np.zeros((0, pc_features.shape[1], channels_to_use.size))     #dtype = default, double
+            all_labels = np.zeros((0,), dtype = 'int')
                 
             for idx2, cluster_id2 in enumerate(units_for_channel):
     
@@ -330,7 +330,7 @@ def calculate_pc_metrics(spike_clusters,
                     subsample = int(relative_counts[idx2])
                     index_mask = make_index_mask(spike_clusters, cluster_id2, min_num = 0, max_num = subsample)
                     pcs = get_unit_pcs(pc_features, index_mask, channel_mask)
-                    labels = np.ones((pcs.shape[0],)) * cluster_id2
+                    labels = np.ones((pcs.shape[0],), dtype = 'int') * cluster_id2
                     
                     all_pcs = np.concatenate((all_pcs, pcs),0)
                     all_labels = np.concatenate((all_labels, labels),0)

@@ -3,7 +3,6 @@ import os
 import sys
 import subprocess
 import time
-import shutil
 import fnmatch
 
 import numpy as np
@@ -46,14 +45,34 @@ def call_TPrime(args):
     
     sync_period = args['tPrime_helper_params']['sync_period']
 
-    ni_ex_list = args['tPrime_helper_params']['ni_ex_list']
-    ni_ex_list = ni_ex_list.split(' -')
-    ni_ex_list = [idx for idx in ni_ex_list if len(idx) > 0]
-    im_ex_list = args['tPrime_helper_params']['im_ex_list']
-    im_ex_list = im_ex_list.split(' -')
-    im_ex_list = [idx for idx in im_ex_list if len(idx) > 0]
-
-
+    ni_ex_string = args['tPrime_helper_params']['ni_ex_list']       
+    ni_ex_list = list()
+    
+    if ni_ex_string != '':
+        # find start points all instances of '-X' in ni_ex_string
+        ni_str_list = ni_ex_string.split(' ')
+        nstr = len(ni_str_list)
+        for i in range(nstr):
+            firstDash = ni_str_list[i].find('-')
+            if firstDash >= 0:
+                print(ni_str_list[i][firstDash+1:])
+                ni_ex_list.append(ni_str_list[i][firstDash+1:])
+                        
+    
+    im_ex_string = args['tPrime_helper_params']['im_ex_list']
+    im_ex_list = list()
+    
+    if im_ex_string != '':
+        # find start points all instances of '-X' in ni_ex_string
+        im_str_list = im_ex_string.split(' ')
+        nstr = len(im_str_list)
+        for i in range(nstr):
+            firstDash = im_str_list[i].find('-')
+            if firstDash >= 0:
+                print(im_str_list[i][firstDash+1:])
+                im_ex_list.append(im_str_list[i][firstDash+1:])
+    
+    
     toStream_type, toStream_prb, toStream_ex_name = catGT_ex_params_from_str(toStream_params)
 
     from_list = list()       # list of files of sync edges for streams to translate to reference
@@ -208,9 +227,9 @@ def call_TPrime(args):
         
     # path to the 'runit.bat' executable that calls TPrime.
     # Essential in linux where TPrime executable is only callable through runit
-    if (sys.platform.startswith,'win'):
+    if sys.platform.startswith('win'):
         exe_path = os.path.join(args['tPrime_helper_params']['tPrime_path'], 'runit.bat')
-    elif (sys.platform.startwith, 'linux'):
+    elif sys.platform.starstwith('linux'):
         exe_path = os.path.join(args['tPrime_helper_params']['tPrime_path'], 'runit.sh')
     else:
         print('unknown system, cannot run TPrime')   

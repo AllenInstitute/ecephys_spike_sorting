@@ -80,9 +80,10 @@ def extract_waveforms(raw_data,
     total_units = len(cluster_ids)
     total_epochs = len(epochs)
 
+    # allocate array for waveforms, datatype = default, double
     mean_waveforms = np.zeros(
         (total_units, total_epochs, 2, raw_data.shape[1], samples_per_spike))
-    spike_count = np.zeros((total_units, total_epochs + 1))
+    spike_count = np.zeros((total_units, total_epochs + 1), dtype = 'int')
 
     peak_channels = np.squeeze(channel_map[np.argmax(np.max(templates,1) - np.min(templates,1),1)])
 

@@ -218,7 +218,7 @@ def get_noise_channels(raw_data_file, num_channels, sample_rate, bit_volts, nois
 
     D = data[start_index:end_index, :] * bit_volts
     
-    D_filt = np.zeros(D.shape)
+    D_filt = np.zeros(D.shape)  # datatype set by D
 
     for i in range(D.shape[1]):
         D_filt[:,i] = filtfilt(b, a, D[:,i])
