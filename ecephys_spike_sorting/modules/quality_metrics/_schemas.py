@@ -1,10 +1,11 @@
 from argschema import ArgSchema, ArgSchemaParser 
 from argschema.schemas import DefaultSchema
-from argschema.fields import Nested, InputDir, String, Float, Dict, Int
+from argschema.fields import Nested, InputDir, String, Float, Dict, Int, Bool
 from ...common.schemas import EphysParams, Directories, WaveformMetricsFile
 
 
 class QualityMetricsParams(DefaultSchema):
+    
     isi_threshold = Float(required=False, default=0.0015, help='Maximum time (in seconds) for ISI violation')
     min_isi = Float(required=False, default=0.00, help='Minimum time (in seconds) for ISI violation')
     num_channels_to_compare = Int(required=False, default=13, help='Number of channels to use for computing PC metrics; must be odd')
@@ -18,6 +19,9 @@ class QualityMetricsParams(DefaultSchema):
 
     quality_metrics_output_file = String(required=True, help='CSV file where metrics will be saved')
 
+    include_pc_metrics = Bool(required=False, default=True, help='Compute features that require principal components')
+
+
 class InputParameters(ArgSchema):
     
     quality_metrics_params = Nested(QualityMetricsParams)
@@ -26,6 +30,7 @@ class InputParameters(ArgSchema):
     waveform_metrics = Nested(WaveformMetricsFile)
     
 class OutputSchema(DefaultSchema): 
+
     input_parameters = Nested(InputParameters, 
                               description=("Input parameters the module " 
                                            "was run with"), 

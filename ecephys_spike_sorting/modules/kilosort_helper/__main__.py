@@ -58,6 +58,14 @@ def run_kilosort(args):
                                              input_file_forward_slash,
                                              args['ephys_params'], 
                                              args['kilosort_helper_params']['kilosort2_params'])
+
+    elif args['kilosort_helper_params']['kilosort_version'] == 3:
+    
+        matlab_file_generator.create_config3(args['kilosort_helper_params']['matlab_home_directory'], 
+                                             output_dir_forward_slash, 
+                                             input_file_forward_slash,
+                                             args['ephys_params'], 
+                                             args['kilosort_helper_params']['kilosort3_params'])
     else:
         return
 
@@ -69,9 +77,12 @@ def run_kilosort(args):
     if args['kilosort_helper_params']['kilosort_version'] == 1:
         eng.kilosort_config_file(nargout=0)
         eng.kilosort_master_file(nargout=0)
-    else:
+    elif args['kilosort_helper_params']['kilosort_version'] == 2: 
         eng.kilosort2_config_file(nargout=0)
         eng.kilosort2_master_file(nargout=0)
+    elif args['kilosort_helper_params']['kilosort_version'] == 3:
+        eng.kilosort3_config_file(nargout=0)
+        eng.main_kilosort3(nargout=0)
 
     execution_time = time.time() - start
 
