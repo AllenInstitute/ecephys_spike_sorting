@@ -275,7 +275,7 @@ def load_kilosort_data(folder,
     amplitudes = load(folder,'amplitudes.npy')
     templates = load(folder,'templates.npy')
     unwhitening_mat = load(folder,'whitening_mat_inv.npy')
-    channel_map = load(folder, 'channel_map.npy')
+    channel_map = np.squeeze(load(folder, 'channel_map.npy'))
 
     if include_pcs:
         pc_features = load(folder, 'pc_features.npy')

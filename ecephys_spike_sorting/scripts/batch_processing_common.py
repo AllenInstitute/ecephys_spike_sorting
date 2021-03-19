@@ -623,7 +623,7 @@ class processing_session():
             command_string = "robocopy "+ source +" "+destination +r" /e /xc /xn /xo"
 
             if 'cww' in module:
-                command_string = command_string+ ' /xf probe_info.json'
+                command_string = command_string+ '/xf probe_info.json'
             self.logger_dict[probe].info(command_string)
             self.process_dict[probe][module] = subprocess.Popen(command_string)#,stdout = subprocess.PIPE,stderr = subprocess.PIPE))
                 #shutil.copytree(extracted_data_location, new_location)
@@ -1087,7 +1087,7 @@ class processing_session():
                     mask = probe_json['mask']
                 else:
                     mask = 384*[True]
-                if sum(not(channel) for channel in mask)>0:
+                if sum(not(channel) for channel in mask)>30:
                     mask = 384*[True]
                 references = [191]
                 for ref in references:

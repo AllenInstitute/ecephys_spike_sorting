@@ -21,11 +21,21 @@ def calculate_quality_metrics(args):
     print("Loading data...")
 
     try:
-        spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, clusterIDs, cluster_quality, pc_features, pc_feature_ind = \
+        if args['quality_metrics_params']['include_pc_metrics']:
+            spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, clusterIDs, cluster_quality, pc_features, pc_feature_ind = \
                 load_kilosort_data(args['directories']['kilosort_output_directory'], \
                     args['ephys_params']['sample_rate'], \
                     use_master_clock = False,
                     include_pcs = True)
+        else:
+            spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
+                load_kilosort_data(args['directories']['kilosort_output_directory'], \
+                    args['ephys_params']['sample_rate'], \
+                    use_master_clock = False,
+                    include_pcs = False)
+
+            pc_features = None
+            pc_feature_ind = None
 
         metrics = calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, pc_features, pc_feature_ind, args['quality_metrics_params'])
     

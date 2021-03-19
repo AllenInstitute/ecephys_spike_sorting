@@ -26,18 +26,20 @@ def run_kilosort(args):
     output_dir = args['directories']['kilosort_output_directory']
     output_dir_forward_slash = output_dir.replace('\\','/')
 
-    mask = get_noise_channels(args['ephys_params']['ap_band_file'], 
-                              args['ephys_params']['sample_rate'],
-                              args['ephys_params']['bit_volts'])
+    mask2, offset, scaling, surface_channel, air_channel = read_probe_json(args['common_files']['probe_json'])
+    mask2 = [not i for i in mask2]
 
-    _, offset, scaling, surface_channel, air_channel = read_probe_json(args['common_files']['probe_json'])
-    
+    try:
+        mask = get_noise_channels(args['ephys_params']['ap_band_file'], 
+                                  args['ephys_params']['sample_rate'],
+                                  args['ephys_params']['bit_volts'])
+    except Exception as E:
+        mask = np.array(mask2)
+    mask[mask2] = False
+
     mask[args['ephys_params']['reference_channels']] = False
 
     top_channel = np.min([args['ephys_params']['num_channels'], int(surface_channel) + args['kilosort_helper_params']['surface_channel_buffer']])
-
-    shutil.copyfile(os.path.join('ecephys_spike_sorting','modules','kilosort_helper','kilosort2_master_file.m'),
-        os.path.join(args['kilosort_helper_params']['matlab_home_directory'],'kilosort2_master_file.m'))
 
     matlab_file_generator.create_chanmap(args['kilosort_helper_params']['matlab_home_directory'], \
                                         EndChan = top_channel, \
@@ -52,12 +54,27 @@ def run_kilosort(args):
                                             args['kilosort_helper_params']['kilosort_params'])
     
     elif args['kilosort_helper_params']['kilosort_version'] == 2:
+
+        shutil.copyfile(os.path.join('ecephys_spike_sorting','modules','kilosort_helper','kilosort2_master_file.m'),
+            os.path.join(args['kilosort_helper_params']['matlab_home_directory'],'kilosort2_master_file.m'))
     
         matlab_file_generator.create_config2(args['kilosort_helper_params']['matlab_home_directory'], 
                                              output_dir_forward_slash, 
                                              input_file_forward_slash,
                                              args['ephys_params'], 
                                              args['kilosort_helper_params']['kilosort2_params'])
+
+    elif args['kilosort_helper_params']['kilosort_version'] == 3:
+
+        shutil.copyfile(os.path.join('ecephys_spike_sorting','modules','kilosort_helper','main_kilosort3.m'),
+            os.path.join(args['kilosort_helper_params']['matlab_home_directory'],'main_kilosort3.m'))
+    
+        matlab_file_generator.create_config3(args['kilosort_helper_params']['matlab_home_directory'], 
+                                             output_dir_forward_slash, 
+                                             input_file_forward_slash,
+                                             args['ephys_params'], 
+                                             args['kilosort_helper_params']['kilosort3_params'])
+
     else:
         return
 
@@ -69,9 +86,12 @@ def run_kilosort(args):
     if args['kilosort_helper_params']['kilosort_version'] == 1:
         eng.kilosort_config_file(nargout=0)
         eng.kilosort_master_file(nargout=0)
-    else:
+    elif args['kilosort_helper_params']['kilosort_version'] == 2: 
         eng.kilosort2_config_file(nargout=0)
         eng.kilosort2_master_file(nargout=0)
+    elif args['kilosort_helper_params']['kilosort_version'] == 3:
+        eng.kilosort3_config_file(nargout=0)
+        eng.main_kilosort3(nargout=0)
 
     execution_time = time.time() - start
 

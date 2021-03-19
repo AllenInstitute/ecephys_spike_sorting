@@ -39,7 +39,8 @@ class RemoteInterface(RemoteObject):
 		print('Attempting to initiate processing from remote command')
 		print('Probes = '+ str(probes))
 		self.parent.set_session( session_name)
-		started = self.parent.start_processing(session_name, probes, WSE_computer=WSE_computer)
+		#started = self.parent.start_processing(session_name, probes, WSE_computer=WSE_computer)
+		#commenting out until we fix it to run the appropriate day
 		return started
 
 	def ping(self):

@@ -1045,8 +1045,8 @@ class processing_session():
                         surface_channel = 300
                         logging.error('Failed to retrieve surface channel', exc_info=True)
                     for channel in range(384):
-                        max_chan = min(383, surface_channel+50)
-                        if not(channel in range(surface_channel-80, max_chan)):
+                        max_chan = min(383, surface_channel+30)
+                        if not(channel in range(surface_channel-40, max_chan)):
                             mask[channel] = False
                 edit_mask(probe, mask, 'kilosort')
             except Exception as E:

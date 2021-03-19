@@ -40,6 +40,37 @@ class Kilosort2Parameters(DefaultSchema):
     nPCs = Int(required=False, default=3, help='how many PCs to project the spikes into')
     useRAM = Int(required=False, default=0, help='must be 0')
 
+class Kilosort3Parameters(DefaultSchema):
+
+    trange = String(required=False, default='[0 Inf]', help='Time range in seconds to process')
+    fproc = String(required=False, default="fullfile('D:/data/kilosort', 'temp_wh.dat')", help='Processed data file on a fast ssd')
+  
+    chanMap = String(required=False, default="'chanMap.mat'", help='path to channel map .mat file')
+    fshigh = Int(required=False, default=300, help='frequency for high pass filtering')
+    minfr_goodchannels = Float(required=False, default=0.1, help='minimum firing rate on a "good" channel (0 to skip)')
+    Th = String(required=False, default='[9 9]', help='threshold (last pass can be lower')
+    lam = Int(required=False, default=10, help='how important is the amplitude penalty (like in Kilosort1, 0 means not used, 10 is average, 50 is a lot)')
+    AUCsplit = Float(required=False, default=0.8, help='splitting a cluster at the end requires at least this much isolation for each sub-cluster (max = 1)')
+    minFR = Float(required=False, default=1/50., help='minimum spike rate (Hz)')
+    momentum = String(required=False, default='[20 400]', help='number of samples to average over (annealed)')
+    sigmaMask = Int(required=False, default=30, help='spatial constant in um for computing residual variance of spike')
+    ThPre = Int(required=False, default=8, help='threshold crossings for pre-clustering (in PCA projection space)')
+    sig = Int(required=False, default=20)
+    nblocks = Int(required=False, default=5)
+
+    spkTh = Int(required=False, default=-6, help='spike threshold is standard deviations')
+    reorder = Int(required=False, default=1, help='whether to reorder batches for drift correction')
+    nskip = Int(required=False, default=25, help='how many batches to skip for determining spike PCs')
+    GPU = Int(required=False, default=1, help='whether to run this code on an Nvidia GPU')
+    nfilt_factor = Int(required=False, default=4, help='max number of clusters per good channel (even temporary ones)')
+    ntbuff = Int(required=False, default=64, help='samples of symmetrical buffer for whitening and spike detection')
+    NT = String(required=False, default='64*1024 + ops.ntbuff', help='this is the batch size; for GPU should be a multiple of 32 + ntbuff)')
+    whiteningRange = Int(required=False, default=32)
+    nSkipCov = Int(required=False, default=25, help='compute whitening matrix from every Nth batch')
+    scaleproc = Int(required=False, default=200, help='int16 scaling of whitenend data')
+    nPCs = Int(required=False, default=3, help='how many PCs to project the spikes into')
+    useRAM = Int(required=False, default=0, help='must be 0')
+
 class KilosortHelperParameters(DefaultSchema):
 
     kilosort_version = Int(required=True, default=2, help='Kilosort version to use (1 or 2)')
@@ -51,6 +82,7 @@ class KilosortHelperParameters(DefaultSchema):
     
     kilosort_params = Nested(KilosortParameters, required=False, help='Parameters used to auto-generate a Kilosort config file')
     kilosort2_params = Nested(Kilosort2Parameters, required=False, help='Parameters used to auto-generate a Kilosort2 config file')
+    kilosort3_params = Nested(Kilosort3Parameters, required=False, help='Parameters used to auto-generate a Kilosort3 config file')
 
 class InputParameters(ArgSchema):
     

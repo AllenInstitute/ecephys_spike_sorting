@@ -26,114 +26,128 @@ logging.basicConfig(level = logging.INFO)
 
 
 from helpers.check_data_processing import check_data_processing, check_all_space
-from helpers.batch_processing_config import get_from_config, get_from_kwargs
-
 #import helpers.processing as npxprocess
 from create_input_json import createInputJson
 from zro import RemoteObject, Proxy
 
-session = '1044026583_509811_20200818_probeDEF'
+session = '969357522_478202_20191017'
 probes_in = ['A', 'B', 'C', 'D', 'E', 'F']
 probe_type = 'PXI'
 class processing_session():
 
-    def __init__(self, session_name, probes_in, **kwargs):
+    def __init__(self, session_name, probes_in, probe_type = 'PXI', WSE_computer=None):
         self.session_name = session_name
-        self.probe_type = get_from_kwargs('probe_type', kwargs)
-        self.WSE_computer = get_from_kwargs('WSE_computer', kwargs)
-        self.cortex_only = get_from_kwargs('cortex_only', kwargs, False)
+        self.probe_type = probe_type
+        self.WSE_computer = WSE_computer
         ### Put read config here??
-        probe_params = get_from_config('probe_params')
+        probe_params = namedtuple('probe_params',['probe_letter', 'pxi_slot', 'num_in_slot', 'session','start_module','end_module','backup1','backup2'])
+        slot_params = namedtuple('slot_params',['slot_num', 'recording_dir', 'extracted_drive','backup1','backup2'])
 
-        slot_params = get_from_config('slot_params')
+        #self.phy_viewing_drive = 'A:' #(change this to an additional 1tb SSD when you have time and backups are taken care of)
+        self.lims_upload_drive = r"\\W10dt05515\E" #Change to a Sata drive that we don't plan to remove so it stays shared. 
 
-        self.lims_upload_drive = get_from_kwargs('lims_upload_drive', kwargs)
-
-        processing_drive = get_from_kwargs('processing_drive', kwargs)
-
-        default_backup1 = os.path.join(get_from_kwargs('network_backup', kwargs), session_name)
-        default_backup2 = get_from_kwargs('disk_backup', kwargs)
-        default_start = get_from_kwargs('start_module', kwargs)
-        default_end = get_from_kwargs('end_module', kwargs)
-
-        slot_config = get_from_kwargs('slot_config', kwargs)
-
-        self.json_directory = get_from_kwargs('json_directory', kwargs)
+        default_backup1 = os.path.join(r'\\10.128.50.43\sd6.3', session_name)
+        default_backup2 = os.path.join(r'\\10.128.50.43\sd6.3', session_name)
+        default_start = 'extract_from_npx'
+        default_end = 'cleanup'
+        self.json_directory = r'C:\Users\svc_neuropix\Documents\json_files'
 
 
+        session_name2 = "1030489628_498756_20200617"
+        default_backup1_2 = r'V:'
+        default_backup2_2 = os.path.join(r'\\10.128.50.43\sd6.2', session_name2)
+        default_start_2 = 'depth_estimation'
+
+        session_name3 = '1028043324_498757_20200604'
+        default_backup1_3 = r"I:"
+        default_backup2_3 = os.path.join(r'\\10.128.50.43\sd6', session_name3)
+        default_start_3 = 'kilosort_helper'
+        default_end_3 = 'cleanup'
 
         pxi_slots = OrderedDict()
+        pxi_slots['2a'] = slot_params(2, os.path.join(r'A:', session_name2+'_probeABC'), 'D:', default_backup1_2, default_backup2_2)
+        pxi_slots['3a'] = slot_params(3, os.path.join(r'B:', session_name2+'_probeDEF'), 'D:', default_backup1_2, default_backup2_2)
+        #pxi_slots['2b'] = slot_params(2, os.path.join('S:', session_name3+'_probeABC'), 'E:', default_backup1_3, default_backup2_3)#os.path.join(r'\\sd5\sd5.2', session_name2), os.path.join(r'\\sd5\sd5.2', session_name2))#T
+        #pxi_slots['3b'] = slot_params(3, os.path.join('S:', session_name3+'_probeABC'), 'J:', default_backup1_3, default_backup2_3)#os.path.join(r'\\sd5\sd5.2', session_name2), os.path.join(r'\\sd5\sd5.2', session_name2))#T
 
-        for slot, params in slot_config.items():
-            pxi_slots[str(slot)] = slot_params(int(slot), os.path.join(params['acq_drive'], session_name+'_'+params['suffix']), processing_drive, default_backup1, default_backup2)#S
-        #print(pxi_slots)
-        self.pxi_slots = get_from_kwargs('pxi_slots', kwargs, default=pxi_slots)
-        #print(self.pxi_slots)
-        #print(self.pxi_slots['3'])
+
+        pxi_slots['2'] = slot_params(2, os.path.join(r'\\W10dt05515\w', session_name+'_probeABC'), 'D:', default_backup1, default_backup2)#S
+        pxi_slots['3'] = slot_params(3, os.path.join(r'\\W10dt05515\w', session_name+'_probeDEF'), 'D:', default_backup1, default_backup2)#os.path.join(r'\\sd5\sd5.2', session_name2), os.path.join(r'\\sd5\sd5.2', session_name2))#T
+        #pxi_slots['2'] = slot_params(2, os.path.join(r'\\sd5\sd5.3\914313377_468996_20190730'), 'E:', r'\\sd5\sd5.3\914313377_468996_20190730', r'\\sd5\sd5.3\914313377_468996_20190730')#S
+        #pxi_slots['3'] = slot_params(3, os.path.join(r'\\sd5\sd5.3\914313377_468996_20190730'), 'F:', r'\\sd5\sd5.3\914313377_468996_20190730', r'\\sd5\sd5.3\914313377_468996_20190730')#os.path.join(r'\\sd5\sd5.2', session_name2), os.path.join(r'\\sd5\sd5.2', session_name2))#T
+        self.pxi_slots = pxi_slots
 
         #Whether to verify that the backup exists before starting extraction
-        self.skip_verify_backup = get_from_kwargs('skip_verify_backup', kwargs)
+        self.skip_verify_backup = True
 
 
-        processable_probes = get_from_kwargs('processable_probes', kwargs)
-
-        probes_to_process = [probe for probe in probes_in if probe in processable_probes]
-        probe_config = get_from_kwargs('probe_config', kwargs)
         probes = OrderedDict()
-        for probe in probes_to_process:
-            probe_key = 'probe'+probe
-            probe_slot_params = probe_config[probe]
-            probes[probe_key]=probe_params(probe, probe_slot_params['pxi_slot'], probe_slot_params['num_in_slot'], session_name, default_start, default_end, default_backup1, default_backup2)
-            #print(probes[probe_key].pxi_slot)
-        self.probes = get_from_kwargs('probes', kwargs, default=probes)
 
-        modules = [
-            #'copy_back_primary_raw_data',
-            #'copy_back_secondary_raw_data',
+        if 'A' in probes_in:
+            probes['probeA']=probe_params('A', '2', '1', session_name, default_start, default_end, default_backup1, default_backup2)
+        if 'B' in probes_in:
+            probes['probeB']=probe_params('B', '2', '2',  session_name, default_start, default_end, default_backup1, default_backup2)
+        if 'C' in probes_in:
+            probes['probeC']=probe_params('C', '2', '3',  session_name, default_start, default_end, default_backup1, default_backup2)
+        #if 'D' in probes_in:
+        #    probes['probeD']=probe_params('D', '3', '1',  session_name, default_start, default_end, default_backup1, default_backup2)
+        #if 'E' in probes_in:
+        #    probes['probeE']=probe_params('E', '3', '2',  session_name, default_start, default_end, default_backup1, default_backup2)
+        #if 'F' in probes_in:
+        #    probes['probeF']=probe_params('F', '3', '3',  session_name, default_start, default_end, default_backup1, default_backup2)
+
+
+        #probes['probeA2']=probe_params('A', '2a', '1', session_name2, default_start_2, default_end, default_backup1_2, default_backup2_2)
+        #probes['probeB2']=probe_params('B', '2a', '2',  session_name2, default_start_2, default_end, default_backup1_2, default_backup2_2)
+        #probes['probeC2']=probe_params('C', '2a', '3',  session_name2, default_start_2, default_end, default_backup1_2, default_backup2_2)
+        #probes['probeD2']=probe_params('D', '3a', '1',  session_name2, 'cleanup', default_end, default_backup1_2, default_backup2_2)
+        #probes['probeE2']=probe_params('E', '3a', '2',  session_name2, default_start_2, default_end, default_backup1_2, default_backup2_2)
+        #probes['probeF2']=probe_params('F', '3a', '3',  session_name2, default_start_2, default_end, default_backup1_2, default_backup2_2)
+
+        
+#       probes['probeA3']=probe_params('A', '2b', '1', session_name3, default_start_3, default_end_3, default_backup1_3, default_backup2_3)
+#       probes['probeB3']=probe_params('B', '2b', '2',  session_name3, default_start_3, default_end_3, default_backup1_3, default_backup2_3)
+#        probes['probeF3']=probe_params('F', '3b', '3',  session_name3, default_start_3, default_end_3, default_backup1_3, default_backup2_3)
+
+
+        self.probes = probes
+
+        self.modules = [
            #'primary_backup_raw_data1',
            'extract_from_npx',
            'restructure_directories',
            'depth_estimation',
+           'edit_probe_json',
            'median_subtraction',
            'kilosort_helper',
            'noise_templates',
            'mean_waveforms',
            'quality_metrics',
            'add_noise_class_to_metrics',
-           'copy_logs', 
            'final_copy_parallel',
            #'primary_backup_raw_data1',#combine these into one module - or allow it to kick off multiple processes without waiting?
            #'primary_backup_processed_data',#combine these into one module - or allow it to kick off multiple processes without waiting?
            #'secondary_backup_processed_data',#combine these into one module - or allow it to kick off multiple processes without waiting?
            #'secondary_backup_raw_data',#combine these into one module - or allow it to kick off multiple processes without waiting? is it really that simple?
+           'copy_logs',           
            'cleanup'
            #'primary_processed_lims_only',
            #'move_processed_for_phy',
         ]
-        self.modules = get_from_kwargs('modules', kwargs, default=modules)
 
-        copy_while_waiting_modules = [
-            'cww_primary_backup_raw_data',
-            'cww_primary_backup_processed', # need to name these differently because both may be run
-            'cww_secondary_backup_raw_data', #these can be the same as the main modules because only needs to run once - slot module prevents from running again
-            'cww_secondary_backup_processed'
+        self.copy_while_waiting_modules = [
+            'copy_while_waiting_primary_processed', # need to name these differently because both may be run
+            #'secondary_backup_raw_data', #these can be the same as the main modules because only needs to run once - slot module prevents from running again
+            'primary_backup_raw_data1',
+            #'copy_while_waiting_secondary_processed'
         ]
-        self.copy_while_waiting_modules = get_from_kwargs('copy_while_waiting_modules', kwargs, default=copy_while_waiting_modules)
 
-
-
-        final_copy_all_parallel = [
-            'final_primary_backup_raw_data',
-            'final_primary_backup_processed', # need to name these differently because both may be run
-            'final_secondary_backup_raw_data', #these can be the same as the main modules because only needs to run once - slot module prevents from running again
-            'final_secondary_backup_processed'
+        self.final_copy_all_parallel = [
+           'primary_backup_raw_data1',
+           'primary_backup_processed_data',
+           #'secondary_backup_raw_data',
+           #'secondary_backup_processed_data'
         ]
-        self.final_copy_all_parallel = get_from_kwargs('final_copy_all_parallel', kwargs, default=final_copy_all_parallel)
-
-
-
-
-
 
 
         self.no_process_modules = [
@@ -150,9 +164,7 @@ class processing_session():
             'primary_backup_raw_data2',
             'primary_backup_processed_data',
             'secondary_backup_raw_data',
-            'secondary_backup_processed_data',
-            'copy_back_primary_raw_data',
-            'copy_back_secondary_raw_data',                         
+            'secondary_backup_processed_data',                          
         }.union(set(self.copy_while_waiting_modules)).union(set(self.final_copy_all_parallel))
 
 
@@ -164,23 +176,14 @@ class processing_session():
             'copy_while_waiting_secondary_raw':{},
             'copy_while_waiting_primary_raw':{},
             'parallel_secondary_backup_raw_data':{},
-            'parallel_primary_backup_raw_data':{} ,
-            'cww_primary_backup_raw_data': {},  
-            'cww_secondary_backup_raw_data': {},  
-            'final_primary_backup_raw_data': {},  
-            'final_secondary_backup_raw_data': {},   
-            'copy_back_primary_raw_data': {},
-            'copy_back_secondary_raw_data': {},       
+            'parallel_primary_backup_raw_data':{}               
         }   
 
         self.network_modules = {
             'copy_while_waiting_secondary_raw',
             'copy_while_waiting_secondary_processed',          
             'secondary_backup_raw_data',
-            'secondary_backup_processed_data',
-            'cww_primary_backup_raw_data',  
-            'final_primary_backup_raw_data', 
-            'copy_back_primary_raw_data',
+            'secondary_backup_processed_data'
         }
 
         self.backup_modules = {
@@ -189,7 +192,7 @@ class processing_session():
             'primary_backup_processed_data',
             'copy_while_waiting_primary_raw',
             'copy_while_waiting_primary_processed'
-            }.union(set(self.copy_while_waiting_modules)).union(set(self.final_copy_all_parallel))
+            }   
 
         self.process_dict = {}
         self.warning_dict = {}
@@ -258,7 +261,6 @@ class processing_session():
         #session_name = '834008253_433874_20190307'
         print('checking readiness for processing')
         try:
-            print('#'*50+"\n\n")
             #time.sleep(60*60*36)
             self.check_ready_for_processing()
             print('Started processing')
@@ -268,9 +270,7 @@ class processing_session():
             self.process_npx('x')
             started_processing = True
         except Exception as E:
-            print("\n\n"+'#'*50)
-            logging.exception('Failed to start processing', exc_info=True)
-            logging.debug('Failed to start processing', exc_info=True)
+            logging.exception('Failed to start processing')
             started_processing = False
         print('finished initiating processing')
         return started_processing
@@ -294,8 +294,6 @@ class processing_session():
 
     def raw_path(self, slot_or_probe):
         def path_s(self, pxi_slot):
-            #print('######'+str(self.pxi_slots))
-            #print(type(pxi_slot))
             dirpath = self.pxi_slots[pxi_slot].recording_dir
             return dirpath
         try:
@@ -438,13 +436,7 @@ class processing_session():
             for idx, module in enumerate(self.modules):
                 if idx >= start_num and idx <= end_num:
                     module_list.append(module)
-            if 'kilosort_helper' in module_list:
-                module_list.extend(list(self.copy_while_waiting_modules))
-            if 'final_copy_all_parallel' in module_list:
-                module_list.extend(list(self.final_copy_all_parallel))
             npx_module_dict[probe] = module_list
-
-        #pprint(npx_module_dict)
 
         slot_list = []
         backup_size_dict = {}
@@ -460,32 +452,15 @@ class processing_session():
                 total_size = 0
             return total_size
 
-        def module_included(module_list, keyword_list):
-            found = False
-            for module in module_list:
-                missing_keyword = False
-                for keyword in keyword_list:
-                    if not(keyword in module):
-                        missing_keyword=True
-                if not(missing_keyword):
-                    found = True
-            return found
-
-
         for probe in self.probes:
-            module_list = npx_module_dict[probe]#set(npx_module_dict[probe]).union(set(self.copy_while_waiting_modules)).union(set(self.final_copy_all_parallel))
-            #print(module_list)
-            copy_raw = module_included(module_list, ['primary', 'raw'])
-            copy_processed = module_included(module_list, ['primary', 'processed'])
-            copy_raw2 = module_included(module_list, ['secondary', 'raw'])
-            copy_processed2 = module_included(module_list, ['secondary', 'processed'])
-            kilosort=module_included(module_list, ['kilosort_helper'])
-            extract = module_included(module_list, ['extract_from_npx'])
-            #print(extract)
+            module_list = npx_module_dict[probe]
+            copy_raw = 'primary_backup_raw_data' in module_list
+            copy_processed = 'copy_processed_data' in module_list or 'copy_while_waiting_primary' in self.copy_while_waiting_modules
+            copy_raw2 = 'secondary_backup_raw_data' in module_list or 'copy_while_waiting_secondary_raw' in self.copy_while_waiting_modules
+            copy_processed2 = 'secondary_backup_processed_data' in module_list or 'copy_while_waiting_secondary_processed' in self.copy_while_waiting_modules
+            kilosort=('kilosort_helper' in module_list)
+            extract = 'extract_from_npx' in module_list
             raw_dir = self.raw_path(probe)
-            copy_back = module_included(module_list, ['copy_back'])
-            if copy_back:
-                raw_dir = self.raw_backup1(probe)
             #sorted_drive = sorted_drive(probe)
             sorted_drive = self.sorted_drive(probe)
             sorted_dir = self.sorted_path(probe)
@@ -502,7 +477,7 @@ class processing_session():
                     recording_size = recording_size*(not(self.slot(probe) in slot_list))
                     slot_list.append(self.slot(probe))
                 except FileNotFoundError as E:
-                    print('One of the directories probably doesn\'t exist - check '+probe+': '+sorted_drive)
+                    print('One of the directories probably doesn\'t exist - check '+probe)
                     raise E
             else: 
                 try:
@@ -537,65 +512,36 @@ class processing_session():
             logging.debug("secondary_backup_space_needed"+ str(secondary_backup_space_needed))
             c_space_needed = kilosort*extracted_size
             
+            extract = ('extract_from_npx' in module_list)
             if extract and os.path.isdir(sorted_dir):
-                err_str = str(sorted_dir,)+" already exists. Please delete it if you would like to repeat the extraction from npx, otherwise comment out the 'extract_from_npx' module."
-                print(err_str)
-                raise ValueError(err_str)
-            new_data_space_needed = extract*extracted_size + processing_size + median_sub_size + kilosort_size
-            sorted_drive
+                raise ValueError(sorted_dir, " already exists. Please delete it if you would like to repeat the extraction from npx, otherwise comment out the 'extract_from_npx' module.")
+            data_space_needed = extract*extracted_size + processing_size + median_sub_size + kilosort_size
+            logging.debug("data_space_needed"+ str(data_space_needed))
             try:
-                backup_size_dict[sorted_drive] += new_data_space_needed
+                backup_size_dict[params.backup1] += primary_backup_space_needed
             except:
-                backup_size_dict[sorted_drive] = new_data_space_needed
-            logging.debug("data_space_needed"+ str(new_data_space_needed))
-            backup_location, folder = os.path.split(params.backup1)
-            try:
-                backup_size_dict[backup_location] += primary_backup_space_needed
-            except:
-                backup_size_dict[backup_location] = primary_backup_space_needed
+                backup_size_dict[params.backup1] = primary_backup_space_needed
             backup_location, folder = os.path.split(params.backup2)
             try:
                 backup_size_dict[backup_location] += secondary_backup_space_needed
             except:
                 backup_size_dict[backup_location] = secondary_backup_space_needed
             max_c_space_needed = max(c_space_needed,max_c_space_needed)
-            #if free_space < data_space_needed:
-            #    print('check ' +probe)
-            #    raise ValueError('There is not enough space on one of the drives')
-            print(probe+' exists')
+            if free_space < data_space_needed:
+                print('check ' +probe)
+                raise ValueError('There is not enough space on one of the drives')
+            print(probe+' exist and there appears to be enough disk space free for processing')
 
-        try:
-            backup_size_dict[sorted_drive] += max_c_space_needed
-        except:
-            backup_size_dict[sorted_drive] = max_c_space_needed
-        if psutil.disk_usage(sorted_drive).free < backup_size_dict[sorted_drive]: #TODO make this flexible - it only works since extraction and processing are both on D
-            err_str = 'There is not enough space on the D drive for kilosort to process the largest dataset'
-            print(err_str)
-            raise ValueError(err_str)
-        else: print('There appears to be enough space on the sorting drive '+str(sorted_drive)+ ' for kilosort')
+        if psutil.disk_usage(r'C:').free < max_c_space_needed:
+            raise ValueError('There is not enough space on the C drive for kilosort to process the largest dataset')
+        else: print('There appears to be enough space on the C drive for kilosort')
         for bdrive, size_needed in backup_size_dict.items():
-            try:
-                print('Checking space on '+ bdrive)
-                if not(os.path.exists(bdrive)):
-                    os.makedirs(bdrive)
-                if psutil.disk_usage(bdrive).free < size_needed:
-                    print('Free space on ',bdrive,': ',  psutil.disk_usage(bdrive).free)
-                    print('Space predicted needed on ',bdrive,': ', size_needed )
-                    err_str = 'There is not enough space on '+bdrive+' for all the data'
-                    print(err_str)
-                    raise AssertionError(err_str)
-                else: print('And there appears to be enough space on backup drive '+bdrive)
-            except Exception as E:
-                print('There is not enough space on '+bdrive+' for all the data')
-                raise(E)
-            try:
-                print('Checking wite permissions '+ bdrive)
-                test_path = os.path.join(bdrive, 'test.txt')
-                with open(test_path, 'w') as f:
-                    f.write('test write')
-            except Exception as E:
-                print('Write permissions to not appear to be enabled for '+bdrive+'. This is likely a full unc path that requires write permissions under the drives sharing properties')
-                raise(E)
+            print('Checking space on '+ bdrive)
+            if psutil.disk_usage(bdrive).free < size_needed:
+                print('Free space on ',bdrive,': ',  psutil.disk_usage(bdrive).free)
+                print('Space predicted needed on ',bdrive,': ', size_needed )
+                raise ValueError('There is not enough space on the backup drive for all the data')
+            else: print('And there appears to be enough space on backup drive '+bdrive)
         #raise(ValueError)
         ####################################################################
 
@@ -611,27 +557,15 @@ class processing_session():
                 self.warning_dict[probe]=[string]
         
         def copy_data(source, destination, probe,module):
-            _copy_data(source, destination, probe,module, non_parallel=False)
-
-        def _copy_data(source, destination, probe,module, non_parallel=False):
             self.logger_dict[probe].info("{}: Copying data from {} to {} ...".format(module,source,destination))
             try:
                 os.mkdir(destination)
             except Exception as E:
                 add_warning(probe,"For "+module+" files were not copied if they already existed.")
-
             command_string = "robocopy "+ source +" "+destination +r" /e /xc /xn /xo"
-
-            if 'cww' in module:
-                command_string = command_string+ ' /xf probe_info.json'
             self.logger_dict[probe].info(command_string)
             self.process_dict[probe][module] = subprocess.Popen(command_string)#,stdout = subprocess.PIPE,stderr = subprocess.PIPE))
                 #shutil.copytree(extracted_data_location, new_location)
-            if non_parallel:
-                self.process_dict[probe][module].communicate()
-
-        def copy_data_non_parallel(source, destination, probe,module):
-            _copy_data(source, destination, probe,module, non_parallel=True)
 
         def move_data(source, destination, probe,module):
             self.logger_dict[probe].info("{}: Moving data from {} to {} ...".format(module,source,destination))
@@ -699,9 +633,8 @@ class processing_session():
             failed = 0
             try:
                 session_id = self.session_id(probe)
-                start_string = self.start.strftime("%y.%m.%d.%I.%M.%S")
-                input_json = os.path.join(self.json_directory, session_id  + '_' + probe + '_' +start_string+'_'+ next_module+ '-input.json')
-                output_json = os.path.join(self.json_directory, session_id  + '_' + probe + '_' +start_string+'_'+ next_module + '-output.json')
+                input_json = os.path.join(self.json_directory, session_id  + '_' + probe + '_' + next_module+ '-input.json')
+                output_json = os.path.join(self.json_directory, session_id  + '_' + probe + '_' + next_module + '-output.json')
                 ########################
                 #directory = r'D:\test_2019-07-25_18-16-48_probeA_sorted'
                 #info = createInputJson(input_json,
@@ -738,43 +671,35 @@ class processing_session():
             return next_module, this_module_info, failed
 
         def start_module(probe, module, command_string, info):
-            if module == 'primary_backup_raw_data' or module == 'primary_backup_raw_data1' or module == 'primary_backup_raw_data2' or module == 'cww_primary_backup_raw_data' or module == 'final_primary_backup_raw_data':
+            if module == 'primary_backup_raw_data1' or module == 'primary_backup_raw_data2':
                 current_location = self.raw_path(probe)
                 backup_location = self.raw_backup1(probe)
                 copy_data(current_location,backup_location, probe,module)
-                #if os.path.getsize(current_location) < 30*(10**9):
-                #        copy_data(current_location,backup_location, probe,module)
-            elif module == 'copy_back_primary_raw_data':
-                current_location = self.raw_backup1(probe)
-                backup_location = self.raw_path(probe)
-                copy_data_non_parallel(current_location,backup_location, probe,module) 
-            elif module == 'copy_back_secondary_raw_data':
-                current_location = self.raw_backup2(probe)
-                backup_location = self.raw_path(probe)
-                copy_data_non_parallel(current_location,backup_location, probe,module)      
+                if os.path.getsize(current_location) < 30*(10**9):
+                        copy_data(current_location,backup_location, probe,module)
             elif module == 'move_processed_for_phy':
                 current_location = self.sorted_path(probe)
                 backup_location = self.phy_viewing_drive
-                #if os.path.getsize(current_location) < 30*(10**9):
-                move_data(current_location,backup_location, probe,module)
+                if os.path.getsize(current_location) < 30*(10**9):
+                        move_data(current_location,backup_location, probe,module)
             elif module == 'primary_processed_lims_only':
                 current_location = self.sorted_path(probe)
                 backup_location = self.sorted_backup1(probe)
                 copy_data(current_location,backup_location, probe,module)
-            elif (module == 'primary_backup_processed_data') or (module == 'cww_primary_backup_processed') or (module == 'final_primary_backup_processed'):
+            elif module == 'primary_backup_processed_data' or module == 'copy_while_waiting_primary_processed':
                 current_location = self.sorted_path(probe)
                 backup_location = self.sorted_backup1(probe)
                 copy_data(current_location,backup_location, probe,module)
-            elif module == 'secondary_backup_raw_data' or module == 'cww_secondary_backup_raw_data' or module == 'final_secondary_backup_raw_data':
+            elif module == 'secondary_backup_raw_data':
                 current_location = self.raw_path(probe)
                 backup_location = self.raw_backup2(probe)
                 copy_data(current_location,backup_location, probe,module)
-            elif module == 'secondary_backup_processed_data' or module == 'cww_secondary_backup_processed' or module == 'final_secondary_backup_processed':
+            elif module == 'secondary_backup_processed_data' or module == 'copy_while_waiting_secondary_processed':
                 current_location = self.sorted_path(probe)
                 backup_location = self.sorted_backup2(probe)
                 copy_data(current_location,backup_location, probe,module)
             elif module == 'cleanup':
-                dir_sucess = check_data_processing(self.probe_type, self.raw_path(probe), self.sorted_path(probe), self.raw_backup1(probe), self.raw_backup2(probe), self.sorted_backup1(probe), self.sorted_backup2(probe), self.lims_upload_drive, cortex_only=self.cortex_only)
+                dir_sucess = check_data_processing(self.probe_type, self.raw_path(probe), self.sorted_path(probe), self.raw_backup1(probe), self.raw_backup2(probe), self.sorted_backup1(probe), self.sorted_backup2(probe), self.lims_upload_drive)
                 self.success_list.append(dir_sucess)
                 no_returncode(probe,module,  rcode_in = int(not(dir_sucess)))
             elif module == 'extract_from_npx':
@@ -797,13 +722,10 @@ class processing_session():
                         raise(E)
                 if backup_verified or skip_verify_backup:
                     self.process_dict[probe][module] = subprocess.Popen(command_string.split(' '), stdout = subprocess.PIPE,stderr = subprocess.PIPE)
-            elif module == 'edit_probe_json1':
-                serial_number = edit_probe_json1(probe)
+            elif module == 'edit_probe_json':
+                serial_number = edit_probe_json(probe)
                 if serial_number == None:
                     add_warning(probe, 'Could not find settings.xml for '+probe)
-                no_returncode(probe, module)
-            elif module == 'edit_probe_json2':
-                edit_probe_json2(probe)
                 no_returncode(probe, module)
             elif module == 'copy_logs':
                 copy_logs(probe)
@@ -814,22 +736,6 @@ class processing_session():
             elif module == 'restructure_directories':
                 restructure_directories(probe)
                 no_returncode(probe, module)
-            elif module == 'depth_estimation':
-                old_probe_json = read_probe_json(probe)
-                self.process_dict[probe][module] = subprocess.Popen(command_string.split(' '), stdout = subprocess.PIPE,stderr = subprocess.PIPE)
-                self.process_dict[probe][module].communicate()
-                edit_probe_json(probe, old_probe_json)
-                edit_mask_for_depth_estimation(probe, old_probe_json)
-                edit_probe_png_path(probe)
-                no_returncode(probe, module)
-            elif module == 'median_subtraction':
-                edit_mask_for_median_subtraction(probe)
-                log_mask(probe)
-                self.process_dict[probe][module] = subprocess.Popen(command_string.split(' '), stdout = subprocess.PIPE,stderr = subprocess.PIPE)
-            elif module == 'kilosort_helper':
-                edit_mask_for_kilosort(probe)
-                log_mask(probe)
-                self.process_dict[probe][module] = subprocess.Popen(command_string.split(' '), stdout = subprocess.PIPE,stderr = subprocess.PIPE)
             else:
                 self.process_dict[probe][module] = subprocess.Popen(command_string.split(' '), stdout = subprocess.PIPE,stderr = subprocess.PIPE)
 
@@ -837,33 +743,24 @@ class processing_session():
             self.logger_dict[probe].info('finished '+module+', no exit status to fetch')
             self.info_dict[probe][module]._replace(rcode = rcode_in, output = None, error = None, endtime = datetime.datetime.now())
 
-        def restructure_dir(src, dest, probe=None):
+        def restructure_dir(src, dest):
             sucess = False
             try:
                 goal_empty = os.path.split(dest)[0]
-                os.makedirs(goal_empty, exist_ok=True)
+                os.makedirs(os.path.split(dest)[0])
             except Exception as E:
-                if not(probe is None):
-                    self.logger_dict[probe].warning(E, exc_info=True)
-            if os.path.isdir(dest):
-                try:
-                    os.rmdir(dest) #Joshs stuff creates the extracting probes AP directry. this causes the rename to fail so we must remove it.  
-                    raise(ValueError)
-                except Exception as E2:
-                    logging.warning(E2, exc_info=True)
-                    if not(probe is None):
-                        self.logger_dict[probe].warning(E2, exc_info=True)         
+                if os.path.isdir(goal_empty):
+                    try:
+                        os.rmdir(dest)
+                        raise(ValueError)
+                    except Exception as E2:
+                        logging.warning(E2, exc_info=True)
+                logging.warning(E, exc_info=True)
             try:
-                info_str = 'does it exist? -' +str(src) + str(os.path.exists(src))
-                self.logger_dict[probe].warning(info_str)
-                info_str = 'does it exist? -' +str(dest) + str(os.path.exists(dest))
-                self.logger_dict[probe].warning(info_str)
                 os.rename(src, dest)
                 sucess = True
             except Exception as E:
                 logging.warning(E, exc_info=True)
-                if not(probe is None):
-                    self.logger_dict[probe].warning(E, exc_info=True)       
             return sucess
 
         def restructure_directories(probe):
@@ -877,16 +774,13 @@ class processing_session():
                 dirs_to_restructure.append((self.extracted_LFP_path(probe), self.sorted_LFP_path(probe)))
                 dirs_to_restructure.append((self.extracted_events_path(probe), self.sorted_events_path(probe)))
                 for src, dest in dirs_to_restructure:
-                    try:
-                        sucess = restructure_dir(src, dest, probe=probe)
-                        if sucess:
-                            self.logger_dict[probe].info(sucess_string.format(src = src, dest = dest))
-                        else:
-                            self.logger_dict[probe].warning(error_string.format(src = src, dest = dest), exc_info=True)
-                    except Exception as E:
+                    sucess = restructure_dir(src, dest)
+                    if sucess:
+                        self.logger_dict[probe].info(sucess_string.format(src = src, dest = dest))
+                    else:
                         self.logger_dict[probe].warning(error_string.format(src = src, dest = dest), exc_info=True)
-            edit_probe_json(probe, probe_json=None)
-
+            else:
+                pass
 
         def copy_logs(probe):
             save_progess_stats(probe)
@@ -900,26 +794,18 @@ class processing_session():
             os.mkdir(log_dir)
             session_name = self.session_name
             session_id = session_name.split('_')[0]
-            info_str = 'Copying logs and module jsons with \nsession id: '+ str(session_id) + '\nprobe: '+ str(probe) + '\ndata: '+str(start_date_string)
-            self.logger_dict[probe].info(info_str) 
             for name in os.listdir(self.json_directory):
-                session_present = session_id in name
-                probe_present = probe in name
-                date_present = start_date_string in name
-                if session_present and probe_present and date_present:
-                    source = os.path.join(self.json_directory, name)
-                    dest = os.path.join(log_dir, name)
-                    try:
+                if session_id in name and probe in name:
+                    date_maybe = name.split('_')[1]
+                    if len(date_maybe) ==17:
+                        if date_maybe == start_date_string:
+                            source = os.path.join(self.json_directory, name)
+                            dest = os.path.join(log_dir, name)
+                            shutil.copy2(source,dest)
+                    else:   
+                        source = os.path.join(self.json_directory, name)
+                        dest = os.path.join(log_dir, name)
                         shutil.copy2(source,dest)
-                    except Exception as E:
-                        err_str = 'Failed to copy '+ str(source) + ' to ' + str(dest)
-                        self.logger_dict[probe].warning(err_str, exc_info=True)       
-                    #dest = os.path.join(self.json_directory, 'completed_'+name)
-                    #os.rename(source,dest)
-                else:
-                    last_not_copied_str = 'Logging for debugging purposes - Did not copy '+ str(name) +' \nsession id: '+ str(session_present) + '\nprobe: '+ str(probe_present) + '\ndata: '+str(date_present)
-                    #self.logger_dict[probe].debug(last_not_copied_str)
-
 
         def add_noise_class_to_metrics(probe):
             try:
@@ -978,154 +864,73 @@ class processing_session():
                 self.logger_dict[probe].exception(E)
             return value
 
-
-        def read_probe_json(probe):
-            json_path = os.path.join(self.sorted_path(probe),'probe_info.json')
-            self.logger_dict[probe].info('Reading probe json'+json_path)
-            probe_json = {}
-            try:
-                with open(json_path, "r") as read_file:
-                    probe_json = json.load(read_file)
-            except Exception as E:
-                self.logger_dict[probe].warning('Error reading probe_json')
-            return probe_json
-
-
-        def write_probe_json(probe, probe_json):
-            json_path = os.path.join(self.sorted_path(probe),'probe_info.json')
-            self.logger_dict[probe].info('Writing probe json'+json_path)
-            try:
-                with open(json_path, "w") as write_file:
-                    json.dump(probe_json, write_file, indent=4)
-            except Exception as E:
-                self.logger_dict[probe].exception('Error writing probe_json')
-            return probe_json
-
-        def log_mask(probe):
-            probe_json = read_probe_json(probe)
-            mask_str = 'Using mask: '+ str(probe_json['mask'])
-            self.logger_dict[probe].info(mask_str)
-
-
-        def edit_mask(probe, new_mask, editing_for_module):
-            old_mask_module = 'pre_'+editing_for_module
-
-            old_mask_key = old_mask_module+'_masks'
-            new_mask_key = editing_for_module+'_masks'
-
-            start_date_string = self.start.strftime("%y.%m.%d.%I.%M.%S")
-            probe_json = read_probe_json(probe)
-            try: 
-                if not(old_mask_key in probe_json):
-                    probe_json[old_mask_key] = {}
-                probe_json[old_mask_key][start_date_string] = probe_json['mask']     
-                probe_json['mask'] = new_mask
-                if not(new_mask_key in probe_json):
-                    probe_json[new_mask_key] = {}
-                probe_json[new_mask_key][start_date_string] = new_mask
-            except Exception as E:
-                err_str = 'Failed to edit mask for editing module '+str(editing_for_module)
-                logging.error(err_str, exc_info=True)
-            write_probe_json(probe, probe_json)
-
-
-
-        def edit_mask_for_kilosort(probe):
-            probe_json = read_probe_json(probe)
-            try: 
-                cortex_only = self.cortex_only
+        def check_noise_channels(mask):
+            """Check to see if there are too many chaannels masked, and default to only masking the reference channels if so"""
+            if sum(not(channel) for channel in mask)>30:
                 mask = 384*[True]
+                references = [36, 73, 75, 112, 151, 188, 227, 264, 303, 340, 379]
+                for ref in references:
+                    mask[ref] = False
+            return mask
+
+        def verify_mask(probe_json):
+            probe_json['original_mask'] = probe_json['mask']
+            probe_json['mask'] = check_noise_channels(probe_json['mask'])
+            try: 
+                cortex_only = False
                 if cortex_only:
-                    #references = [191]
-                    #for ref in references:
-                    #    mask[ref] = False
+                    mask = 384*[True]
+                    references = [36, 73, 75, 112, 151, 188, 227, 264, 303, 340, 379]
+                    for ref in references:
+                        mask[ref] = False
                     try:
                         surface_channel = int(probe_json['surface_channel'] )
                     except Exception as E:
                         surface_channel = 300
                         logging.error('Failed to retrieve surface channel', exc_info=True)
                     for channel in range(384):
-                        max_chan = min(383, surface_channel+50)
-                        if not(channel in range(surface_channel-80, max_chan)):
+                        if not(channel in range(surface_channel-80, surface_channel)):
                             mask[channel] = False
-                edit_mask(probe, mask, 'kilosort')
+                    probe_json['mask'] = mask
             except Exception as E:
-                logging.error('Failed to edit mask for kilosort', exc_info=True)
+                logging.error('Failed to mask out everything but cortex', exc_info=True)
+            return probe_json
 
 
-        def edit_mask_for_depth_estimation(probe, old_probe_json):
-            editing_for_module = 'depth_estimation'
-            old_mask_module = 'pre_'+editing_for_module
-
-            old_mask_key = old_mask_module+'_masks'
-            new_mask_key = editing_for_module+'_masks'
-
-            start_date_string = self.start.strftime("%y.%m.%d.%I.%M.%S")
-            probe_json = read_probe_json(probe)
-            try: 
-                new_mask = probe_json['mask']
-                for key, value in old_probe_json.items():
-                    if 'mask' in key:
-                        probe_json[key] = value
-                if not(old_mask_key in probe_json):
-                    probe_json[old_mask_key] = {}
-                probe_json[old_mask_key][start_date_string] = old_probe_json['mask']     
-                probe_json['mask'] = new_mask
-                if not(new_mask_key in probe_json):
-                    probe_json[new_mask_key] = {}
-                probe_json[new_mask_key][start_date_string] = new_mask
-                write_probe_json(probe, probe_json)
+        def edit_probe_json(probe):
+            json_path = os.path.join(self.sorted_path(probe),'probe_info.json')
+            self.logger_dict[probe].info('Adding the software and probe info to the probe_json at path'+json_path)
+            probe_json = {}
+            try:
+                with open(json_path, "r") as read_file:
+                    probe_json = json.load(read_file)
             except Exception as E:
-                err_str = 'Failed to edit mask for '+str(editing_for_module)
-                logging.error(err_str, exc_info=True)
-
-
-        def edit_mask_for_median_subtraction(probe):
-            probe_json = read_probe_json(probe)
-            try: 
-                if 'mask' in probe_json:
-                    mask = probe_json['mask']
-                else:
-                    mask = 384*[True]
-                if sum(not(channel) for channel in mask)>0:
-                    mask = 384*[True]
-                references = [191]
-                for ref in references:
-                    mask[ref] = False
-                edit_mask(probe, mask, 'median subtraction')
+                self.logger_dict[probe].exception('Error reading probe_json')
+            try:
+                probe_json = verify_mask(probe_json)
             except Exception as E:
-                logging.error('Failed to edit mask for median subtraction', exc_info=True)
-            
+                self.logger_dict[probe].exception('Error Verifying the mask and setting to default if too many masked')
 
-        def get_probe_info(probe, probe_json=None):
-            if probe_json is None:
-                probe_json = read_probe_json(probe)
-            #print('probe_info.json: '+str(probe_json))
             if self.probe_type == 'PXI':
                 probe_element = 'PROBE'
             else:
                 probe_element = 'NEUROPIXELS'
-
-            if 'software' in probe_json:
-                software_info = probe_json['probe']
-            else:
-                software_info = {
+            serial_number = get_settings_xml_value(probe, probe_element, 'probe_serial_number', None)
+            if not('software' in probe_json):
+                probe_json["software"] =  {
                     "name" : "Open Ephys GUI",
                     "version" : get_settings_xml_element_text(probe, 'VERSION',"0.4.4"),
                     "machine" : get_settings_xml_element_text(probe, 'MACHINE',os.environ['COMPUTERNAME']),
                     "os" : "Windows 10"
                 } 
-
-            if 'probe' in probe_json:
-                probe_info = probe_json['probe']
-            else:
-                probe_info = {
+            if not('probe' in probe_json):
+                probe_json["probe"] = {
                     "phase" : "3a", 
                     "ap gain" : get_settings_xml_value(probe, probe_element, 'apGainValue',"500x"),
                     "lfp gain" : get_settings_xml_value(probe, probe_element, 'lfpGainValue',"250x"),
                     "reference channel" : get_settings_xml_value(probe, probe_element, 'referenceChannel',"Ext"),
                     "filter cut" : get_settings_xml_value(probe, probe_element, 'filterCut', "300 Hz"),
-                    "serial number" : get_settings_xml_value(probe, probe_element, 'probe_serial_number', None),
+                    "serial number" : serial_number,
                     "slot": self.slot(probe),
                     "port": self.port(probe),
                     "option" : "3",
@@ -1147,35 +952,18 @@ class processing_session():
                         }
                     ]
 
-                }  
-            #print(software_info, probe_info )
-            return software_info, probe_info             
+                }
+            with open(json_path, "w") as write_file:
+                json.dump(probe_json, write_file, indent=4)
 
-
-        def edit_probe_json(probe, probe_json=None):
-            software_info, probe_info = get_probe_info(probe, probe_json)
-            #print(software_info)
-            #print(probe_info)
-            probe_json = read_probe_json(probe)
-            if not('software' in probe_json):
-                probe_json['software'] = software_info
-            if not('probe' in probe_json):
-                probe_json['probe'] = probe_info
-            serial_number = probe_json['probe']['serial number']
-            write_probe_json(probe, probe_json)
-            return serial_number
-
-
-        def edit_probe_png_path(probe):
             try:
                 png_path = os.path.join(self.sorted_path(probe),'probe_depth.png')
                 self.logger_dict[probe].info('Renaming the depth image to be probe specific'+png_path)
                 new_png_path = os.path.join(self.sorted_path(probe),'probe_depth_'+self.probe_letter(probe)+'.png')
                 os.rename(png_path, new_png_path)
-            except Exception as E:
+            except exception as E:
                 self.logger_dict[probe].info('Error Renaming the depth image to be probe specific'+png_path)
-
-
+            return serial_number
 
         def get_next_module(current_module,probe):  
             try:
@@ -1213,53 +1001,19 @@ class processing_session():
                     next_module = get_next_module(next_module,probe)
             return next_module
 
-
-        def make_module_list(probe):
-            params = self.probes[probe]
-            start_num = self.modules.index(params.start_module)
-            end_num = self.modules.index(params.end_module)
-            module_list = []
-            for idx, module in enumerate(self.modules):
-                if idx >= start_num and idx <= end_num:
-                    module_list.append(module)
-            return module_list
-
-        def module_included(module_list, keyword_list):
-            found = False
-            for module in module_list:
-                missing_keyword = False
-                for keyword in keyword_list:
-                    if not(keyword in module):
-                        missing_keyword=True
-                if not(missing_keyword):
-                    found = True
-            return found
-
-        def get_next_probe_to_sort():
-            for probe in self.probes:
-                module_list = make_module_list(probe)
-                kilosort_required = module_included(module_list, ['kilosort_helper'])
-                failed = (probe in self.failed_dict) and (self.failed_dict[probe]) 
-                if not(module_complete('kilosort_helper', probe)) and kilosort_required and not(failed):
-                    break
-            return probe
-
         def count_kilosort_ready():
             count = 0
-            kilosort_ready_list = []
             for probe in self.probes:
                 # median sub needs to be finished, and not busy. It will be busy as soon as it has started another module
                 if module_ready(probe, 'kilosort_helper') and not(is_busy(probe)):
                     count += 1
-                    kilosort_ready_list.append(probe)
-            return count, kilosort_ready_list
+            return count
 
         def module_ready(probe, module):
             prev_accounted_for = previous_main_module_accounted_for(module, probe)
             mod_finished = module_initiated(module, probe)
             mod_scheduled = main_module_scheduled(module, probe)
-            failed = self.failed_dict[probe] == 1
-            return prev_accounted_for and not(mod_finished) and mod_scheduled and not(failed)
+            return prev_accounted_for and not(mod_finished) and mod_scheduled
 
         def previous_main_module_accounted_for(module, probe):
             prev_mod_index = self.modules.index(module)-1
@@ -1342,7 +1096,7 @@ class processing_session():
                 logger.warning('Failed to read stdout',exc_info = True)
             return output_line_list
 
-        def log_progress(probe, idx):
+        def log_progress(probe):
             for module, info in self.info_dict[probe].items():
                 if info.rcode is None:
                     try:
@@ -1379,9 +1133,8 @@ class processing_session():
 
                             robocopy = module in self.copy_modules
                             #print(robocopy)
-                            if not(p.returncode == 0) and not(robocopy):# and p.returncode < 4):
+                            if not(p.returncode == 0) and not(robocopy and p.returncode < 4):
                                 self.failed_dict[probe] == 1
-                                self.current_modules[idx] = False
                                 self.logger_dict[probe].error("return code "+str(p.returncode)+" for "+ module+" "+probe)
                                 try:
                                     for line in error.splitlines():
@@ -1506,7 +1259,7 @@ class processing_session():
 
                 if self.current_modules[idx] and not(self.current_modules[idx] in self.no_process_modules):
                     try:
-                        log_progress(probe, idx)
+                        log_progress(probe)
                     except Exception as E:
                         self.logger_dict[probe].exception('Failed to log progress')
                 time_since_last_log =  (datetime.datetime.now()-self.last_output_dict[probe]['last_log_time']).total_seconds()
@@ -1523,18 +1276,7 @@ class processing_session():
                 start_wait = next_module == 'extract_from_npx' and self.current_modules.count('extract_from_npx')>0 #and time_elapsed<1200*idx#this actually needs to be based on the index of the slot...but as long as we keep the probes in order it should work for now
                 m_sub_wait = next_module == 'median_subtraction' and (any_probe_module_complete('median_subtraction') == False and not(self.current_modules.count('median_subtraction') == 0))
                 #TODO edit copy wait so it waits extra long to copy down if there is another drive letter already working, and estimates the expected time instaed of just 20 minutes
-                
-                #print(probe)
-                next_to_sort = get_next_probe_to_sort()
-                #print('next_to_sort: '+str(next_to_sort))
-                kilosort_count, kilosort_list = count_kilosort_ready()
-                #print('kilosort_list: '+str(kilosort_list))
-                not_next_sort = (next_to_sort in kilosort_list) and not(probe == next_to_sort)
-                #print('not_next_sort: '+str(not_next_sort))
-                #print('next_module: '+str(next_module))
-                #print(self.current_modules)
-                kilosort_wait =(next_module == 'kilosort_helper') and (('kilosort_helper' in self.current_modules) or not_next_sort)
-                #print('kilosort_wait: '+str(kilosort_wait))
+                kilosort_wait = next_module == 'kilosort_helper' and 'kilosort_helper' in self.current_modules
                 slot_wait = (next_module in self.slot_modules) and not(self.slot_modules[next_module][self.slot(probe)] == "Ready")
                 cleanup_wait = next_module == 'cleanup' and time_elapsed<50400 and not(self.probes[probe].start_module=='cleanup') # wait 14 hours to cleanup to make sure lims1 upload can grab folders
                 final_copy = next_module == 'final_copy_parallel'
@@ -1543,9 +1285,7 @@ class processing_session():
                 #count = count_kilosort_ready()
                 #print('kilosort ready: ', count)
                 #print(probe + ' next module is ' + next_module)
-                
-                
-                if not(busy) and kilosort_wait and (kilosort_count > 1):
+                if not(busy) and kilosort_wait and (count_kilosort_ready() > 1):
                     #print('attempting to initiate copy_while_waiting')
                     next_module, next_module_info, copy_failed = initiate_copy_module(probe, idx, self.copy_while_waiting_modules)
                     if next_module and not(copy_failed):
@@ -1563,7 +1303,6 @@ class processing_session():
                     self.logger_dict[probe].info("Finished processing "+ probe)
 
                 ready_for_next_module = not(busy) and not(wait) and not(self.finished_list[idx]) and (self.failed_dict[probe]==0)
-                #print(busy, wait, not(self.finished_list[idx]), self.failed_dict[probe]==0)
                 copy_after_failure = not(busy) and not(self.failed_dict[probe]==0) and (next_module in self.copy_modules)
                 #print(ready_for_next_module , copy_after_failure)
                 if ready_for_next_module or copy_after_failure:
