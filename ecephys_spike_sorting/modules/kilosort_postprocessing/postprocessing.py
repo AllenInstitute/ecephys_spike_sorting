@@ -24,8 +24,10 @@ def remove_double_counted_spikes(spike_times, spike_clusters, spike_templates, a
         Spike templates for each unit
     pc_features : numpy.ndarray (num_spikes x num_pcs x num_channels)
         Pre-computed PCs for blocks of channels around each spike
+        set to None if not available
     pc_feature_ind : numpy.ndarray (num_units x num_channels)
         Channel indices of PCs for each unit
+        set to None if not available
     sample_rate : Float
         Sample rate of spike times
     params : dict of parameters
@@ -66,7 +68,7 @@ def remove_double_counted_spikes(spike_times, spike_clusters, spike_templates, a
 
     print('Removing within-unit overlapping spikes...')
 
-    spikes_to_remove = np.zeros((0,))
+    spikes_to_remove = np.zeros((0,), dtype='i8')
 
     for idx1, unit_id1 in enumerate(unit_list[order]):
 
@@ -89,7 +91,7 @@ def remove_double_counted_spikes(spike_times, spike_clusters, spike_templates, a
 
     print('Removing between-unit overlapping spikes...')
 
-    spikes_to_remove = np.zeros((0,))
+    spikes_to_remove = np.zeros((0,), dtype='i8')
 
     for idx1, unit_id1 in enumerate(unit_list[order]):
 
@@ -203,6 +205,7 @@ def remove_spikes(spike_times, spike_clusters, spike_templates, amplitudes, pc_f
         Amplitude value for each spike time
     pc_features : numpy.ndarray (num_spikes x num_pcs x num_channels)
         Pre-computed PCs for blocks of channels around each spike
+        set to None if not available
     spikes_to_remove : numpy.ndarray
         Indices of spikes to remove
 
@@ -220,7 +223,8 @@ def remove_spikes(spike_times, spike_clusters, spike_templates, amplitudes, pc_f
     spike_clusters = np.delete(spike_clusters, spikes_to_remove, 0)
     spike_templates = np.delete(spike_templates, spikes_to_remove, 0)
     amplitudes = np.delete(amplitudes, spikes_to_remove, 0)
-    pc_features = np.delete(pc_features, spikes_to_remove, 0)
+    if pc_features is not None:
+        pc_features = np.delete(pc_features, spikes_to_remove, 0)
 
     return spike_times, spike_clusters, spike_templates, amplitudes, pc_features
 
