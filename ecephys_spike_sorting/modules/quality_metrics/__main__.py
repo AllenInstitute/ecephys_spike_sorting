@@ -20,23 +20,40 @@ def calculate_quality_metrics(args):
 
     print("Loading data...")
 
-    #try:
-    spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, clusterIDs, cluster_quality, pc_features, pc_feature_ind = \
-            load_kilosort_data(args['directories']['kilosort_output_directory'], \
-                args['ephys_params']['sample_rate'], \
-                use_master_clock = False,
-                include_pcs = True)
+    try:
+        if args['quality_metrics_params']['include_pc_metrics']:
+            spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, clusterIDs, cluster_quality, pc_features, pc_feature_ind = \
+                load_kilosort_data(args['directories']['kilosort_output_directory'], \
+                    args['ephys_params']['sample_rate'], \
+                    use_master_clock = False,
+                    include_pcs = True)
+        else:
+            spike_times, spike_clusters, spike_templates, amplitudes, templates, channel_map, clusterIDs, cluster_quality = \
+                load_kilosort_data(args['directories']['kilosort_output_directory'], \
+                    args['ephys_params']['sample_rate'], \
+                    use_master_clock = False,
+                    include_pcs = False)
 
-    metrics = calculate_metrics(spike_times, spike_clusters, spike_templates, amplitudes, channel_map, pc_features, pc_feature_ind, args['quality_metrics_params'])
+            pc_features = None
+            pc_feature_ind = None
 
-    #except FileNotFoundError:
+        metrics = calculate_metrics(spike_times, 
+            spike_clusters, 
+            spike_templates,
+            amplitudes, 
+            channel_map, 
+            pc_features, 
+            pc_feature_ind, 
+            args['quality_metrics_params'])
+    
+    except FileNotFoundError:
         
-    #    execution_time = time.time() - start
+        execution_time = time.time() - start
 
-    #    print(" Files not available.")
+        print(" Files not available.")
 
-     #   return {"execution_time" : execution_time,
-     #       "quality_metrics_output_file" : None} 
+        return {"execution_time" : execution_time,
+            "quality_metrics_output_file" : None} 
 
     output_file = args['quality_metrics_params']['quality_metrics_output_file']
 

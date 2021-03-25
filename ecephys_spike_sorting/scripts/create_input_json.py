@@ -140,6 +140,22 @@ def createInputJson(output_file,
                 "momentum" : '[20 400]',
                 "sigmaMask" : 30,
                 "ThPre" : 8
+            },
+
+            "kilosort3_params" :
+            {
+                "chanMap" : "'chanMap.mat'",
+                "fshigh" : 300,
+                "minfr_goodchannels" : 0.1,
+                "Th" : '[9 9]',
+                "lam" : 10,
+                "AUCsplit" : 0.8,
+                "minFR" : 1/50.,
+                "momentum" : '[20 400]',
+                "sigmaMask" : 30,
+                "ThPre" : 8,
+                "sig" : 20,
+                "nblocks" : 5
             }
         },
 
@@ -177,6 +193,8 @@ def createInputJson(output_file,
             "quality_metrics_output_file" : os.path.join(kilosort_output_directory, "metrics_test.csv"),
             "drift_metrics_interval_s" : 51,
             "drift_metrics_min_spikes_per_interval" : 10
+
+            "include_pc_metrics" : True
         }
 
     }
