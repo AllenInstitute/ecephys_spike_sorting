@@ -124,7 +124,9 @@ def check_data_processing(probe_type, npx_directory, local_sort_dir, raw_backup_
             pass
 
         if not found:
-            missing_files_list.append(data_file)
+            #putting this conditional here because sometimes (maybe certin installs? only NP2?) don't overwrite this file but the others do
+            if not(data_file =="ap_timestamps.npy"):
+                missing_files_list.append(data_file)
 
     if missing_files_list:
         print('ERROR: Some processing files were not found on any drive for '+probe)
@@ -484,6 +486,7 @@ def make_files(probe_type):
           "probe_info.json":data_file_params('empty',True,'depth_estimation'),
           "channel_states.npy":data_file_params('events',True,'extraction'),
           "event_timestamps.npy":data_file_params('events',True,'extraction'),
+          "ap_timestamps.npy":data_file_params('spikes',False,'extraction'),
           #r"continuous\Neuropix-{}-100.1\continuous.dat".format(probe_type):data_file_params('empty',True,'extraction'),
           "continuous.dat":data_file_params('lfp',True,'extraction'),
           "lfp_timestamps.npy":data_file_params('lfp',True,'extraction'),
