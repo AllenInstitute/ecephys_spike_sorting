@@ -8,7 +8,7 @@ import argparse
 
 session_name = '2053709239_532246_20200930'#test_2019-07-25_18-16-48' #Fill in with appropriate session name
 probes_in = ['B']
-cortex_only = False
+cortex_only = True
 
 start_module = 'kilosort_helper'
 end_module = 'cleanup'
