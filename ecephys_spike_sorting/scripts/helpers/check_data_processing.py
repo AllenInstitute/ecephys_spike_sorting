@@ -163,7 +163,8 @@ def check_data_processing(probe_type, npx_directory, local_sort_dir, raw_backup_
     missing_backup_list = []
     for file in data_files:
         if file not in backup_size_dict:
-            missing_backup_list.append(file)
+            if not(file =="ap_timestamps.npy"):
+                missing_backup_list.append(file)
     if missing_backup_list:
         print('ERROR: Some files are not backed up for '+probe+':')
         print(missing_backup_list)
@@ -249,10 +250,13 @@ def check_data_processing(probe_type, npx_directory, local_sort_dir, raw_backup_
                     new_path = os.path.join(new_dir, filename)
                     #print(new_path)
                     copy_not_move = ('probe_depth' in keep_file) or ('probe_info' in keep_file)
-                    if copy_not_move and cortex_only:
-                        shutil.copy2(local_path, new_path)
-                    else:
-                        shutil.move(local_path, new_path)
+                    try:
+                        if copy_not_move and cortex_only:
+                            shutil.copy2(local_path, new_path)
+                        else:
+                            shutil.move(local_path, new_path)
+                    except Exception as E:
+                        logging.error('Failed to move phy file '+keep_file+' to subdir', exc_info=True)
             except Exception as E:
                 logging.error('Failed to move phy files to subdir', exc_info=True)
 
