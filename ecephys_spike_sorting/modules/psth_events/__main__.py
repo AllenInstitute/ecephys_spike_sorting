@@ -4,6 +4,7 @@ import logging
 import subprocess
 import time
 import shutil
+import fnmatch
 from ...common.utils import catGT_ex_params_from_str
 
 import numpy as np
@@ -27,6 +28,7 @@ def get_psth_events(args):
 
     # get extraction parameters, build name for output file
     ex_type, prb_index, ex_name_str = catGT_ex_params_from_str(extract_str)
+    prb = str(prb_index)
 
     # build path to the CatGT edge extraction file
     if args['ephys_params']['probe_type'] == '3A':
@@ -56,12 +58,24 @@ def get_psth_events(args):
         if 'X' in extract_str:
             # nidq channel
             ex_file_name = run_name + '_tcat.nidq.' + ex_name_str + '.txt'
-            ex_path = os.path.join(run_fld, ex_file_name)
+            file_list = os.listdir(run_fld)
+            flt_list = fnmatch.filter(file_list, ex_file_name)      
+            if len(flt_list) != 1:
+                print('No edge file or multiple files for psth evens\n' )
+                return 
+            ex_path = os.path.join(run_fld, flt_list[0])
+            
         else:
             # SY channel. could be on any probe, so get the probe string
-            prb = str(prb_index)
-            ex_file_name = run_name + '_tcat.imec' + prb + '.' + ex_name_str + '.txt'
+            match_str = run_name + '_tcat.imec' + prb + '.ap.SY_*_6_*.txt'
             ex_prb_fld_name = run_name + '_imec' + prb
+            file_list = os.listdir(os.path.join(run_fld, ex_prb_fld_name))
+            flt_list = fnmatch.filter(file_list,match_str)
+            if len(flt_list) != 1:
+                print('No edge file or multiple files for psth evens\n' )
+                return              
+            ex_file_name = flt_list[0]            
+            
             ex_path = os.path.join(run_fld, ex_prb_fld_name, ex_file_name)
 
     # the CatGT extracted edge files are a single column with </n>

@@ -144,17 +144,15 @@ def ParseTrigStr(trigger_string, prb, gate, prb_folder):
     return first_trig, last_trig
 
 
-def ParseTcatName(tcat_name):
-    
-    parts_list = tcat_name.split('.')
-    # remove tcat from first part of name
-    parts_list[0] = parts_list[0][0:len(parts_list[0])-5]
-    baseName = parts_list[0] + '_' + parts_list[1]
+def ParseTcatName(tcat_name):    
+    tcat_pos = tcat_name.find('tcat',0)
+    baseName = tcat_name[0:tcat_pos-1]  #subtrace 1 from tcat pos to remove _
     return baseName
 
 def GetProbeStr(tcat_name):
-    parts_list = tcat_name.split('.')
-    imStr = parts_list[1]
+    tcat_pos = tcat_name.find('tcat',0)
+    ap_pos = tcat_name.find('.ap',0)   
+    imStr = tcat_name[tcat_pos+5:ap_pos]
     if len(imStr) == 4:
         prbStr = ''      # 3A data, no probe index
     else:

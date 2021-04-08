@@ -525,11 +525,15 @@ def catGT_ex_params_from_str(ex_str):
         # name string = XD_<word>_<bit>_<pulse length>
         # if the pulse length includes a decimal, reformat
         ex_parts[2] = ex_parts[2].replace('.', 'p')
+        # if word = -1, replace with wildcard character
+        if ex_parts[0] == '-1':
+            ex_parts[0] = '*'
         ex_name_str = ex_type + '_' + ex_parts[0] + '_' + ex_parts[1] + '_' + ex_parts[2]
     else:
         # XA or iXA
         # name string = XA_<word>_<pulse length>
-        # if the pulse length includes a decimal, reformat)
+        # if the pulse length includes a decimal, reformat
+        ex_parts[3] = ex_parts[3].replace('.', 'p')
         ex_name_str = ex_type + '_' + ex_parts[0] + '_' + ex_parts[3]
 
     return ex_type, prb_index, ex_name_str

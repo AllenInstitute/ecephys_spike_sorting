@@ -57,6 +57,18 @@ def call_TPrime(args):
             if firstDash >= 0:
                 print(ni_str_list[i][firstDash+1:])
                 ni_ex_list.append(ni_str_list[i][firstDash+1:])
+        # need to get the file name from the directory in case user used the  
+        # -1 option to specify the digital channel     
+        # extracted ni files are in the run directory
+        match_XA_str = run_name + '_tcat.nidq.XA_*.txt'
+        match_XD_str = run_name + '_tcat.nidq.XD_*.txt'
+        match_iXA_str = run_name + '_tcat.nidq.iXA_*.txt'
+        match_iXD_str = run_name + '_tcat.nidq.iXD_*.txt'
+        file_list = os.listdir(run_directory)
+        ni_ex_files = fnmatch.filter(file_list,match_XA_str) + \
+                      fnmatch.filter(file_list,match_XD_str) + \
+                      fnmatch.filter(file_list,match_iXA_str) + \
+                      fnmatch.filter(file_list,match_iXD_str)
                         
     
     im_ex_string = args['tPrime_helper_params']['im_ex_list']
@@ -152,21 +164,37 @@ def call_TPrime(args):
         
         if len(matchI) == 1:
             # get params
-            c_type, c_prb, c_ex_name = catGT_ex_params_from_str(ni_sync_params)
+          
+            # build match string to find file of NI sync edges
+            # for the digital channel match string uses a wild card
+            # '*" character for the word parameter
+            c_type, c_prb, c_ex_name = catGT_ex_params_from_str(ni_sync_params)            
             c_name = run_name + '_tcat.nidq.' + c_ex_name + '.txt'
-            from_list.append(os.path.join(run_directory, c_name))
+            c_name_match = fnmatch.filter(ni_ex_files, c_name) 
+            
+            if len(c_name_match) == 1:
+                # add to list of from_files for TPrime
+                from_list.append(os.path.join(run_directory, c_name_match[0]))
+                
+                # remove from list of ni_ex_files. The other files will be added to events list
+                ni_ex_files.remove(c_name_match[0])
+                
+            else:
+                print('No match or multiple matches for ni sync file in Tprime_helper.' )           
+            
+            #index for this from stream
             c_index = len(from_stream_index)
-            #remove from list
-            del ni_ex_list[matchI[0]]
+            
             # loop over the remaining files of edges extracted from NI,
             # add to events_list and out_file
-            for ex_str in ni_ex_list:
+            for ex_file in ni_ex_files:
                 # get params
-                c_type, c_prb, c_ex_name = catGT_ex_params_from_str(ex_str) 
-                c_name = run_name + '_tcat.nidq.' + c_ex_name + '.txt'
-                events_list.append(os.path.join(run_directory, c_name))
+                events_list.append(os.path.join(run_directory, ex_file))
                 from_stream_index.append(c_index)
-                c_output_name = run_name + '_tcat.nidq.' + c_ex_name + '.adj.txt'
+                
+                # get position of extension in this ex_file name
+                ext_pos = ex_file.find('.txt')                
+                c_output_name = ex_file[0:ext_pos] + '.adj.txt'                
                 out_file = os.path.join(run_directory, c_output_name)
                 out_list.append(out_file) 
         else:
@@ -177,10 +205,11 @@ def call_TPrime(args):
         # toStream is NI
         # build path to the the sync file
         c_name = run_name + '_tcat.nidq.' + toStream_ex_name + '.txt'
-        toStream_path = os.path.join(run_directory, c_name)
+        c_name_match = fnmatch.filter(ni_ex_files, c_name) 
+        toStream_path = os.path.join(run_directory, c_name_match[0])
 
         # build list of event files, include: 
-        #   all files of spike times, except for those in a to stream
+        #   all files of spike times
         #   no NI files, because they are already in the "toStream"
 
         # loop over all SY files
@@ -191,12 +220,12 @@ def call_TPrime(args):
             # These are imec SYNC channels
             # need to get the file name from the directory in case user used the  
             # -1 option to specify the last channel in the file 
-            prb_dir = prb_dir_prefix + str(toStream_prb)
-            match_str = run_name + '_tcat.imec' + str(toStream_prb) + '.ap.SY_*_6_*.txt'
+            prb_dir = prb_dir_prefix + str(c_prb)
+            match_str = run_name + '_tcat.imec' + str(c_prb) + '.ap.SY_*_6_*.txt'
             file_list = os.listdir(os.path.join(run_directory,prb_dir))
             flt_list = fnmatch.filter(file_list,match_str)
             if len(flt_list) != 1:
-                print('No edge file or multiple files for toStream found\n' )
+                print('No edge file or multiple files for fromStream found\n' )
                 return              
             c_name = flt_list[0]
            

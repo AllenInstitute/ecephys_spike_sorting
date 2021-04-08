@@ -258,8 +258,10 @@ def calculate_pc_metrics(spike_clusters,
 
     for idx, cluster_id in enumerate(cluster_ids):
 
+        
         printProgressBar(idx + 1, len(cluster_ids))
 
+            
         peak_channel = peak_channels[cluster_id]
         
         # calculate distances from all channels to peak channel
@@ -340,13 +342,18 @@ def calculate_pc_metrics(spike_clusters,
             num_pcs = all_pcs.shape[0];
 #            num_pcs_str = 'cluster_id: ' + repr(cluster_id) + '; num pcs: ' + repr(num_pcs)
 #            print(num_pcs_str)
+            
+            pcs_for_this_unit = all_pcs[all_labels == cluster_id,:].shape[0]   
+            pcs_for_other_units = all_pcs[all_labels != cluster_id, :].shape[0]
         
         else:
             # no near neighbor units to compare
             num_pcs = 0
+            pcs_for_this_unit = 0
+            pcs_for_other_units = 0
         
-
-        if num_pcs > 10:
+        
+        if num_pcs > 10 and pcs_for_this_unit > 5 and pcs_for_other_units > 5 :
 
             isolation_distances[cluster_id], l_ratios[cluster_id] = mahalanobis_metrics(all_pcs, all_labels, cluster_id)
 
@@ -631,7 +638,8 @@ def mahalanobis_metrics(all_pcs, all_labels, this_unit_id):
     """
     
     pcs_for_this_unit = all_pcs[all_labels == this_unit_id,:]
-    pcs_for_other_units = all_pcs[all_labels != this_unit_id, :]
+     
+    pcs_for_other_units = all_pcs[all_labels != this_unit_id, :]   
     
     mean_value = np.expand_dims(np.mean(pcs_for_this_unit,0),0)
     
@@ -643,6 +651,8 @@ def mahalanobis_metrics(all_pcs, all_labels, this_unit_id):
     mahalanobis_other = np.sort(cdist(mean_value,
                        pcs_for_other_units,
                        'mahalanobis', VI = VI)[0])
+    
+
     
 ##    mahalanobis_self = np.sort(cdist(mean_value,
 #                             pcs_for_this_unit,
