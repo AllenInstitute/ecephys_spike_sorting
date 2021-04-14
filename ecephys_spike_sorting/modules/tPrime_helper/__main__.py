@@ -298,11 +298,13 @@ def call_TPrime_3A(args):
 
     # call TPrime for 3A data
     # assumes no nidq stream
-    # uses full paths rather than building paths
+    # incoming paths are to the catGT output folder; for the toStream and
+    # the fromStreams, find the file of extracted edges that matches
+    # the toStream_params
     # inputs:
     # full path to Tprime executable
-    # path to "to stream" sync edges ("to stream" = the reference stream for the data set)
-    # paths to "from stream" sync edges and text files of events
+    # path to "toStream" catGT output, plus the "toStream_params"
+    # paths to "from stream" catGT output folders
     
     # bNPY, if True, no text files of spike times will be written
     bNPY = True
@@ -315,34 +317,53 @@ def call_TPrime_3A(args):
     start = time.time()
 
     # for twStream, get the spike events and convert to seconds
-    toStream_path = args['tPrime_helper_params']['toStream_path_3A']
-    toStream_parent, toStream_name = os.path.split(toStream_path)
+    toStream_parent = args['tPrime_helper_params']['toStream_path_3A']
+    
+    #
+    toStream_params = args['tPrime_helper_params']['toStream_sync_params']
+    
+    c_type, c_prb, c_ex_name = catGT_ex_params_from_str(toStream_params)
+    match_str = '*_tcat.imec.ap.' + c_ex_name + '.txt'   # will be used for both toStream and fromStream(s)
+    print(toStream_parent)
+    print(match_str)
+    file_list = os.listdir(toStream_parent)
+    flt_list = fnmatch.filter(file_list,match_str)
+    if len(flt_list) != 1:
+        print('No edge file or multiple files for toStream found\n' )
+        return              
+    toStream_name = flt_list[0]
+    toStream_path = os.path.join(toStream_parent, toStream_name)
 
     from_list = args['tPrime_helper_params']['fromStream_list_3A']       # list of files of sync edges for streams to translate to reference
+    fS_file_list = list()
     events_list = list()     # list of files of event times to translate to reference
     from_stream_index = list()     # list of indicies matching event files to a from stream
     out_list = list()    # list of paths for output files, one per event file
 
     # convert events in the toStream to sec; they will not be adjusted
     # search the directory the edges file to get the ks2 output
-    fileList = os.listdir(toStream_parent)
-
     # get name of ks2 output dir and convert to sec
-    ks_outdir = fnmatch.filter(fileList, 'imec_*_ks2')[0]
+    ks_outdir = fnmatch.filter(file_list, 'imec_*_ks2')[0]
     st_file = os.path.join(toStream_parent, ks_outdir, 'spike_times.npy')
     toStream_events_sec = spike_times_npy_to_sec(st_file, 0, bNPY)
     # for later data analysis with spike times as sec, also save as npy
     if not bNPY:
         spike_times_sec_to_npy(toStream_events_sec)
 
-    # fromStreams are just the list provided by the caller for these,
-    # convert only the spike times. For 3A, other digital channels are copies
+    # for each member of from_list, find the edge file in that directory, and
+    # adjust only the spike times. For 3A, other digital channels are copies
     # of those in the toStream
 
-    for fS in from_list:
-        fS_parent, fS_name = os.path.split(fS)
-        fileList = os.listdir(fS_parent)
-        ks_outdir = fnmatch.filter(fileList, 'imec_*_ks2')[0]
+    
+    for fS_parent in from_list:
+        file_list = os.listdir(fS_parent)
+        flt_list = fnmatch.filter(file_list,match_str)
+        if len(flt_list) != 1:
+            print('No edge file or multiple files for fromStream found\n' )
+            return              
+        fS_name = flt_list[0]
+        fS_file_list.append(os.path.join(fS_parent,fS_name))
+        ks_outdir = fnmatch.filter(file_list, 'imec_*_ks2')[0]
         st_file = os.path.join(fS_parent, ks_outdir, 'spike_times.npy')
         st_file_sec = spike_times_npy_to_sec(st_file, 0, bNPY)
         events_list.append(st_file_sec)
@@ -357,7 +378,7 @@ def call_TPrime_3A(args):
     print('toStream:')
     print(toStream_path)
     print('fromStream')
-    for fp in from_list:
+    for fp in fS_file_list:
         print(fp)
     print('event files')
     for i, ep in enumerate(events_list):
@@ -366,13 +387,21 @@ def call_TPrime_3A(args):
     for op in out_list:
         print(op)
 
-    exe_path = os.path.join(args['tPrime_helper_params']['tPrime_path'], 'runit')
+    # path to the 'runit.bat' executable that calls TPrime.
+    # Essential in linux where TPrime executable is only callable through runit
+    if sys.platform.startswith('win'):
+        exe_path = os.path.join(args['tPrime_helper_params']['tPrime_path'], 'runit.bat')
+    elif sys.platform.starstwith('linux'):
+        exe_path = os.path.join(args['tPrime_helper_params']['tPrime_path'], 'runit.sh')
+    else:
+        print('unknown system, cannot run TPrime')  
+        
     sync_period = args['tPrime_helper_params']['sync_period']
 
     tcmd = exe_path + ' -syncperiod=' + repr(sync_period) + \
         ' -tostream=' + toStream_path
 
-    for i, fp in enumerate(from_list):
+    for i, fp in enumerate(fS_file_list):
         tcmd = tcmd + ' -fromstream=' + repr(i) + ',' + fp
 
     for i, ep in enumerate(events_list):

@@ -24,17 +24,18 @@ def GetTrialRange(prb, gate, prb_folder):
     minIndex =  sys.maxsize
     maxIndex = 0
     searchStr = '_g' + gate + '_t'
+    print(searchStr)
     for tName in tFiles:
         if (fnmatch.fnmatch(tName,'*.ap.bin')):
-            
             gPos = tName.find(searchStr)
             tStart = gPos + len(searchStr)
             tEnd = tName.find('.', tStart)
             
             if gPos > 0 and tEnd > 0:
                 try:
-                    tInd = int(tName[tStart:tEnd])
+                    tInd = int(tName[tStart:tEnd])                    
                 except ValueError:
+                    print(tName[tStart:tEnd])
                     print('Error parsing trials for probe folder: ' + prb_folder + '\n')
                     return -1, -1
             else:
@@ -70,14 +71,14 @@ def EphysParams(metaFullPath):
     
     num_channels = int(meta['nSavedChans'])
     
-    uVPerBit = Chan0_uVPerBit(meta)
+    uVPerBit = Chan0_uVPerBit(meta, probe_type)
       
     return(probe_type, sample_rate, num_channels, uVPerBit)
 
 # Return gain for imec channels.
 # Index into these with the original (acquired) channel IDs.
 #
-def Chan0_uVPerBit(meta):
+def Chan0_uVPerBit(meta, probe_type):
     # Returns uVPerBit conversion factor for channel 0
     # If all channels have the same gain (usually set that way for 
     # 3A and NP1 probes; always true for NP2 probes), can use
@@ -88,13 +89,13 @@ def Chan0_uVPerBit(meta):
     # plus a final empty entry following the last ')'
     # channel zero is the 2nd element in the list
 
-    if 'imDatPrb_dock' in meta:
+    if probe_type == 'NP21' or probe_type == 'NP24':
         # NP 2.0; APGain = 80 for all channels
         # voltage range = 1V
         # 14 bit ADC
         uVPerBit = (1e6)*(1.0/80)/pow(2,14)
     else:
-        # 3A, 3B1, 3B2 (NP 1.0)
+        # 3A, 3B1, 3B2 (NP 1.0), or other NP 1.0-like probes
         # voltage range = 1.2V
         # 10 bit ADC
         currList = imroList[1].split(sep=' ')   # 2nd element in list, skipping header

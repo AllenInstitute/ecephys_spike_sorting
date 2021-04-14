@@ -520,6 +520,9 @@ def catGT_ex_params_from_str(ex_str):
         # name string = SY_<word>_<bit>_<pulse length>
         # if the pulse length includes a decimal, reformat
         ex_parts[3] = ex_parts[3].replace('.', 'p')
+        # if word = -1, replace with wildcard character
+        if ex_parts[1] == '-1':
+            ex_parts[1] = '*'
         ex_name_str = ex_type + '_' + ex_parts[1] + '_' + ex_parts[2] + '_' + ex_parts[3]
     elif ex_type == 'XD' or ex_type == 'iXD':
         # name string = XD_<word>_<bit>_<pulse length>

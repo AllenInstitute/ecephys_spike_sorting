@@ -65,8 +65,8 @@ def createInputJson(output_file,
     
     # location of kilosor respository and kilosort version
 
-    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS3_fork\Kilosort2'
-    KS2ver = '3.0'      # must equal '3.0', '2.5' or '2.0', and match the kiilosort_repository
+    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS20_release'
+    KS2ver = '2.0'      # must equal '3.0', '2.5' or '2.0', and match the kiilosort_repository
     
     # KS 3.0 does not yet output pcs.
     if KS2ver == '3.0':
@@ -117,7 +117,7 @@ def createInputJson(output_file,
             print('SpikeGLX params read from meta')
             print('probe type: {:s}, sample_rate: {:.5f}, num_channels: {:d}, uVPerBit: {:.4f}'.format\
                   (probe_type, sample_rate, num_channels, uVPerBit))
-        print('kilosort output directory: ' + kilosort_output_directory )
+        #print('kilosort output directory: ' + kilosort_output_directory )
 
         
     else:
@@ -170,7 +170,7 @@ def createInputJson(output_file,
             "extracted_data_directory": extracted_data_directory,
             "kilosort_output_directory": kilosort_output_directory,
             "kilosort_output_tmp": kilosort_output_tmp
-        },
+       },
 
         "common_files": {
             "settings_json" : npx_directory,
