@@ -30,7 +30,9 @@ def run_CatGT(args):
         outer_site = args['catGT_helper_params']['loccar_outer']
         car_str = ' -loccar=' + repr(inner_site) + ',' + repr(outer_site)
     elif car_mode == 'gbldmx':
-        car_str = ' -gbldmx'
+        car_str = ' -gbldmx'    
+    elif car_mode == 'gblcar':
+        car_str = ' -gblcar'
     elif car_mode == 'None' or car_mode == 'none':
         car_str = ''
         

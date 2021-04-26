@@ -1,7 +1,6 @@
 import os
-import shutil
+import sys
 import subprocess
-import numpy as np
 
 from helpers import SpikeGLX_utils
 from helpers import log_from_json
@@ -30,9 +29,9 @@ from create_input_json import createInputJson
 refPerMS_dict = {'default': 2.0, 'cortex': 2.0, 'medulla': 1.5, 'thalamus': 1.0}
 
 # threhold values appropriate for KS2, KS2.5
-#ksTh_dict = {'default':'[10,4]', 'cortex':'[10,4]', 'medulla':'[10,4]', 'thalamus':'[10,4]'}
+ksTh_dict = {'default':'[10,4]', 'cortex':'[10,4]', 'medulla':'[10,4]', 'thalamus':'[10,4]'}
 # threshold values appropriate for KS3.0
-ksTh_dict = {'default':'[9,9]', 'cortex':'[9,9]', 'medulla':'[9,9]', 'thalamus':'[9,9]'}
+#ksTh_dict = {'default':'[9,9]', 'cortex':'[9,9]', 'medulla':'[9,9]', 'thalamus':'[9,9]'}
 
 
 
@@ -59,7 +58,7 @@ npx_directory = r'D:\ecephys_fork\test_data\SC_10trial'
 #           these strings must match a key in the param dictionaries above.
 
 run_specs = [									
-						['SC024_092319_NP1.0_Midbrain', '0', 'start,end', '0,1', ['cortex', 'medulla'] ]
+						['SC024_092319_NP1.0_Midbrain', '0', '0,9', '0:1', ['cortex', 'cortex'] ]
 ]
 
 # ------------------
@@ -68,7 +67,7 @@ run_specs = [
 # Set to an existing directory; all output will be written here.
 # Output will be in the standard SpikeGLX directory structure:
 # run_folder/probe_folder/*.bin
-catGT_dest = r'D:\ecephys_fork\test_data\SC_10trial\SC024_KS3'
+catGT_dest = r'D:\ecephys_fork\test_data\SC_10trial\SC024_tshift'
 
 # ------------
 # CatGT params
@@ -76,8 +75,8 @@ catGT_dest = r'D:\ecephys_fork\test_data\SC_10trial\SC024_KS3'
 run_CatGT = True   # set to False to sort/process previously processed data.
 
 
-# CAR mode for CatGT. Must be equal to 'None', 'gbldmx', or 'loccar'
-car_mode = 'gbldmx'
+# CAR mode for CatGT. Must be equal to 'None', 'gbldmx', 'gblcar' or 'loccar'
+car_mode = 'gblcar'
 # inner and outer radii, in um for local comman average reference, if used
 loccar_min = 40
 loccar_max = 160
@@ -87,10 +86,10 @@ loccar_max = 160
 # Note 2: this command line includes specification of edge extraction
 # see CatGT readme for details
 # these parameters will be used for all runs
-catGT_cmd_string = '-prb_fld -out_prb_fld -aphipass=300 -gfix=0,0.10,0.02'
+catGT_cmd_string = '-prb_fld -out_prb_fld -aphipass=300 -gfix=0.4,0.10,0.02 -tshift'
 
 ni_present = True
-ni_extract_string = '-XA=0,1,3,500 -XA=1,3,3,0 -XD=4,1,50 -XD=4,2,1.7 -XD=4,3,5'
+ni_extract_string = '-XA=0,1,3,500 -iXA=1,3,3,0  -XD=-1,1,50 -XD=-1,2,1.7 -XD=-1,3,5 -iXD=-1,3,5'
 
 
 
@@ -119,7 +118,7 @@ c_Waves_snr_um = 160
 # extract param string for psth events -- copy the CatGT params used to extract
 # events that should be exported with the phy output for PSTH plots
 # If not using, remove psth_events from the list of modules
-event_ex_param_str = 'XD=4,1,50'
+event_ex_param_str = 'XD=-1,1,50'
 
 # -----------------
 # TPrime parameters
@@ -369,7 +368,7 @@ for spec in run_specs:
                                            fromStream_list_3A = list()
                                            ) 
         
-        command = "python -W ignore -m ecephys_spike_sorting.modules." + 'tPrime_helper' + " --input_json " + input_json \
+        command = sys.executable + " -W ignore -m ecephys_spike_sorting.modules." + 'tPrime_helper' + " --input_json " + input_json \
     		          + " --output_json " + output_json
         subprocess.check_call(command.split(' '))  
     
