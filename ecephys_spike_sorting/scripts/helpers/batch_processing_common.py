@@ -21,6 +21,7 @@ import multiprocessing
 import json
 import xml.etree.ElementTree as ET
 import pandas as pd
+import numpy as np
 
 logging.basicConfig(level = logging.INFO)
 
@@ -60,6 +61,10 @@ class processing_session():
 
         self.json_directory = get_from_kwargs('json_directory', kwargs)
 
+        self.sharing_backup = get_from_kwargs('sharing_backup', kwargs)
+
+        self.force = get_from_kwargs('force', kwargs)
+
 
 
         pxi_slots = OrderedDict()
@@ -93,6 +98,7 @@ class processing_session():
            #'primary_backup_raw_data1',
            'extract_from_npx',
            'restructure_directories',
+           'extend_short_data',
            'depth_estimation',
            'median_subtraction',
            'kilosort_helper',
@@ -139,6 +145,7 @@ class processing_session():
         self.no_process_modules = [
             'edit_probe_json',
             'restructure_directories',
+            'extend_short_data',
             'add_noise_class_to_metrics',
             'copy_logs',
             'cleanup'
@@ -195,6 +202,7 @@ class processing_session():
         self.warning_dict = {}
         self.logger_dict = {}
         self.success_list = []
+        self.failed_clanup_dict = {}
         self.finished_list = [0]*len(self.probes)
         self.current_modules = [False]*len(self.probes)
         self.copy_while_waiting = [False]*len(self.probes)
@@ -220,6 +228,8 @@ class processing_session():
             for module in self.slot_modules:
                 self.slot_modules[module][pxi_slot] = 'Ready'
 
+        self.extended_short_data = False
+        self.file_length_s = None
         self.start = datetime.datetime.now()    
 
     def create_file_handler(self, level_string,level_idx,limsID,probe):
@@ -269,10 +279,10 @@ class processing_session():
             started_processing = True
         except Exception as E:
             print("\n\n"+'#'*50)
-            logging.exception('Failed to start processing', exc_info=True)
-            logging.debug('Failed to start processing', exc_info=True)
+            logging.exception('Failed to finish processing', exc_info=True)
+            logging.debug('Failed to finish processing', exc_info=True)
             started_processing = False
-        print('finished initiating processing')
+        #print('finished processing')
         return started_processing
 
     def slot(self, probe):
@@ -440,7 +450,7 @@ class processing_session():
                     module_list.append(module)
             if 'kilosort_helper' in module_list:
                 module_list.extend(list(self.copy_while_waiting_modules))
-            if 'final_copy_all_parallel' in module_list:
+            if 'final_copy_parallel' in module_list:
                 module_list.extend(list(self.final_copy_all_parallel))
             npx_module_dict[probe] = module_list
 
@@ -471,132 +481,145 @@ class processing_session():
                     found = True
             return found
 
+        try:
+            for probe in self.probes:
+                module_list = npx_module_dict[probe]#set(npx_module_dict[probe]).union(set(self.copy_while_waiting_modules)).union(set(self.final_copy_all_parallel))
+                #print(module_list)
+                copy_raw = module_included(module_list, ['primary', 'raw'])
+                copy_processed = module_included(module_list, ['primary', 'processed'])
+                copy_raw2 = module_included(module_list, ['secondary', 'raw'])
+                copy_processed2 = module_included(module_list, ['secondary', 'processed'])
+                kilosort=module_included(module_list, ['kilosort_helper'])
+                extract = module_included(module_list, ['extract_from_npx'])
+                print('module_list: ', str(module_list))
+                print('copy_raw: ', copy_raw, ', copy_processed: ', copy_processed, ', copy_raw2: ', copy_raw2, ', copy_processed2: ', copy_processed2)
+                #print(extract)
+                raw_dir = self.raw_path(probe)
+                copy_back = module_included(module_list, ['copy_back'])
+                if copy_back:
+                    raw_dir = self.raw_backup1(probe)
+                #sorted_drive = sorted_drive(probe)
+                sorted_drive = self.sorted_drive(probe)
+                sorted_dir = self.sorted_path(probe)
+                backup_dir = self.raw_backup1(probe)
+                sorted_backup_dir = self.sorted_backup1(probe)
+                backup_dir2 = self.raw_backup2(probe)
+                sorted_backup_dir2 = self.sorted_backup2(probe)
+                if ('copy_raw_data' in npx_module_dict[probe] or 'extract_from_npx' in npx_module_dict[probe] or 'restructure_directories' in npx_module_dict[probe]):
+                    try:
+                        print(sorted_drive)
+                        free_space = psutil.disk_usage(sorted_drive).free
+                        recording_size = sum(os.path.getsize(os.path.join(raw_dir,file)) for file in os.listdir(raw_dir))
+                        extracted_size = 1.25*recording_size/self.probes_sharing_slot(self.slot(probe))
+                        recording_size = recording_size*(not(self.slot(probe) in slot_list))
+                        slot_list.append(self.slot(probe))
+                    except FileNotFoundError as E:
+                        print('One of the directories probably doesn\'t exist - check '+probe+': '+sorted_drive)
+                        raise E
+                else: 
+                    try:
+                        recording_size = 0
+                        free_space = psutil.disk_usage(sorted_drive).free
+                        if os.path.isdir(sorted_dir):
+                            extracted_size = dir_size(sorted_dir)
+                        else:
+                            raise FileNotFoundError
+                    except FileNotFoundError as E:
+                        print('One of the directories probably doesn\'t exist - check '+sorted_dir)
+                        raise E
+                logging.debug("free_space"+ str(free_space))
+                logging.debug("extracted_size"+ str(extracted_size))
+                residual_size = extracted_size/12
+                logging.debug("residual_size"+ str(residual_size))
+                kilosort_size = (30*(10**9))*kilosort
+                logging.debug("kilosort_size"+ str(kilosort_size))
+                median_sub_size = residual_size*('median_subtraction' in module_list)
+                logging.debug("median_sub_size"+ str(median_sub_size))
+                processing_size = (100*(10**6))#100 megabytes for depth png, mean waveforms and metrics 
+                logging.debug("processing_size"+ str(processing_size))
 
-        for probe in self.probes:
-            module_list = npx_module_dict[probe]#set(npx_module_dict[probe]).union(set(self.copy_while_waiting_modules)).union(set(self.final_copy_all_parallel))
-            #print(module_list)
-            copy_raw = module_included(module_list, ['primary', 'raw'])
-            copy_processed = module_included(module_list, ['primary', 'processed'])
-            copy_raw2 = module_included(module_list, ['secondary', 'raw'])
-            copy_processed2 = module_included(module_list, ['secondary', 'processed'])
-            kilosort=module_included(module_list, ['kilosort_helper'])
-            extract = module_included(module_list, ['extract_from_npx'])
-            #print(extract)
-            raw_dir = self.raw_path(probe)
-            copy_back = module_included(module_list, ['copy_back'])
-            if copy_back:
-                raw_dir = self.raw_backup1(probe)
-            #sorted_drive = sorted_drive(probe)
-            sorted_drive = self.sorted_drive(probe)
-            sorted_dir = self.sorted_path(probe)
-            backup_dir = self.raw_backup1(probe)
-            sorted_backup_dir = self.sorted_backup1(probe)
-            backup_dir2 = self.raw_backup2(probe)
-            sorted_backup_dir2 = self.sorted_backup2(probe)
-            if ('copy_raw_data' in npx_module_dict[probe] or 'extract_from_npx' in npx_module_dict[probe] or 'restructure_directories' in npx_module_dict[probe]):
+                current_raw_backup = dir_size(backup_dir)
+                current_processed_backup = dir_size(sorted_backup_dir)
+                current_raw_backup2 = dir_size(backup_dir2)
+                current_processed_backup2 = dir_size(sorted_backup_dir2)
+
+                primary_backup_space_needed = copy_raw*max(0,recording_size -current_raw_backup) + copy_processed*(processing_size+max(0,extracted_size-current_processed_backup))
+                logging.debug("primary_backup_space_needed"+ str(primary_backup_space_needed))
+                secondary_backup_space_needed=  copy_raw2*max(0,recording_size -current_raw_backup2) + copy_processed2*(processing_size+max(0,extracted_size-current_processed_backup2))
+                logging.debug("secondary_backup_space_needed"+ str(secondary_backup_space_needed))
+                c_space_needed = kilosort*extracted_size
+                
+                if extract and os.path.isdir(sorted_dir):
+                    err_str = str(sorted_dir,)+" already exists. Please delete it if you would like to repeat the extraction from npx, otherwise comment out the 'extract_from_npx' module."
+                    print(err_str)
+                    raise ValueError(err_str)
+                new_data_space_needed = extract*extracted_size + processing_size + median_sub_size + kilosort_size
+                sorted_drive
                 try:
-                    print(sorted_drive)
-                    free_space = psutil.disk_usage(sorted_drive).free
-                    recording_size = sum(os.path.getsize(os.path.join(raw_dir,file)) for file in os.listdir(raw_dir))
-                    extracted_size = 1.25*recording_size/self.probes_sharing_slot(self.slot(probe))
-                    recording_size = recording_size*(not(self.slot(probe) in slot_list))
-                    slot_list.append(self.slot(probe))
-                except FileNotFoundError as E:
-                    print('One of the directories probably doesn\'t exist - check '+probe+': '+sorted_drive)
-                    raise E
-            else: 
+                    backup_size_dict[sorted_drive] += new_data_space_needed
+                except:
+                    backup_size_dict[sorted_drive] = new_data_space_needed
+                logging.debug("data_space_needed"+ str(new_data_space_needed))
+                backup_location, folder = os.path.split(params.backup1)
                 try:
-                    recording_size = 0
-                    free_space = psutil.disk_usage(sorted_drive).free
-                    if os.path.isdir(sorted_dir):
-                        extracted_size = dir_size(sorted_dir)
-                    else:
-                        raise FileNotFoundError
-                except FileNotFoundError as E:
-                    print('One of the directories probably doesn\'t exist - check '+sorted_dir)
-                    raise E
-            logging.debug("free_space"+ str(free_space))
-            logging.debug("extracted_size"+ str(extracted_size))
-            residual_size = extracted_size/12
-            logging.debug("residual_size"+ str(residual_size))
-            kilosort_size = (30*(10**9))*kilosort
-            logging.debug("kilosort_size"+ str(kilosort_size))
-            median_sub_size = residual_size*('median_subtraction' in module_list)
-            logging.debug("median_sub_size"+ str(median_sub_size))
-            processing_size = (100*(10**6))#100 megabytes for depth png, mean waveforms and metrics 
-            logging.debug("processing_size"+ str(processing_size))
+                    backup_size_dict[backup_location] += primary_backup_space_needed
+                except:
+                    backup_size_dict[backup_location] = primary_backup_space_needed
+                backup_location, folder = os.path.split(params.backup2)
+                try:
+                    backup_size_dict[backup_location] += secondary_backup_space_needed
+                except:
+                    backup_size_dict[backup_location] = secondary_backup_space_needed
+                max_c_space_needed = max(c_space_needed,max_c_space_needed)
+                #if free_space < data_space_needed:
+                #    print('check ' +probe)
+                #    raise ValueError('There is not enough space on one of the drives')
+                print(probe+' exists')
 
-            current_raw_backup = dir_size(backup_dir)
-            current_processed_backup = dir_size(sorted_backup_dir)
-            current_raw_backup2 = dir_size(backup_dir2)
-            current_processed_backup2 = dir_size(sorted_backup_dir2)
-
-            primary_backup_space_needed = copy_raw*max(0,recording_size -current_raw_backup) + copy_processed*(processing_size+max(0,extracted_size-current_processed_backup))
-            logging.debug("primary_backup_space_needed"+ str(primary_backup_space_needed))
-            secondary_backup_space_needed=  copy_raw2*max(0,recording_size -current_raw_backup2) + copy_processed2*(processing_size+max(0,extracted_size-current_processed_backup2))
-            logging.debug("secondary_backup_space_needed"+ str(secondary_backup_space_needed))
-            c_space_needed = kilosort*extracted_size
-            
-            if extract and os.path.isdir(sorted_dir):
-                err_str = str(sorted_dir,)+" already exists. Please delete it if you would like to repeat the extraction from npx, otherwise comment out the 'extract_from_npx' module."
+            try:
+                backup_size_dict[sorted_drive] += max_c_space_needed
+            except:
+                backup_size_dict[sorted_drive] = max_c_space_needed
+            if psutil.disk_usage(sorted_drive).free < backup_size_dict[sorted_drive]: #TODO make this flexible - it only works since extraction and processing are both on D
+                err_str = 'There is not enough space on the D drive for kilosort to process the largest dataset'
                 print(err_str)
                 raise ValueError(err_str)
-            new_data_space_needed = extract*extracted_size + processing_size + median_sub_size + kilosort_size
-            sorted_drive
-            try:
-                backup_size_dict[sorted_drive] += new_data_space_needed
-            except:
-                backup_size_dict[sorted_drive] = new_data_space_needed
-            logging.debug("data_space_needed"+ str(new_data_space_needed))
-            backup_location, folder = os.path.split(params.backup1)
-            try:
-                backup_size_dict[backup_location] += primary_backup_space_needed
-            except:
-                backup_size_dict[backup_location] = primary_backup_space_needed
-            backup_location, folder = os.path.split(params.backup2)
-            try:
-                backup_size_dict[backup_location] += secondary_backup_space_needed
-            except:
-                backup_size_dict[backup_location] = secondary_backup_space_needed
-            max_c_space_needed = max(c_space_needed,max_c_space_needed)
-            #if free_space < data_space_needed:
-            #    print('check ' +probe)
-            #    raise ValueError('There is not enough space on one of the drives')
-            print(probe+' exists')
-
-        try:
-            backup_size_dict[sorted_drive] += max_c_space_needed
-        except:
-            backup_size_dict[sorted_drive] = max_c_space_needed
-        if psutil.disk_usage(sorted_drive).free < backup_size_dict[sorted_drive]: #TODO make this flexible - it only works since extraction and processing are both on D
-            err_str = 'There is not enough space on the D drive for kilosort to process the largest dataset'
-            print(err_str)
-            raise ValueError(err_str)
-        else: print('There appears to be enough space on the sorting drive '+str(sorted_drive)+ ' for kilosort')
-        for bdrive, size_needed in backup_size_dict.items():
-            try:
-                print('Checking space on '+ bdrive)
-                if not(os.path.exists(bdrive)):
-                    os.makedirs(bdrive)
-                if psutil.disk_usage(bdrive).free < size_needed:
+            else: print('There appears to be enough space on the sorting drive '+str(sorted_drive)+ ' for kilosort')
+            for bdrive, size_needed in backup_size_dict.items():
+                try:
+                    if self.sharing_backup:
+                        size_needed = size_needed*2
+                    print('Checking space on '+ bdrive)
+                    if not(os.path.exists(bdrive)):
+                        os.makedirs(bdrive)
+                    #print('#####for location '+str(bdrive))
+                    #print('needed: '+str(size_needed))
+                    #print('free: '+str(psutil.disk_usage(bdrive).free))
                     print('Free space on ',bdrive,': ',  psutil.disk_usage(bdrive).free)
                     print('Space predicted needed on ',bdrive,': ', size_needed )
-                    err_str = 'There is not enough space on '+bdrive+' for all the data'
-                    print(err_str)
-                    raise AssertionError(err_str)
-                else: print('And there appears to be enough space on backup drive '+bdrive)
-            except Exception as E:
-                print('There is not enough space on '+bdrive+' for all the data')
+                    if psutil.disk_usage(bdrive).free < size_needed:
+                        err_str = 'There is not enough space on '+bdrive+' for all the data'
+                        print(err_str)
+                        raise AssertionError(err_str)
+                    else: print('And there appears to be enough space on backup drive '+bdrive)
+                except Exception as E:
+                    print('There is not enough space on '+bdrive+' for all the data')
+                    raise(E)
+                try:
+                    print('Checking wite permissions '+ bdrive)
+                    test_path = os.path.join(bdrive, 'test.txt')
+                    with open(test_path, 'w') as f:
+                        f.write('test write')
+                except Exception as E:
+                    print('Write permissions to not appear to be enabled for '+bdrive+'. This is likely a full unc path that requires write permissions under the drives sharing properties')
+                    raise(E)
+            #raise(ValueError)
+        except Exception as E:
+            if not(self.force):
                 raise(E)
-            try:
-                print('Checking wite permissions '+ bdrive)
-                test_path = os.path.join(bdrive, 'test.txt')
-                with open(test_path, 'w') as f:
-                    f.write('test write')
-            except Exception as E:
-                print('Write permissions to not appear to be enabled for '+bdrive+'. This is likely a full unc path that requires write permissions under the drives sharing properties')
-                raise(E)
-        #raise(ValueError)
+            else:
+                print("There doesn't appear to be enough space, but -f was passed so we will proceed with the sort")
+
         ####################################################################
 
     def process_npx(self, x):
@@ -620,7 +643,7 @@ class processing_session():
             except Exception as E:
                 add_warning(probe,"For "+module+" files were not copied if they already existed.")
 
-            command_string = "robocopy "+ source +" "+destination +r" /e /xc /xn /xo"
+            command_string = "robocopy "+ source +" "+destination +r" /e /xc /xn /xo /j /r:3 /w:10"
 
             if 'cww' in module:
                 command_string = command_string+ ' /xf probe_info.json'
@@ -639,7 +662,7 @@ class processing_session():
                 os.mkdir(destination)
             except Exception as E:
                 add_warning(probe,"For "+module+" files were not moved if they already existed.")
-            command_string = "robocopy "+ source +" "+destination +r" /e /xc /xn /xo /move"
+            command_string = "robocopy "+ source +" "+destination +r" /e /xc /xn /xo /move /r:3 /w:10"
             self.logger_dict[probe].info(command_string)
             self.process_dict[probe][module] = subprocess.Popen(command_string)#,stdout = subprocess.PIPE,stderr = subprocess.PIPE))
                 #shutil.copytree(extracted_data_location, new_location)
@@ -723,6 +746,13 @@ class processing_session():
                     kilosort_output_directory=self.sorted_AP_path(probe), 
                     probe_type=self.probe_type
                 )
+                if self.extended_short_data:
+                    try:
+                        info['kilosort_helper_params']['kilosort2_params']['trange'] = '[0 '+str(self.file_length_s)+']'
+                    except Exeption as E:
+                        self.logger_dict[probe].error("Error setting trange for short sort")
+                        self.logger_dict[probe].exception(E)
+
                 command_string = "python -W ignore -m ecephys_spike_sorting.modules." + next_module + " --input_json " + input_json \
                   + " --output_json " + output_json
 
@@ -774,8 +804,14 @@ class processing_session():
                 backup_location = self.sorted_backup2(probe)
                 copy_data(current_location,backup_location, probe,module)
             elif module == 'cleanup':
-                dir_sucess = check_data_processing(self.probe_type, self.raw_path(probe), self.sorted_path(probe), self.raw_backup1(probe), self.raw_backup2(probe), self.sorted_backup1(probe), self.sorted_backup2(probe), self.lims_upload_drive, cortex_only=self.cortex_only)
+                dir_sucess, missing_files_list, mismatch_size_list, missing_backup_list = check_data_processing(self.probe_type, self.raw_path(probe), self.sorted_path(probe), self.raw_backup1(probe), self.raw_backup2(probe), self.sorted_backup1(probe), self.sorted_backup2(probe), self.lims_upload_drive, cortex_only=self.cortex_only)
                 self.success_list.append(dir_sucess)
+                if not(dir_sucess):
+                    failed_files = set()
+                    failed_files = failed_files.union(set(missing_files_list))
+                    failed_files = failed_files.union(set(mismatch_size_list))
+                    failed_files = failed_files.union(set(missing_backup_list))
+                    self.failed_clanup_dict[probe] = failed_files
                 no_returncode(probe,module,  rcode_in = int(not(dir_sucess)))
             elif module == 'extract_from_npx':
                 skip_verify_backup = self.skip_verify_backup
@@ -813,6 +849,9 @@ class processing_session():
                 no_returncode(probe, module)
             elif module == 'restructure_directories':
                 restructure_directories(probe)
+                no_returncode(probe, module)
+            elif module == 'extend_short_data':
+                extend_short_data(probe)
                 no_returncode(probe, module)
             elif module == 'depth_estimation':
                 old_probe_json = read_probe_json(probe)
@@ -865,6 +904,52 @@ class processing_session():
                 if not(probe is None):
                     self.logger_dict[probe].warning(E, exc_info=True)       
             return sucess
+
+        def extend_short_data(probe):
+
+            output_file = os.path.join(self.sorted_AP_path(probe), 'continuou*.dat')
+            print('############output_file: ', str(output_file))
+            output_file = glob.glob(output_file)[0]
+
+
+            data = np.memmap(output_file, dtype='int16')
+            print(data.size)
+            time = data.size/(30000*384)
+            data._mmap.close()
+            del(data)
+
+            self.file_length_s = time
+            print('time in seconds: ', time)
+            if self.file_length_s <1200:
+                self.extended_short_data = True
+                location, filename = os.path.split(output_file)
+                new_filename = 'original_'+filename
+                temp_data = os.path.join(location, new_filename)
+                try:
+                    os.rename(output_file, temp_data)
+                except Exception as E:
+                    self.logger_dict[probe].waring('Unable to rename short data, its probably already been renamed', exc_info=True)
+
+
+                with open(output_file, 'wb') as f:
+                    blocksize = 100*384
+                    total_size = 0
+                    index = 0
+                    data = np.memmap(temp_data, dtype='int16')
+                    print(data.size)
+                    time = data.size/(30000*384)
+                    counter = 0
+                    while total_size < 30000*384*60*20: #while the file length is less than 20 minutes
+                        if index > data.size:
+                                index = 0
+                        if counter>10000:
+                            self.logger_dict[probe].info('appending index: '+str(index))
+                            counter = 0
+                        counter +=1
+                        data[index:index+blocksize].tofile(f)
+                        index += blocksize
+                        total_size += blocksize
+                #f.close()
 
         def restructure_directories(probe):
             print('Probe Type: ', self.probe_type)
@@ -988,6 +1073,9 @@ class processing_session():
                     probe_json = json.load(read_file)
             except Exception as E:
                 self.logger_dict[probe].warning('Error reading probe_json')
+                with open(json_path, "w") as write_file:
+                    probe_json = {}
+                    json.dump(probe_json, write_file, indent=4)
             return probe_json
 
 
@@ -1537,7 +1625,7 @@ class processing_session():
                 kilosort_wait =(next_module == 'kilosort_helper') and (('kilosort_helper' in self.current_modules) or not_next_sort)
                 #print('kilosort_wait: '+str(kilosort_wait))
                 slot_wait = (next_module in self.slot_modules) and not(self.slot_modules[next_module][self.slot(probe)] == "Ready")
-                cleanup_wait = next_module == 'cleanup' and time_elapsed<50400 and not(self.probes[probe].start_module=='cleanup') # wait 14 hours to cleanup to make sure lims1 upload can grab folders
+                cleanup_wait = next_module == 'cleanup' and time_elapsed<0#50400 and not(self.probes[probe].start_module=='cleanup') # wait 14 hours to cleanup to make sure lims1 upload can grab folders
                 final_copy = next_module == 'final_copy_parallel'
                 wait = kilosort_wait or start_wait or slot_wait or cleanup_wait or final_copy or m_sub_wait
                 #print(wait, kilosort_wait , start_wait , slot_wait , cleanup_wait , final_copy, m_sub_wait)
@@ -1575,18 +1663,37 @@ class processing_session():
         print_progress_stats()
         computer = os.environ['COMPUTERNAME']
         sucess = all(set(self.success_list))
+        print('#'*60)
         if sucess:
-            self.set_completed(self.session_name, computer)
-        else: print('processing was not verified so no signal was sent')
+            print('')
+            print('Processing completed sucessfully for all probes!')
+            print('')
+            #self.set_completed(self.session_name, computer)
+        else:
+            print('') 
+            print('Processing completed sucessfully!! But was not verified, there may have been sorting errors')
+            print('')
+            print('#'*60)
+            print('#'*60)
+            print('#'*60)
+            print('ALERT!!! Please check the following probes and ensure that the corresponding files are present, backed up and sizes and modification times match the backup.')
+            print('')
+            pprint(self.failed_clanup_dict)
+            print('')
+        #self.assistant_set_session(self.session_name)
 
-        self.assistant_set_session(self.session_name)
+        #self.make_batch_files(self.session_name)
 
-        self.make_batch_files(self.session_name)
-
-        self.cleanup_DAQs()
-
-        check_all_space(self.probes)
-        return session_name, sucess
+        #self.cleanup_DAQs()
+        try:
+            npx_dirs = set()
+            for probe in self.probes:
+                npx_dirs.add(self.raw_path(probe))
+            check_all_space(npx_dirs)
+            print('')
+        except Excpetion as E:
+            print('Failed to check space on Acquisition drives')
+        return self.session_name, sucess
 
     def get_processing_assitant_proxy(self):
         computer = os.environ['COMPUTERNAME']

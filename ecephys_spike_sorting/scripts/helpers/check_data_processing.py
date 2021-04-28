@@ -86,7 +86,7 @@ def check_data_processing(probe_type, npx_directory, local_sort_dir, raw_backup_
             print('ERROR: the raw data backup does not match the acquired data for '+probe)
     else:
         err_str = 'WARNING: could not find the acquired data at '+ str(npx_directory) + ' to compare to backup size'
-        print(err_str)
+        #print(err_str)
 
 
     missing_files_list = []
@@ -376,8 +376,9 @@ def check_data_processing(probe_type, npx_directory, local_sort_dir, raw_backup_
             if f not in data_files and not(f == 'continuous.dat'):
                 extra_files.append(f)
     if extra_files:
-        print("ERROR: Some extra files were found for ",probe)
-        print(extra_files)
+        pass
+        #print("ERROR: Some extra files were found for ",probe)
+        #print(extra_files)
     else:
         pass
         #print("No extra files were found for ", probe)
@@ -391,15 +392,17 @@ def check_data_processing(probe_type, npx_directory, local_sort_dir, raw_backup_
         else:
             print("ERROR: The raw data on SD4 is not the same size as the raw data on the backup drive for ", probe)
     else:
-        print('ERROR: Could not find raw data on SD4 for  for '+probe+':')
+        pass
+        #print('ERROR: Could not find raw data on SD4 for  for '+probe+':')
 
     missing_net_backup_list = []
     for file in data_files:
         if file not in network_size_dict:
             missing_net_backup_list.append(file)
     if missing_net_backup_list:
-        print('ERROR: Some files are not backed up on SD4 for '+probe+':')
-        print(missing_net_backup_list)
+        pass
+        #print('ERROR: Some files are not backed up on SD4 for '+probe+':')
+        #print(missing_net_backup_list)
     else:
         pass#print('all files are backed up on SD4 for '+probe)
 
@@ -412,11 +415,12 @@ def check_data_processing(probe_type, npx_directory, local_sort_dir, raw_backup_
         print('ERROR: Some processing files have different sizes or modification times on the backup drive and SD4 for '+probe)
         print(net_mismatch_size_list)
     elif not(network_size_dict):
-        print('WARNING: Could not check file sizes on SD4 since they do not exist')
+        pass
+        #print('WARNING: Could not check file sizes on SD4 since they do not exist')
     else:
         pass
         #print('All files on the backup drive match the size and modification times of those on SD4 for '+probe)
-    return sucess
+    return sucess, missing_files_list, mismatch_size_list, missing_backup_list
 
 def safe_delete_npx(local_npx_dir, backup_npx_dir):
     for root, dirs, files in os.walk(local_npx_dir):
@@ -537,10 +541,18 @@ def check_all_data(npx_directories):
 def check_all_space(npx_directories):
     space_dict = {}
     for npx_dir in npx_directories:
-        drive, tail = os.path.splitdrive(npx_dir)
-        free_space = psutil.disk_usage(drive).free
-        if  free_space < (200*(10**9)):
-            space_dict[drive] = free_space
+        #drive, tail = os.path.splitdrive(npx_dir)
+        try:
+            #print(npx_dir)
+            free_space = psutil.disk_usage(npx_dir).free
+            if  free_space < (600*(10**9)):
+                space_dict[drive] = free_space
+        except Exception as E:
+            npx_dir = os.path.split(npx_dir)[0]
+            #print(npx_dir)
+            free_space = psutil.disk_usage(npx_dir).free
+            if  free_space < (600*(10**9)):
+                space_dict[drive] = free_space
     if space_dict:
         for drive in space_dict.items():
             print("ERROR: Not enough space on ",drive,"for acquisition")
