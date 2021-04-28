@@ -39,25 +39,37 @@ def compute_channel_offsets(ap_data, ephys_params, params):
     numChannels = ephys_params['num_channels']
     numIterations = params['n_passes']
 
-    offsets = np.zeros((numChannels, numIterations), dtype = 'int16')
-    rms_noise = np.zeros((numChannels, numIterations), dtype='float')
+    
 
-    for i in range(numIterations):
+    
 
-        start_sample = int((params['start_time'] + params['skip_s_per_pass'] * i)* ephys_params['sample_rate'])
-        end_sample = start_sample + int(params['time_interval'] * ephys_params['sample_rate'])
+    def iterate_depth_info(numIterations):
+        try:
+            offsets = np.zeros((numChannels, numIterations), dtype = 'int16')
+            rms_noise = np.zeros((numChannels, numIterations), dtype='float')
+            for i in range(numIterations):
+                start_sample = int((params['start_time'] + params['skip_s_per_pass'] * i)* ephys_params['sample_rate'])
+                end_sample = start_sample + int(params['time_interval'] * ephys_params['sample_rate'])
 
-        for ch in range(numChannels):
-            try:
-                    printProgressBar(i * numChannels + ch +1, numChannels * numIterations)
-            except Exception as E:
-                pass
-            data = ap_data[start_sample:end_sample, ch]
-            offsets[ch,i] = np.nanmedian(data).astype('int')
-            median_subtr = data - offsets[ch,i]
-            rms_noise[ch,i] = rms(median_subtr) * ephys_params['bit_volts']
+                for ch in range(numChannels):
+                    try:
+                            printProgressBar(i * numChannels + ch +1, numChannels * numIterations)
+                    except Exception as E:
+                        pass
+                    data = ap_data[start_sample:end_sample, ch]
+                    offsets[ch,i] = np.nanmedian(data).astype('int')
+                    median_subtr = data - offsets[ch,i]
+                    rms_noise[ch,i] = rms(median_subtr) * ephys_params['bit_volts']
+        except Exception as E:
+            numIterations = numIterations - 1
+            if numIterations >0:
+                rms_noise, offsets = iterate_depth_info(numIterations)
+            else:
+                prine('Unable to estimate offsets or RMS noise. Returning empty arrays')
+        return rms_noise, offsets
         
 
+    rms_noise, offsets = iterate_depth_info(numIterations)
     print(offsets)
 
     mask = np.ones((numChannels,), dtype=bool)
