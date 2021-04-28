@@ -1,5 +1,5 @@
 
-from helpers.batch_processing_common_sm_cortex import processing_session
+from helpers.batch_processing_common import processing_session
 from helpers.batch_processing_config import get_from_config, get_from_kwargs
 import sys
 
@@ -24,6 +24,7 @@ modules = [
    'restructure_directories',
    'depth_estimation',
    'median_subtraction',
+   'extend_short_data',
    'kilosort_helper',
    'noise_templates',
    'mean_waveforms',
@@ -80,6 +81,9 @@ if __name__ == '__main__':
   parser.add_argument("-start", "--start_module", 
                   help= "which module to start from")
 
+  parser.add_argument("-f", "--force", 
+                  help= "ignore errors when checking if there is enough space to complete processing", action="store_true")
+
   args = parser.parse_args()
 
   try:
@@ -100,6 +104,9 @@ if __name__ == '__main__':
   cortex_only = args.cortex
   print("cortex only", cortex_only)
 
+  force = args.force
+  print("Force? ignore errors when checking if there is enough space: ", force)
+
   try:
     if not(args.start_module is None):
       start_module = args.start_module
@@ -118,7 +125,8 @@ if __name__ == '__main__':
         final_copy_all_parallel=final_copy_all_parallel,
     start_module = start_module,
     end_module = end_module,
-    processable_probes = probes_in
+    processable_probes = probes_in,
+    force = force
     )
   processor.start_processing()
 

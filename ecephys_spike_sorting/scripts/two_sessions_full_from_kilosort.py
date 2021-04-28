@@ -66,7 +66,7 @@ final_copy_all_parallel = [
 #       },
 #    }
         
-
+sharing_backup = True
         
 
 def make_slots(session_names):
@@ -125,6 +125,7 @@ if __name__ == '__main__':
     end_module = end_module,
     probes=probes,
     pxi_slots = slots,
+    sharing_backup = sharing_backup
     )
   processor.start_processing()
 

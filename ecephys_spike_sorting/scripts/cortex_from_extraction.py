@@ -62,6 +62,7 @@ final_copy_all_parallel = [
 #     },
 #    }
 
+sharing_backup = True
 
 if __name__ == '__main__':
   try:
@@ -76,7 +77,8 @@ if __name__ == '__main__':
     copy_while_waiting_modules=copy_while_waiting_modules,
     final_copy_all_parallel=final_copy_all_parallel,
     start_module = start_module,
-    end_module = end_module
+    end_module = end_module,
+    sharing_backup = sharing_backup
     )
   processor.start_processing()
 
