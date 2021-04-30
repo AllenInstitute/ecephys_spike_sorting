@@ -74,7 +74,8 @@ def check_data_processing(probe_type, npx_directory, local_sort_dir, raw_backup_
         #print('The raw data has been backed up for '+probe)
         raw_size_backup = dir_size(raw_backup_1)
     else:
-        print('ERROR: Could not find raw data_backup for '+probe+':')
+        pass
+        #print('ERROR: Could not find raw data_backup for '+probe+':')
 
     raw_size = 0
     if os.path.isdir(npx_directory):
@@ -83,7 +84,8 @@ def check_data_processing(probe_type, npx_directory, local_sort_dir, raw_backup_
             pass
             #print('the raw data backup matches the acquired data for '+probe)
         else:
-            print('ERROR: the raw data backup does not match the acquired data for '+probe)
+            pass
+            #print('ERROR: the raw data backup does not match the acquired data for '+probe)
     else:
         err_str = 'WARNING: could not find the acquired data at '+ str(npx_directory) + ' to compare to backup size'
         #print(err_str)
@@ -157,7 +159,7 @@ def check_data_processing(probe_type, npx_directory, local_sort_dir, raw_backup_
                 pass
                 #print('The continuous size seems correct relative to the npx size for '+probe)
             else: print('ERROR: The continuous file seems too large or too small relative to the npx for '+probe)
-        else:print('ERROR: unable to find continuous to compare to npx for '+probe)
+        else:pass#print('ERROR: unable to find continuous to compare to npx for '+probe)
     else: print('ERROR: Unable to find npx to compare to continuous file for '+probe)
 
     missing_backup_list = []
@@ -390,7 +392,8 @@ def check_data_processing(probe_type, npx_directory, local_sort_dir, raw_backup_
             pass
             #print('The raw data is on SD4 and the size matches the backup for '+probe)
         else:
-            print("ERROR: The raw data on SD4 is not the same size as the raw data on the backup drive for ", probe)
+            pass
+            #print("ERROR: The raw data on SD4 is not the same size as the raw data on the backup drive for ", probe)
     else:
         pass
         #print('ERROR: Could not find raw data on SD4 for  for '+probe+':')
@@ -546,15 +549,19 @@ def check_all_space(npx_directories):
             #print(npx_dir)
             free_space = psutil.disk_usage(npx_dir).free
             if  free_space < (600*(10**9)):
-                space_dict[drive] = free_space
+                space_dict[npx_dir] = free_space
         except Exception as E:
             npx_dir = os.path.split(npx_dir)[0]
             #print(npx_dir)
             free_space = psutil.disk_usage(npx_dir).free
             if  free_space < (600*(10**9)):
-                space_dict[drive] = free_space
+                space_dict[npx_dir] = free_space
     if space_dict:
-        for drive in space_dict.items():
+        for drive in space_dict.keys():
+            print('#'*60)
+            print('#'*60)
+            print('#'*60)
+            print('V'*60)
             print("ERROR: Not enough space on ",drive,"for acquisition")
     else: print("There is enough space for acquisition on all drives")
 

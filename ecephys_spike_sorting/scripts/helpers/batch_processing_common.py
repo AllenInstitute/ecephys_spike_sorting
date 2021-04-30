@@ -61,7 +61,7 @@ class processing_session():
 
         self.json_directory = get_from_kwargs('json_directory', kwargs)
 
-        self.sharing_backup = get_from_kwargs('sharing_backup', kwargs)
+        self.sharing_backup = get_from_kwargs('sharing_backup', kwargs, False)
 
         self.force = get_from_kwargs('force', kwargs)
 
@@ -543,9 +543,12 @@ class processing_session():
                 current_raw_backup2 = dir_size(backup_dir2)
                 current_processed_backup2 = dir_size(sorted_backup_dir2)
 
+                
                 primary_backup_space_needed = copy_raw*max(0,recording_size -current_raw_backup) + copy_processed*(processing_size+max(0,extracted_size-current_processed_backup))
+                primary_backup_space_needed = primary_backup_space_needed*(int(self.sharing_backup)+1)
                 logging.debug("primary_backup_space_needed"+ str(primary_backup_space_needed))
                 secondary_backup_space_needed=  copy_raw2*max(0,recording_size -current_raw_backup2) + copy_processed2*(processing_size+max(0,extracted_size-current_processed_backup2))
+                secondary_backup_space_needed = secondary_backup_space_needed*(int(self.sharing_backup)+1)
                 logging.debug("secondary_backup_space_needed"+ str(secondary_backup_space_needed))
                 c_space_needed = kilosort*extracted_size
                 
@@ -587,8 +590,6 @@ class processing_session():
             else: print('There appears to be enough space on the sorting drive '+str(sorted_drive)+ ' for kilosort')
             for bdrive, size_needed in backup_size_dict.items():
                 try:
-                    if self.sharing_backup:
-                        size_needed = size_needed*2
                     print('Checking space on '+ bdrive)
                     if not(os.path.exists(bdrive)):
                         os.makedirs(bdrive)
@@ -1676,10 +1677,16 @@ class processing_session():
             print('#'*60)
             print('#'*60)
             print('#'*60)
+            print('V'*60)
             print('ALERT!!! Please check the following probes and ensure that the corresponding files are present, backed up and sizes and modification times match the backup.')
             print('')
             pprint(self.failed_clanup_dict)
             print('')
+            print('Processing completed sucessfully!! But was not verified, there may have been sorting errors')
+            print('^'*60)
+            print('#'*60)
+            print('#'*60)
+            print('#'*60)
         #self.assistant_set_session(self.session_name)
 
         #self.make_batch_files(self.session_name)
