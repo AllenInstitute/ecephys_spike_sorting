@@ -65,7 +65,7 @@ def compute_channel_offsets(ap_data, ephys_params, params):
             if numIterations >0:
                 rms_noise, offsets = iterate_depth_info(numIterations)
             else:
-                prine('Unable to estimate offsets or RMS noise. Returning empty arrays')
+                print('Unable to estimate offsets or RMS noise. Returning empty arrays')
         return rms_noise, offsets
         
 
@@ -123,53 +123,63 @@ def find_surface_channel(lfp_data, ephys_params, params):
 
     save_figure = params['save_figure']
 
-    candidates = np.zeros((n_passes,))
-    
-    for p in range(n_passes):
-        
-        startPt = int(sample_frequency*params['skip_s_per_pass']*p)
-        endPt = startPt + int(sample_frequency)
-    
-        if ephys_params['reorder_lfp_channels']:
-            channels = get_lfp_channel_order()
-        else:
-            channels = np.arange(nchannels).astype('int')
 
-        chunk = np.copy(lfp_data[startPt:endPt,channels])
-        
-        for ch in np.arange(nchannels):
-            chunk[:,ch] = chunk[:,ch] - np.median(chunk[:,ch])
+    def iterate_surface_chan(n_passes):
+        candidates = np.zeros((n_passes,))
+        try:
+            for p in range(n_passes):
+                
+                startPt = int(sample_frequency*params['skip_s_per_pass']*p)
+                endPt = startPt + int(sample_frequency)
             
-        for ch in np.arange(nchannels):
-            chunk[:,ch] = chunk[:,ch] - np.median(chunk[:,channel_range[0]:channel_range[1]],1)
-        
-        power = np.zeros((int(nfft/2+1), nchannels))
-    
-        for ch in np.arange(nchannels):
-            try:
-                printProgressBar(p * nchannels + ch + 1, nchannels * n_passes)
-            except Exception as E:
-                pass
-            sample_frequencies, Pxx_den = welch(chunk[:,ch], fs=sample_frequency, nfft=nfft)
-            power[:,ch] = Pxx_den
-        
-        in_range = find_range(sample_frequencies, 0, params['max_freq'])
-        
-        mask_chans = ephys_params['reference_channels']
+                if ephys_params['reorder_lfp_channels']:
+                    channels = get_lfp_channel_order()
+                else:
+                    channels = np.arange(nchannels).astype('int')
 
-        in_range_gamma = find_range(sample_frequencies, freq_range[0],freq_range[1])
-        
-        values = np.log10(np.mean(power[in_range_gamma,:],0))
-        values[mask_chans] = values[mask_chans-1]
-        values = gaussian_filter1d(values,smoothing_amount)
+                chunk = np.copy(lfp_data[startPt:endPt,channels])
+                
+                for ch in np.arange(nchannels):
+                    chunk[:,ch] = chunk[:,ch] - np.median(chunk[:,ch])
+                    
+                for ch in np.arange(nchannels):
+                    chunk[:,ch] = chunk[:,ch] - np.median(chunk[:,channel_range[0]:channel_range[1]],1)
+                
+                power = np.zeros((int(nfft/2+1), nchannels))
+            
+                for ch in np.arange(nchannels):
+                    try:
+                        printProgressBar(p * nchannels + ch + 1, nchannels * n_passes)
+                    except Exception as E:
+                        pass
+                    sample_frequencies, Pxx_den = welch(chunk[:,ch], fs=sample_frequency, nfft=nfft)
+                    power[:,ch] = Pxx_den
+                
+                in_range = find_range(sample_frequencies, 0, params['max_freq'])
+                
+                mask_chans = ephys_params['reference_channels']
 
-        surface_channels = np.where((np.diff(values) < diff_thresh) * (values[:-1] < power_thresh) )[0]
+                in_range_gamma = find_range(sample_frequencies, freq_range[0],freq_range[1])
+                
+                values = np.log10(np.mean(power[in_range_gamma,:],0))
+                values[mask_chans] = values[mask_chans-1]
+                values = gaussian_filter1d(values,smoothing_amount)
 
-        if len(surface_channels > 0):
-            candidates[p] = np.max(surface_channels)
-        else:
-            candidates[p] = nchannels
-      
+                surface_channels = np.where((np.diff(values) < diff_thresh) * (values[:-1] < power_thresh) )[0]
+
+                if len(surface_channels > 0):
+                    candidates[p] = np.max(surface_channels)
+                else:
+                    candidates[p] = nchannels
+        except Exception as E:
+            n_passes = n_passes - 1
+            if n_passes >0:
+                candidates, chunk, power, in_range, values = iterate_surface_chan(n_passes)
+            else:
+                print('Unable to estimate surface channel. Returning empty arrays')
+        return candidates, chunk, power, in_range, values
+
+    candidates, chunk, power, in_range, values = iterate_surface_chan(n_passes)
     surface_channel = np.median(candidates)
     air_channel = np.min([surface_channel + params['air_gap'], nchannels])
 
