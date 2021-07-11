@@ -65,7 +65,7 @@ def createInputJson(output_file,
     
     # location of kilosor respository and kilosort version
 
-    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS20_release'
+    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS3_fork\Kilosort2'
     KS2ver = '2.0'      # must equal '3.0', '2.5' or '2.0', and match the kiilosort_repository
     
     # KS 3.0 does not yet output pcs.
@@ -145,11 +145,15 @@ def createInputJson(output_file,
     # for a Np 1.0 probe, 163 um => 32 sites
     nrows = np.sqrt((np.square(ks_whiteningRadius_um) - np.square(hpitch.get(probe_type))))/vpitch.get(probe_type)
     ks_whiteningRange = int(round(2*nrows*nColumn.get(probe_type)))
+    if ks_whiteningRange > 384:
+        ks_whiteningRange = 384
     
     # nNeighbors is the number of sites kilosort includes in a template.
     # Calculate the number of sites within that radisu.
     nrows = np.sqrt((np.square(ks_templateRadius_um) - np.square(hpitch.get(probe_type))))/vpitch.get(probe_type)
     ks_nNeighbors = int(round(2*nrows*nColumn.get(probe_type)))
+    if ks_nNeighbors > 64:
+        ks_nNeighbors = 64          #max allowed in CUDA
     # print('ks_nNeighbors: ' + repr(ks_nNeighbors))
     
     c_waves_radius_sites = int(round(c_Waves_snr_um/vpitch.get(probe_type)))

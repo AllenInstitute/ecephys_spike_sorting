@@ -26,7 +26,7 @@ def GetTrialRange(prb, gate, prb_folder):
     searchStr = '_g' + gate + '_t'
     print(searchStr)
     for tName in tFiles:
-        if (fnmatch.fnmatch(tName,'*.ap.bin')):
+        if (fnmatch.fnmatch(tName,'*.bin')):
             gPos = tName.find(searchStr)
             tStart = gPos + len(searchStr)
             tEnd = tName.find('.', tStart)
@@ -195,4 +195,24 @@ def ParseCatGTLog(logPath, run_name, gate_string, prb_list):
      
     return gfix_edits
 
+def CreateNITimeEvents(catGT_run_name, gate_string, catGT_dest):
 
+    # new version of catGT (1.9) always creates an output NI metadata file
+ 
+    output_folder = 'catgt_' + catGT_run_name + '_g' + gate_string
+    niMeta_filename = catGT_run_name + '_g' + gate_string + '_tcat.nidq.meta'
+    niMeta_path = Path(os.path.join(catGT_dest, output_folder, niMeta_filename))       
+    meta = SGLXMeta.readMeta(niMeta_path)
+    
+    sample_rate = float(meta['niSampRate'])
+    num_channels = int(meta['nSavedChans'])
+    nSamp = int(meta['fileSizeBytes'])/(num_channels * 2)
+    ni_times = np.arange(nSamp)/sample_rate
+    
+    # save ni_times in output folder to be an event file
+    out_name = catGT_run_name + '_g' + gate_string + '_tcat.nidq.times.npy'
+    out_path = os.path.join(catGT_dest, output_folder, out_name)
+    np.save(out_path,ni_times)
+
+
+    return

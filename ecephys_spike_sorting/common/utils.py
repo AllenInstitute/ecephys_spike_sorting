@@ -350,17 +350,27 @@ def load_kilosort_data(folder,
                pc_features, pc_feature_ind, template_features
 
 
-def get_spike_depths(spike_clusters, pc_features, pc_feature_ind, channel_pos):
+def get_spike_depths(spike_clusters, unit_template_ids, pc_features, pc_feature_ind, channel_pos):
 
     """
     Calculates the distance (in microns) of individual spikes from the probe tip
 
     This implementation is based on Matlab code from github.com/cortex-lab/spikes
+    
+    Needs to be called for a subset of spikes extracted with the majority template 
+    This is true for all spikes in data which has not been curated.
+    Manual merges create clusters that derive from multiple templats, but this
+    algorthim examines features from a single template -- so we select spikes
+    for each cluster that were extracted with the majority template before calling 
+    in metrics.py
 
     Input:
     -----
     spike_clusters : numpy.ndarray (N x 0)
         Cluster IDs for N spikes
+    unit_template_ids : numpy.ndearray (Nclusters x 0)
+        majority template assignment for each cluster ID
+        before any manual curation, unit_template_ids = cluster_ids
     pc_features : numpy.ndarray (N x channels x num_PCs)
         PC features for each spike
     pc_feature_ind  : numpy.ndarray (M x channels)
@@ -380,8 +390,7 @@ def get_spike_depths(spike_clusters, pc_features, pc_feature_ind, channel_pos):
     pc_features_copy[pc_features_copy < 0] = 0
     pc_power = pow(pc_features_copy, 2)
     
-
-    spike_feat_ind = pc_feature_ind[spike_clusters, :]
+    spike_feat_ind = pc_feature_ind[unit_template_ids[spike_clusters], :]
     spike_feat_ycoord = channel_pos[spike_feat_ind, 1]
     spike_depths = np.sum(spike_feat_ycoord * pc_power, 1) / np.sum(pc_power,1)
 
@@ -545,9 +554,14 @@ def getSortResults(output_dir):
     # load results from phy for run logging and creation of the table for C_Waves
 
     cluLabel = np.load(os.path.join(output_dir, 'spike_clusters.npy'))
+    spkTemplate = np.load(os.path.join(output_dir,'spike_templates.npy'))
+    cluLabel = np.squeeze(cluLabel)
+    spkTemplate = np.squeeze(spkTemplate)
 
     unqLabel, labelCounts = np.unique(cluLabel, return_counts = True)
     nTot = cluLabel.shape[0]
+    nLabel = unqLabel.shape[0]
+    maxLabel = np.max(unqLabel)
 
     templates = np.load(os.path.join(output_dir, 'templates.npy'))
     channel_map = np.load(os.path.join(output_dir, 'channel_map.npy'))
@@ -558,20 +572,26 @@ def getSortResults(output_dir):
     nTemplate = templates.shape[0]
     
     # initialize peak_channels array
-    peak_channels = np.zeros([nTemplate,],'uint32')
+    peak_channels = np.zeros([nLabel,],'uint32')
     
-    # for each template (nt x nchan), multiply the the transpose (nchan x nt) by inverse of 
+   
+    # After manual splits or merges, some labels will have spikes found with
+    # different templats.
+    # for each label in the list unqLabel, get the most common template
+    # For that template (nt x nchan), multiply the the transpose (nchan x nt) by inverse of 
     # the whitening matrix (nchan x nchan); get max and min along tthe time axis (1)
     # to find the peak channel
-    for i in np.arange(0,nTemplate):
-        currT = templates[i,:].T
+    for i in np.arange(0,nLabel):
+        curr_spkTemplate = spkTemplate[np.where(cluLabel==unqLabel[i])]
+        template_mode = np.argmax(np.bincount(curr_spkTemplate))
+        currT = templates[template_mode,:].T
         curr_unwh = np.matmul(w_inv, currT)
         currdiff = np.max(curr_unwh,1) - np.min(curr_unwh,1)
         peak_channels[i] = channel_map[np.argmax(currdiff)]
 
-    clus_Table = np.zeros((nTemplate, 2), dtype='uint32')
+    clus_Table = np.zeros((maxLabel+1, 2), dtype='uint32')
     clus_Table[unqLabel, 0] = labelCounts
-    clus_Table[:, 1] = peak_channels
+    clus_Table[unqLabel, 1] = peak_channels
 
     np.save(os.path.join(output_dir, 'clus_Table.npy'), clus_Table)
 

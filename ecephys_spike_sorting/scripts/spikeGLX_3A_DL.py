@@ -61,7 +61,6 @@ run_CatGT = True  # set to False to sort/process previously processed data.
 catGT_stream_string = '-prb_3A -ap -no_run_fld -t_miss_ok'
 
 # CatGT command string includes all instructions for catGT operations
-# Note that directory naming in this script requires -prb_fld and -out_prb_fld
 # see CatGT readme for details
 # 3A specific details:
 #   -no automatically generated run folders. Assume user has grouped data from the probes

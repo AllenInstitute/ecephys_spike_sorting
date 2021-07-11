@@ -13,6 +13,7 @@ from ...common.utils import printProgressBar
 
 def metrics_from_file(mean_waveform_fullpath,
                       snr_fullpath,
+                      clus_fullpath,
                       spike_times, 
                       spike_clusters, 
                       templates, 
@@ -34,6 +35,7 @@ def metrics_from_file(mean_waveform_fullpath,
     -------
     mean_wavefrom_fullpath: path to the mean waveforms npy file
     snr_fullpath: path to snr npy file
+    clus_fullpath: path to clus_Table (contains peak channels)
     spike_times : spike times (in samples)
     spike_clusters : cluster IDs for each spike time []
     clusterIDs : all unique cluster ids
@@ -85,21 +87,23 @@ def metrics_from_file(mean_waveform_fullpath,
     
     mean_waveforms = np.load(mean_waveform_fullpath)
     snr_array = np.load(snr_fullpath)
+    clus_table = np.load(clus_fullpath)
+    peak_channels = clus_table[:,1]
 
-    channel_map = np.squeeze(channel_map)
-    
-    nTemplate = templates.shape[0]
-    
-    # initialize peak_channels array
-    peak_channels = np.zeros([nTemplate,],'uint32')
-    # for each template (nt x nchan), multiply the the transpose (nchan x nt) by inverse of 
-    # the whitening matrix (nchan x nchan); get max and min along tthe time axis (1)
-    # to find the peak channel
-    for i in np.arange(0,nTemplate):
-        currT = templates[i,:].T
-        curr_unwh = np.matmul(w_inv, currT)
-        currdiff = np.max(curr_unwh,1) - np.min(curr_unwh,1)
-        peak_channels[i] = channel_map[np.argmax(currdiff)]
+#    channel_map = np.squeeze(channel_map)
+#    
+#    nTemplate = templates.shape[0]
+#    
+#    # initialize peak_channels array
+#    peak_channels = np.zeros([nTemplate,],'uint32')
+#    # for each template (nt x nchan), multiply the the transpose (nchan x nt) by inverse of 
+#    # the whitening matrix (nchan x nchan); get max and min along tthe time axis (1)
+#    # to find the peak channel
+#    for i in np.arange(0,nTemplate):
+#        currT = templates[i,:].T
+#        curr_unwh = np.matmul(w_inv, currT)
+#        currdiff = np.max(curr_unwh,1) - np.min(curr_unwh,1)
+#        peak_channels[i] = channel_map[np.argmax(currdiff)]
     
     for cluster_idx, cluster_id in enumerate(cluster_ids):
 

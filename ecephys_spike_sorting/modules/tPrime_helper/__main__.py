@@ -4,6 +4,7 @@ import sys
 import subprocess
 import time
 import fnmatch
+from pathlib import Path
 
 import numpy as np
 
@@ -64,12 +65,14 @@ def call_TPrime(args):
         match_XD_str = run_name + '_tcat.nidq.XD_*.txt'
         match_iXA_str = run_name + '_tcat.nidq.iXA_*.txt'
         match_iXD_str = run_name + '_tcat.nidq.iXD_*.txt'
+        match_times_str = run_name + '_tcat.nidq.times.npy'
         file_list = os.listdir(run_directory)
         ni_ex_files = fnmatch.filter(file_list,match_XA_str) + \
                       fnmatch.filter(file_list,match_XD_str) + \
                       fnmatch.filter(file_list,match_iXA_str) + \
-                      fnmatch.filter(file_list,match_iXD_str)
-                        
+                      fnmatch.filter(file_list,match_iXD_str) + \
+                      fnmatch.filter(file_list,match_times_str)
+                          
     
     im_ex_string = args['tPrime_helper_params']['im_ex_list']
     im_ex_list = list()
@@ -192,9 +195,10 @@ def call_TPrime(args):
                 events_list.append(os.path.join(run_directory, ex_file))
                 from_stream_index.append(c_index)
                 
-                # get position of extension in this ex_file name
-                ext_pos = ex_file.find('.txt')                
-                c_output_name = ex_file[0:ext_pos] + '.adj.txt'                
+                # get suffix for this file
+                suf = Path(ex_file).suffix
+                ext_pos = ex_file.find(suf)                
+                c_output_name = ex_file[0:ext_pos] + '.adj' + suf              
                 out_file = os.path.join(run_directory, c_output_name)
                 out_list.append(out_file) 
         else:

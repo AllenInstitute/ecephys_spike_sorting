@@ -2,6 +2,7 @@ from argschema import ArgSchemaParser
 import os
 import logging
 import time
+import pathlib
 
 
 import numpy as np
@@ -20,6 +21,32 @@ def calculate_quality_metrics(args):
     start = time.time()
     
     include_pcs = args['quality_metrics_params']['include_pcs']
+    
+    # make usre we can write an output file
+    
+    output_file = args['cluster_metrics']['cluster_metrics_file']
+    validName = True
+    if os.path.exists(output_file):
+        validName = False
+        # loop over up to 9 copis with an added _1, _2 ...etc
+        outPath = pathlib.Path(output_file).parent
+        outName = pathlib.Path(output_file).stem
+        outExt = pathlib.Path(output_file).suffix
+        for version_idx in range(1,9):
+            newName = outName + '_' + repr(version_idx) + outExt
+            newFile = os.path.join(outPath,newName)
+            if os.path.exists(newFile) is False:
+                #break out of loop
+                validName = True
+                output_file = newFile
+                break
+    
+    if validName is False:
+        print(" Can't write output file (already up to version _9).")
+        execution_time = time.time() - start
+        return {"execution_time" : execution_time,
+            "quality_metrics_output_file" : None} 
+
 
     print("Loading data...")
 
@@ -42,7 +69,7 @@ def calculate_quality_metrics(args):
             pc_feature_ind = []
             
 
-        metrics = calculate_metrics(spike_times, spike_clusters, amplitudes, channel_map, channel_pos, templates, pc_features, pc_feature_ind, args['quality_metrics_params'])
+        metrics = calculate_metrics(spike_times, spike_clusters, spike_templates, amplitudes, channel_map, channel_pos, templates, pc_features, pc_feature_ind, args['quality_metrics_params'])
 
     except FileNotFoundError:
         
@@ -54,7 +81,6 @@ def calculate_quality_metrics(args):
             "quality_metrics_output_file" : None} 
 
     
-    output_file = args['cluster_metrics']['cluster_metrics_file']
 
     if os.path.exists(args['waveform_metrics']['waveform_metrics_file']):
         metrics = metrics.merge(pd.read_csv(args['waveform_metrics']['waveform_metrics_file'], index_col=0),
