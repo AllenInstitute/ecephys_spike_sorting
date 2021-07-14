@@ -15,7 +15,7 @@ https://github.com/AllenInstitute/ecephys_spike_sorting
 
 ## Overview
 
-The general outline of the pipeline is preprocessing, spike sorting by either [Kilosort2.5](https://github.com/MouseLand/Kilosort2) or {Kilosort 2.0] (https://github.com/MouseLand/Kilosort/releases/tag/v2.0) , followed by cleanup and calculation of QC metrics. The original version from the Allen used preprocessing specifically for data saved using the [Open Ephys GUI](https://github.com/open-ephys/plugin-gui). This version is designed to run with data collected using [SpikeGLX](http://billkarsh.github.io/SpikeGLX), and its associated tools (CatGT, TPrime, and C_Waves). The identification of noise clusters is unchanged from the original code. Calculation of QC metrics has been updated to work with any Neuropixels probe type, rather than assuming NP 1.0 site geomtery.
+The general outline of the pipeline is preprocessing, spike sorting by [Kilosort 3.0](https://github.com/MouseLand/Kilosort), [Kilosort 2.5](https://github.com/MouseLand/Kilosort2) or [Kilosort 2.0](https://github.com/MouseLand/Kilosort/releases/tag/v2.0) , followed by cleanup and calculation of QC metrics. The original version from the Allen used preprocessing specifically for data saved using the [Open Ephys GUI](https://github.com/open-ephys/plugin-gui). This version is designed to run with data collected using [SpikeGLX](http://billkarsh.github.io/SpikeGLX), and its associated tools (CatGT, TPrime, and C_Waves). The identification of noise clusters is unchanged from the original code. Calculation of QC metrics has been updated to work with any Neuropixels probe type, rather than assuming NP 1.0 site geomtery; also, the metrics code can now be run on phy output after manual curation.
 
 The spikeGLX_pipeline.py script implements this pipeline: 
 
@@ -37,7 +37,7 @@ Further documentation can be found in each module's README file. For more inform
 
 5. [noise_templates](ecephys_spike_sorting/modules/noise_templates/README.md): Identifies noise units based on their waveform shape and ISI histogram or a random forest classifier.
 
-6. [mean_waveforms](ecephys_spike_sorting/modules/mean_waveforms/README.md): Extracts mean waveforms from the raw data, given spike times and unit IDs. Also calculates metrics for each waveform. In this version the mean waveforms can be calculated using Bill Karsh's efficient C_Waves tool.
+6. [mean_waveforms](ecephys_spike_sorting/modules/mean_waveforms/README.md): Extracts mean waveforms from the raw data, given spike times and unit IDs. Also calculates metrics for each waveform. In this version the mean waveforms are calculated using Bill Karsh's efficient C_Waves tool.
 
 7. [quality_metrics](ecephys_spike_sorting/modules/quality_metrics/README.md): Calculates quality metrics for each unit to assess isolation and sorting quality.
 
@@ -59,7 +59,7 @@ These modules have been tested with Python 3.7.
 
 We recommend using [pipenv](https://github.com/pypa/pipenv) to run these modules.
 
-The SpikeGLX pipeline is dependent on three command line applications currently available only for Windows, and has not been tested in Linux or Mac. These instructions are for Windows 10.
+All of the components of the SpikeGLX pipeline are available in Windows and Linux, but the pipeline has only been tested in Windows. These instructions are for Windows 10.
 
 
 ### Install pipenv
@@ -144,27 +144,20 @@ Parameters are set in two files. Values that are constant across runs—like paths
 In **create_input_json.py**, be sure to set these paths and parameters for your system:
 
 - ecephys_directory: parent directory that contains the modules directory
-
 - kilosort_repository
-
 - KS2ver -- needs to be set to '2.5' or '2.0', and be correct for the repository
-
 - npy_matlab_repository
-
 - catGTPath: contains the CatGT.exe file
-
 - cWaves_path: contains the C_Waves.exe file
-
 - tPrimePath: contains the TPrime.exe file
+- kilosort_output_temp (see note below)
 
-- kilosort_output_temp: for the kilosort residual file, also temporary copies of the config and master file. With kilosort 2.5, this "temporary" file -- which has been drift corrected-- may be used for manual curation in phy. If you want it to be kept available, set the parameter ks_copy_fproc=1; then a copy will be made with the kilosort output and the params.py adjusted automatically.
+>>> Note: The kilosort_output_temp folder contains the kilosort residual file and also temporary copies of the config and master file. With kilosort 2.5, this "temporary" file--which has been drift corrected--may be used for manual curation in phy. If you want it to be kept available, set the parameter ks_copy_fproc=1; then a copy will be made with the kilosort output and the params.py adjusted automatically.
 
 Other “mostly constant” parameters in **create_input_json.py**:
 
 - Most Kilosort2 parameters. 
-
 - kilosort post processing params 
-
 - quality metrics params
 
 Read through the parameter list for **create_input_json.py** to see which parameters are already passed in and therefore settable per run from a calling pipeline script. These currently include the threshold parameter for Kilosort, switches to include postprocessing steps within Kilosort, and radii (in um) to define the extent of templates and regions for calculating quality metrics. These radii are converted to sites in **create_input_json.py** using the probe type read from the metadata.
@@ -199,35 +192,39 @@ To run scripts, navigate to the ecephys_spike_sorting\scripts directory and ente
 If you manually curate your data in phy, you can recalculate mean waveforms and quality metrics for the curated clusters. You'll need to run a script that skips preprocessing and sorting, and just runs the mean_waveforms and metrics modules. The required changes in sglx_multi_run_pipeline.py are:
 
 - Set variable run_CatGT = False
-
 - Set variable runTPrime = False
-
 - Only include mean_waveforms and quality_metrics in the list of modules to be called, e.g.
 
+
+```
 modules = [
-		 #'kilosort_helper',
+            #'kilosort_helper',
             #'kilosort_postprocessing',
             #'noise_templates',
             #'psth_events',
             'mean_waveforms',
             'quality_metrics'
-		]
+          ]
+```
+  
+When the mean_waveforms and metrics modules are re-run the first time, these output files are preserved with their old names:
 
-When the mean_waveforms and metrics modules are rerun the first time, these output files just get preserved with their old names:
-metrics.csv
-waveform_metrics.csv
-clus_Table.npy
+- metrics.csv
+- waveform_metrics.csv
+- clus_Table.npy
 
-These output files get renamed with an added  "_0":
-mean_waveforms.npy -> mean_waveforms_0.npy
-cluster_snr.npy -> cluster_snr_0.npy
+These output files are renamed with an added  "_0":
 
-The new output files are numbered by the latest version. Output from the first re-run is in:
-metrics_1.csv
-waveform_metrics_1.csv
-clus_Table_1.csv
-mean_waveforms_1.npy
-cluster_snr_1.npy
+- mean_waveforms.npy -> mean_waveforms_0.npy
+- cluster_snr.npy -> cluster_snr_0.npy
+
+The new output files are numbered by the latest version. Output files from the first re-run are named:
+
+- metrics_1.csv
+- waveform_metrics_1.csv
+- clus_Table_1.csv
+- mean_waveforms_1.npy
+- cluster_snr_1.npy
 
 Another re-run will create a full set with _2, etc
 
