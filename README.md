@@ -194,6 +194,43 @@ To run scripts, navigate to the ecephys_spike_sorting\scripts directory and ente
    (.venv)$ python <script_name.py>
 ```
 
+### Running metrics modules on manually curated data
+
+If you manually curate your data in phy, you can recalculate mean waveforms and quality metrics for the curated clusters. You'll need to run a script that skips preprocessing and sorting, and just runs the mean_waveforms and metrics modules. The required changes in sglx_multi_run_pipeline.py are:
+
+- Set variable run_CatGT = False
+
+- Set variable runTPrime = False
+
+- Only include mean_waveforms and quality_metrics in the list of modules to be called, e.g.
+
+modules = [
+		 #'kilosort_helper',
+            #'kilosort_postprocessing',
+            #'noise_templates',
+            #'psth_events',
+            'mean_waveforms',
+            'quality_metrics'
+		]
+
+When the mean_waveforms and metrics modules are rerun the first time, these output files just get preserved with their old names:
+metrics.csv
+waveform_metrics.csv
+clus_Table.npy
+
+These output files get renamed with an added  "_0":
+mean_waveforms.npy -> mean_waveforms_0.npy
+cluster_snr.npy -> cluster_snr_0.npy
+
+The new output files are numbered by the latest version. Output from the first re-run is in:
+metrics_1.csv
+waveform_metrics_1.csv
+clus_Table_1.csv
+mean_waveforms_1.npy
+cluster_snr_1.npy
+
+Another re-run will create a full set with _2, etc
+
 
 
 ## Multiplatform installation for original pipeline
