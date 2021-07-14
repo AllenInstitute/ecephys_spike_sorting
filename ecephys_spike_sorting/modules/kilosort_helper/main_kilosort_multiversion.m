@@ -74,6 +74,7 @@ if ~strcmp(rP.KSver, '3.0')
     % final merges
     rez = find_merges(rez, 1);
     
+    
     % final splits by SVD
     if rP.finalSplits
         rez = splitAllClusters(rez, 1);

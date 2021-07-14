@@ -5,6 +5,7 @@ import json
 import glob
 import sys
 import time
+import pathlib
 
 from git import Repo
 
@@ -550,7 +551,7 @@ def catGT_ex_params_from_str(ex_str):
 
     return ex_type, prb_index, ex_name_str
 
-def getSortResults(output_dir):
+def getSortResults(output_dir, clu_version):
     # load results from phy for run logging and creation of the table for C_Waves
 
     cluLabel = np.load(os.path.join(output_dir, 'spike_clusters.npy'))
@@ -593,6 +594,35 @@ def getSortResults(output_dir):
     clus_Table[unqLabel, 0] = labelCounts
     clus_Table[unqLabel, 1] = peak_channels
 
-    np.save(os.path.join(output_dir, 'clus_Table.npy'), clus_Table)
-
+    if clu_version == 0:
+        np.save(os.path.join(output_dir, 'clus_Table.npy'), clus_Table)
+    else:
+        clu_Name = 'clus_Table_' + repr(clu_version) + '.npy'
+        np.save(os.path.join(output_dir, clu_Name), clus_Table)
+ 
     return nTemplate, nTot
+
+def getFileVersion(input_filePath):
+    
+    # arting from the base path name givin in the parameters
+    # also return name for next file in series = next_file
+    # If no file exists yet, return curr_file = 'none', new_file = input
+    
+    next_version = 0;
+    next_file = input_filePath
+    
+    if os.path.exists(next_file):
+        # loop over up to 20 versions with an added _1, _2 ...etc
+        outPath = pathlib.Path(input_filePath).parent
+        outName = pathlib.Path(input_filePath).stem
+        outExt = pathlib.Path(input_filePath).suffix
+        for version_idx in range(1,21):
+            nextName = outName + '_' + repr(version_idx) + outExt
+            next_file = os.path.join(outPath, nextName)
+            if os.path.exists(next_file) is False:
+                #break out of loop 
+                next_version = version_idx
+                break
+    
+
+    return next_file, next_version

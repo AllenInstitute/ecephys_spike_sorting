@@ -58,7 +58,7 @@ npx_directory = r'D:\ecephys_fork\test_data\SC_10trial'
 #           these strings must match a key in the param dictionaries above.
 
 run_specs = [									
-						['SC024_092319_NP1.0_Midbrain', '0', '0,9', '0:1', ['cortex', 'cortex'] ]
+						['SC024_092319_NP1.0_Midbrain', '0', '0,9', '0,1', ['cortex','cortex'] ]
 ]
 
 # ------------------
@@ -67,7 +67,7 @@ run_specs = [
 # Set to an existing directory; all output will be written here.
 # Output will be in the standard SpikeGLX directory structure:
 # run_folder/probe_folder/*.bin
-catGT_dest = r'D:\ecephys_fork\test_data\SC_10trial\SC024_tshift'
+catGT_dest = r'D:\ecephys_fork\test_data\SC_10trial\SC_10trial_output'
 
 # ------------
 # CatGT params

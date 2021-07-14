@@ -81,7 +81,8 @@ def run_postprocessing(args):
     np.savetxt(os.path.join(output_dir, 'overlap_summary.csv'), overlap_summary, fmt = '%d', delimiter = ',')
 
     # remoake the clus_Table.npy with the new spike counts
-    getSortResults(output_dir)
+    # moved this to call to mean_maveforms module
+    # getSortResults(output_dir)
 
     execution_time = time.time() - start
 

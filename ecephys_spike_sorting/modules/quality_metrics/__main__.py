@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 from ...common.utils import load_kilosort_data
+from ...common.utils import getFileVersion
 from ...common.epoch import get_epochs_from_nwb_file
 
 from .metrics import calculate_metrics
@@ -24,29 +25,9 @@ def calculate_quality_metrics(args):
     
     # make usre we can write an output file
     
-    output_file = args['cluster_metrics']['cluster_metrics_file']
-    validName = True
-    if os.path.exists(output_file):
-        validName = False
-        # loop over up to 9 copis with an added _1, _2 ...etc
-        outPath = pathlib.Path(output_file).parent
-        outName = pathlib.Path(output_file).stem
-        outExt = pathlib.Path(output_file).suffix
-        for version_idx in range(1,9):
-            newName = outName + '_' + repr(version_idx) + outExt
-            newFile = os.path.join(outPath,newName)
-            if os.path.exists(newFile) is False:
-                #break out of loop
-                validName = True
-                output_file = newFile
-                break
+    output_file_args = args['cluster_metrics']['cluster_metrics_file']
     
-    if validName is False:
-        print(" Can't write output file (already up to version _9).")
-        execution_time = time.time() - start
-        return {"execution_time" : execution_time,
-            "quality_metrics_output_file" : None} 
-
+    output_file, metrics_version = getFileVersion(output_file_args)
 
     print("Loading data...")
 
@@ -81,15 +62,20 @@ def calculate_quality_metrics(args):
             "quality_metrics_output_file" : None} 
 
     
-
-    if os.path.exists(args['waveform_metrics']['waveform_metrics_file']):
-        metrics = metrics.merge(pd.read_csv(args['waveform_metrics']['waveform_metrics_file'], index_col=0),
+    # build name for waveform_metrics file with matched version
+    wm_args = args['waveform_metrics']['waveform_metrics_file']
+    if metrics_version == 0:
+        wm = wm_args
+    else:
+        # buld name for waveform metrics file with matched version
+        wm = os.path.join( pathlib.Path(wm_args).parent, pathlib.Path(wm_args).stem + '_' + repr(metrics_version) + '.csv' )
+    if os.path.exists(wm):
+        metrics = metrics.merge(pd.read_csv(wm, index_col=0),
                      on='cluster_id',
                      suffixes=('_quality_metrics','_waveform_metrics'))
 
     print("Saving data...")
    
-
     metrics.to_csv(output_file)
 
     execution_time = time.time() - start

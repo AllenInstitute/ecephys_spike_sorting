@@ -180,11 +180,12 @@ def run_kilosort(args):
     print('kilsort run time: ' + str(np.around(execution_time, 2)) + ' seconds')
     print()
     
-    # get nTot and nTemplate from phy output; write out table of clusters 
-    # which will be used by C_waves
-
-    nTemplate, nTot = getSortResults(output_dir)
-    
+    # Don't call getSortResults until after any postprocessing
+    # but get useful characteristics of ksort output right now
+    spkTemplate = np.load(os.path.join(output_dir,'spike_templates.npy'))
+    nTemplate = np.unique(spkTemplate).size
+    nTot = spkTemplate.size
+       
     return {"execution_time" : execution_time,
             "kilosort_commit_date" : commit_date,
             "kilosort_commit_hash" : commit_time,
