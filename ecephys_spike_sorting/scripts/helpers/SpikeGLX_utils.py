@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 
-import ecephys_spike_sorting.modules.kilosort_helper.SGLXMetaToCoords as SGLXMeta
+import ecephys_spike_sorting.common.SGLXMetaToCoords as SGLXMeta
 
 def GetFirstTrialPath(catGT_run_name, gate_string, trigger_string, probe_string ):
     prb_list = ParseProbeStr(probe_string)

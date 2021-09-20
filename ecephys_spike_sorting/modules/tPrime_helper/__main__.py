@@ -109,9 +109,9 @@ def call_TPrime(args):
         if len(flt_list) != 1:
             print('No edge file or multiple files for toStream found\n' )
             return              
-        c_name = flt_list[0]
+        toStream_name = flt_list[0]
         
-        toStream_path = os.path.join(run_directory, prb_dir, c_name)
+        toStream_path = os.path.join(run_directory, prb_dir, toStream_name)
         
         # convert events in the toStream to sec; they will not be adjusted
         ks_outdir = 'imec' + str(toStream_prb) + '_ks2'
@@ -123,9 +123,7 @@ def call_TPrime(args):
         if not bNPY:
             spike_times_sec_to_npy(toStream_events_sec)
 
-        # remove the toStream from the list of im extraction params
-        matchI = [i for i, value in enumerate(im_ex_list) if toStream_params in value]
-        del im_ex_list[matchI[0]]
+
 
         # fromStreams will include all other SY + NI if present
 
@@ -135,6 +133,8 @@ def call_TPrime(args):
         for ex_str in im_ex_list:
             # get params
             c_type, c_prb, c_ex_name = catGT_ex_params_from_str(ex_str) 
+            if c_ex_name == toStream_name:
+                continue
             
             # These are imec SYNC channels
             # need to get the file name from the directory in case user used the  
@@ -207,10 +207,15 @@ def call_TPrime(args):
                 
     else:
         # toStream is NI
-        # build path to the the sync file
-        c_name = run_name + '_tcat.nidq.' + toStream_ex_name + '.txt'
-        c_name_match = fnmatch.filter(ni_ex_files, c_name) 
-        toStream_path = os.path.join(run_directory, c_name_match[0])
+        
+        # build match string to find file of NI sync edges
+        # for the digital channel match string uses a wild card
+        # '*" character for the word parameter
+        c_type, c_prb, c_ex_name = catGT_ex_params_from_str(ni_sync_params)            
+        c_name = run_name + '_tcat.nidq.' + c_ex_name + '.txt'
+        flt_list = fnmatch.filter(ni_ex_files, c_name) 
+        toStream_name = flt_list[0]
+        toStream_path = os.path.join(run_directory, toStream_name)
 
         # build list of event files, include: 
         #   all files of spike times

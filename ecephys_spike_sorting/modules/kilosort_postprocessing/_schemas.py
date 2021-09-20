@@ -10,6 +10,9 @@ class PostprocessingParams(DefaultSchema):
     between_unit_dist_um = Int(required=False, default=5, help='Number of channels (above and below peak channel) to search for overlapping spikes')
     deletion_mode = String(required=False, default='lowAmpCluster', help='lowAmpCluster or deleteFirst')
     include_pcs = Boolean(required=False, default=True, help='Set to false if features were not saved with Phy output')
+    remove_duplicates = Boolean(required=False, default=True, help='Set to True for duplicate removal')
+    align_avg_waveform = Boolean(required=False, default=True, help='Set to true to set spike times for mean waveform min = t0')
+    cWaves_path = InputDir(require=False, help='directory containing the CWaves executable.')
 
 class InputParameters(ArgSchema):
     
@@ -17,7 +20,7 @@ class InputParameters(ArgSchema):
     directories = Nested(Directories)
     ephys_params = Nested(EphysParams)
     
-
+    
 class OutputSchema(DefaultSchema): 
     input_parameters = Nested(InputParameters, 
                               description=("Input parameters the module " 

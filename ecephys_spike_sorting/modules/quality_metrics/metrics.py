@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import psutil
 from collections import OrderedDict
 
 import warnings
@@ -512,23 +513,50 @@ def calculate_drift_metrics(spike_times,
     maj_tid = unit_template_ids[spike_clusters]
     match_maj = spike_templates==maj_tid
     
-    spike_clusters = spike_clusters[match_maj]
-    spike_times = spike_times[match_maj]
-    pc_features = pc_features[match_maj]
+    # calculate size of the arrays we'll be copying
+    # 2*(number of spikes*4) for spike_times and spike_clusters
+    # number of spikes*number of template channels*4 for first pc on each site
+#    pc_size = pc_features.shape
+#    nmatch = match_maj.shape
+#    memuse = 2*nmatch[0]*4 + nmatch[0]*pc_size[2]*4
+
+#    print("expected size of new memory: " + repr(memuse))
+#    currmem = psutil.Process().memory_info().rss / (1024 * 1024)
+#    print("psutil memory info before copies: " + repr(currmem))
     
-    depths = get_spike_depths(spike_clusters, unit_template_ids, pc_features, pc_feature_ind, channel_pos)
+    
+    # make arrays of just those spikes for which the template matches the 
+    # majority template for htat cluster. These operations make copies of the
+    # arrays.
+    m_spike_clusters = spike_clusters[match_maj]
+    m_spike_times = spike_times[match_maj]
+    
+    # same for pc_features, but we only need the first pc for each
+    # this operation makes a copy of pc_features so original is not altered
+    m_pc_features_sq = np.squeeze(pc_features[match_maj,0,:]);
+    # set negative pc_features to zero before taking square
+    m_pc_features_sq[m_pc_features_sq < 0] = 0
+    # elementwise square
+    m_pc_features_sq = pow(m_pc_features_sq, 2) 
+    
+#    currmem = psutil.Process().memory_info().rss / (1024 * 1024)
+#    print("psutil memory info after copies: " + repr(currmem))
+    
+#    send only
+    
+    depths = get_spike_depths(m_spike_clusters, unit_template_ids, m_pc_features_sq, pc_feature_ind, channel_pos)
     
     interval_starts = np.arange(np.min(spike_times), np.max(spike_times), interval_length)
     interval_ends = interval_starts + interval_length
 
-    cluster_ids = np.unique(spike_clusters)
+    cluster_ids = np.unique(m_spike_clusters)
 
     for idx, cluster_id in enumerate(cluster_ids):
 
         printProgressBar(idx+1, len(cluster_ids))
 
-        in_cluster = spike_clusters == cluster_id
-        times_for_cluster = spike_times[in_cluster]
+        in_cluster = m_spike_clusters == cluster_id
+        times_for_cluster = m_spike_times[in_cluster]
         depths_for_cluster = depths[in_cluster]
 
         median_depths = []

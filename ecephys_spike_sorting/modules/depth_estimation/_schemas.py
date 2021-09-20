@@ -15,7 +15,7 @@ class DepthEstimationParams(DefaultSchema):
     diff_thresh = Float(required=True, default=-0.07, help='Threshold to detect large increases is power at brain surface')
     freq_range = NumpyArray(required=True, default=[0,10], help='Frequency band for detecting power increases')
     max_freq = Int(required=True, default=150, help='Maximum frequency to plot')
-    channel_range = NumpyArray(required=True, default=[370,380], help='Channels assumed to be out of brain, but in saline')
+    saline_range_um = NumpyArray(required=True, default=[3700,3800], help='Y range assume to be out of brain, but in saline')
     n_passes = Int(required=True, default=10, help='Number of times to compute offset and surface channel')
     skip_s_per_pass = Int(required=True, default=5, help='Number of seconds between data chunks used on each pass') #default=100
     start_time = Float(required=True, default=0, help='First time (in seconds) for computing median offset')
@@ -23,7 +23,7 @@ class DepthEstimationParams(DefaultSchema):
 
     nfft = Int(required=True, default=4096, help='Length of FFT used for calculations')
 
-    air_gap = Int(required=True, default=100, help='Approximate number of channels between brain surface and air')
+    air_gap_um = Int(required=True, default=1000, help='Approximate um between brain surface and air')
 
 class InputParameters(ArgSchema):
     

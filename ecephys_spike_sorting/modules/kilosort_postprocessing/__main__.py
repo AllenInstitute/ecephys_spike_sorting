@@ -9,6 +9,7 @@ import numpy as np
 from ...common.utils import load_kilosort_data, getSortResults
 
 from .postprocessing import remove_double_counted_spikes
+from .postprocessing import align_spike_times
 
 def run_postprocessing(args):
 
@@ -44,22 +45,30 @@ def run_postprocessing(args):
         pc_feature_ind = []
         template_features = []
         
+    if args['ks_postprocessing_params']['align_avg_waveform']: 
+        spike_times = align_spike_times(spike_times,
+                                        spike_clusters,
+                                        args['ephys_params']['ap_band_file'], 
+                                        args['directories']['kilosort_output_directory'], 
+                                        args['ks_postprocessing_params']['cWaves_path'])
+        
+    if args['ks_postprocessing_params']['remove_duplicates']:
+        spike_times, spike_clusters, spike_templates, amplitudes, pc_features, \
+        template_features, overlap_matrix, overlap_summary = \
+            remove_double_counted_spikes(spike_times, 
+                                         spike_clusters,
+                                         spike_templates, 
+                                         amplitudes, 
+                                         channel_map,
+                                         channel_pos,
+                                         templates, 
+                                         pc_features, 
+                                         pc_feature_ind, 
+                                         template_features,
+                                         cluster_amplitude,
+                                         args['ephys_params']['sample_rate'],
+                                         args['ks_postprocessing_params'])
 
-    spike_times, spike_clusters, spike_templates, amplitudes, pc_features, \
-    template_features, overlap_matrix, overlap_summary = \
-        remove_double_counted_spikes(spike_times, 
-                                     spike_clusters,
-                                     spike_templates, 
-                                     amplitudes, 
-                                     channel_map,
-                                     channel_pos,
-                                     templates, 
-                                     pc_features, 
-                                     pc_feature_ind, 
-                                     template_features,
-                                     cluster_amplitude,
-                                     args['ephys_params']['sample_rate'],
-                                     args['ks_postprocessing_params'])
 
     print("Saving data...")
 
@@ -73,16 +82,12 @@ def run_postprocessing(args):
     if args['ks_postprocessing_params']['include_pcs']:
         np.save(os.path.join(output_dir, 'pc_features.npy'), pc_features)
         np.save(os.path.join(output_dir, 'template_features.npy'), template_features)
-        
-    np.save(os.path.join(output_dir, 'overlap_matrix.npy'), overlap_matrix)
-    np.save(os.path.join(output_dir, 'overlap_summary.npy'), overlap_summary)
-
-    # save the overlap_summary as a text file -- allows user to easily understand what happened
-    np.savetxt(os.path.join(output_dir, 'overlap_summary.csv'), overlap_summary, fmt = '%d', delimiter = ',')
-
-    # remoake the clus_Table.npy with the new spike counts
-    # moved this to call to mean_maveforms module
-    # getSortResults(output_dir)
+    
+    if args['ks_postprocessing_params']['remove_duplicates']:
+        np.save(os.path.join(output_dir, 'overlap_matrix.npy'), overlap_matrix)
+        np.save(os.path.join(output_dir, 'overlap_summary.npy'), overlap_summary)
+        # save the overlap_summary as a text file -- allows user to easily understand what happened
+        np.savetxt(os.path.join(output_dir, 'overlap_summary.csv'), overlap_summary, fmt = '%d', delimiter = ',')
 
     execution_time = time.time() - start
 

@@ -117,6 +117,7 @@ def createInputJson(output_file,
             print('SpikeGLX params read from meta')
             print('probe type: {:s}, sample_rate: {:.5f}, num_channels: {:d}, uVPerBit: {:.4f}'.format\
                   (probe_type, sample_rate, num_channels, uVPerBit))
+        
         #print('kilosort output directory: ' + kilosort_output_directory )
 
         
@@ -135,6 +136,7 @@ def createInputJson(output_file,
     
     # CatGT needs the inner and outer redii for local common average referencing
     # specified in sites
+
     catGT_loccar_min_sites = int(round(catGT_loccar_min_um/vpitch.get(probe_type)))
     catGT_loccar_max_sites = int(round(catGT_loccar_max_um/vpitch.get(probe_type)))
     # print('loccar min: ' + repr(catGT_loccar_min_sites))
@@ -154,7 +156,7 @@ def createInputJson(output_file,
     ks_nNeighbors = int(round(2*nrows*nColumn.get(probe_type)))
     if ks_nNeighbors > 64:
         ks_nNeighbors = 64          #max allowed in CUDA
-    # print('ks_nNeighbors: ' + repr(ks_nNeighbors))
+    print('ks_nNeighbors: ' + repr(ks_nNeighbors))
     
     c_waves_radius_sites = int(round(c_Waves_snr_um/vpitch.get(probe_type)))
 
@@ -163,8 +165,7 @@ def createInputJson(output_file,
     fproc_forward_slash = fproc.replace('\\','/')
     fproc_str = "'" + fproc_forward_slash + "'"
     
-
-    
+     
     dictionary = \
     {
 
@@ -178,7 +179,7 @@ def createInputJson(output_file,
 
         "common_files": {
             "settings_json" : npx_directory,
-            "probe_json" : npx_directory,
+            "probe_json" : os.path.join(extracted_data_directory,'probe_json.json')
         },
 
         "waveform_metrics" : {
@@ -198,8 +199,8 @@ def createInputJson(output_file,
             "reference_channels" : reference_channels,
             "vertical_site_spacing" : 10e-6,
             "ap_band_file" : continuous_file,
-            "lfp_band_file" : os.path.join(extracted_data_directory, 'continuous', 'Neuropix-' + acq_system + '-100.1', 'continuous.dat'),
-            "reorder_lfp_channels" : True,
+            "lfp_band_file" : continuous_file.replace('.ap.bin', '.lf.bin'),
+            "reorder_lfp_channels" : False,
             "cluster_group_file_name" : 'cluster_group.tsv'
         }, 
 
@@ -209,7 +210,7 @@ def createInputJson(output_file,
             "npx_extractor_executable": r"C:\Users\svc_neuropix\Documents\GitHub\npxextractor\Release\NpxExtractor.exe",
             "npx_extractor_repo": r"C:\Users\svc_neuropix\Documents\GitHub\npxextractor"
         },
-
+ 
         "depth_estimation_params" : {
             "hi_noise_thresh" : 50.0,
             "lo_noise_thresh" : 3.0,
@@ -220,9 +221,9 @@ def createInputJson(output_file,
             "diff_thresh" : -0.06,
             "freq_range" : [0, 10],
             "max_freq" : 150,
-            "channel_range" : [374, 384],
+            "saline_range_um" : [3700, 3800],
             "n_passes" : 10,
-            "air_gap" : 25,
+            "air_gap_um" : 1000,
             "time_interval" : 5,
             "skip_s_per_pass" : 10,
             "start_time" : 10
@@ -272,6 +273,9 @@ def createInputJson(output_file,
 
 # as implemented, "within_unit_overlap window" must be >= "between unit overlap window"
         "ks_postprocessing_params" : {
+            "align_avg_waveform" : True,              
+            "remove_duplicates" : True,
+            "cWaves_path" : cWaves_path,
             "within_unit_overlap_window" : 0.000333,
             "between_unit_overlap_window" : 0.000333,
             "between_unit_dist_um" : 42,

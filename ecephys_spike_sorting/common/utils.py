@@ -5,6 +5,7 @@ import json
 import glob
 import sys
 import time
+import psutil
 import pathlib
 
 from git import Repo
@@ -58,7 +59,7 @@ def rms(data):
 
     return np.power(np.mean(np.power(data.astype('float32'),2)),0.5)
 
-def write_probe_json(output_file, channels, offset, scaling, mask, surface_channel, air_channel, vertical_pos, horizontal_pos):
+def write_probe_json(output_file, surface_channel, air_channel, vertical_pos, horizontal_pos, shank_ind):
 
     """
     Writes a json file containing information about one Neuropixels probe.
@@ -93,14 +94,15 @@ def write_probe_json(output_file, channels, offset, scaling, mask, surface_chann
     with open(output_file, 'w') as outfile:
         json.dump( 
                   {  
-                        'channel' : channels.tolist(), 
-                        'offset' : offset.tolist(), 
-                        'scaling' : scaling.tolist(), 
-                        'mask' : mask.tolist(), 
-                        'surface_channel' : surface_channel, 
-                        'air_channel' : air_channel,
+#                        'channel' : channels.tolist(), 
+#                        'offset' : offset.tolist(), 
+#                        'scaling' : scaling.tolist(), 
+#                        'mask' : mask.tolist(), 
+                        'surface_y' : surface_channel, 
+                        'air_y' : air_channel,
                         'vertical_pos' : vertical_pos.tolist(),
-                        'horizontal_pos' : horizontal_pos.tolist()
+                        'horizontal_pos' : horizontal_pos.tolist(),
+                        'shank_index' : shank_ind.tolist()
                    },
                  
                   outfile, 
@@ -351,7 +353,7 @@ def load_kilosort_data(folder,
                pc_features, pc_feature_ind, template_features
 
 
-def get_spike_depths(spike_clusters, unit_template_ids, pc_features, pc_feature_ind, channel_pos):
+def get_spike_depths(spike_clusters, unit_template_ids, first_pc_sq, pc_feature_ind, channel_pos):
 
     """
     Calculates the distance (in microns) of individual spikes from the probe tip
@@ -372,8 +374,8 @@ def get_spike_depths(spike_clusters, unit_template_ids, pc_features, pc_feature_
     unit_template_ids : numpy.ndearray (Nclusters x 0)
         majority template assignment for each cluster ID
         before any manual curation, unit_template_ids = cluster_ids
-    pc_features : numpy.ndarray (N x channels x num_PCs)
-        PC features for each spike
+    first_pc_sq : numpy.ndarray (N x template channels)
+        square of first pc on each site for each spike
     pc_feature_ind  : numpy.ndarray (M x channels)
         Channels used for PC calculation for each unit
     channel_pos : (channels x 2)
@@ -385,15 +387,24 @@ def get_spike_depths(spike_clusters, unit_template_ids, pc_features, pc_feature_
         Distance (in microns) from each spike waveform from the probe tip
 
     """
-
-    pc_features_copy = np.copy(pc_features)
-    pc_features_copy = np.squeeze(pc_features_copy[:,0,:])
-    pc_features_copy[pc_features_copy < 0] = 0
-    pc_power = pow(pc_features_copy, 2)
     
+    # Need to make a copy of pc_features (which can be up to 20G for a very long run)
+    # to avoid changing the original (python passes by reference)
+    # to help with memory use:
+    # make copy only of the portion of the pc_features array that is used
+    # take the element-wise power in place to avoid making a 2nd copy
+
+    # get values of the 1st pc for each template site for each spike
+#    pc_power = np.copy(pc_features[:,0,:])
+#
+#    # zero out negtaive elements
+#    pc_power[pc_power < 0] = 0
+#
+#    pc_power = pow(pc_power, 2) # element by element square
+  
     spike_feat_ind = pc_feature_ind[unit_template_ids[spike_clusters], :]
     spike_feat_ycoord = channel_pos[spike_feat_ind, 1]
-    spike_depths = np.sum(spike_feat_ycoord * pc_power, 1) / np.sum(pc_power,1)
+    spike_depths = np.sum(spike_feat_ycoord * first_pc_sq, 1) / np.sum(first_pc_sq,1)
 
     return spike_depths
 

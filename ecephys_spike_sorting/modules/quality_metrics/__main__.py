@@ -29,7 +29,10 @@ def calculate_quality_metrics(args):
     
     output_file, metrics_version = getFileVersion(output_file_args)
 
+    print("kilosort_output_dir: ")
+    print(args['directories']['kilosort_output_directory'])
     print("Loading data...")
+
 
     try:
         if include_pcs:

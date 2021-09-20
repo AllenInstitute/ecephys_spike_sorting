@@ -14,8 +14,8 @@ from pathlib import Path
 from scipy.signal import butter, filtfilt, medfilt
 
 from . import matlab_file_generator
-from .SGLXMetaToCoords import MetaToCoords
-from ...common.utils import read_probe_json, get_repo_commit_date_and_hash, rms, getSortResults
+from ...common.SGLXMetaToCoords import MetaToCoords
+from ...common.utils import read_probe_json, get_repo_commit_date_and_hash, rms
 
 def run_kilosort(args):
 
