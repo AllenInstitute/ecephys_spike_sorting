@@ -466,11 +466,13 @@ def calculate_2D_features(waveform, timestamps, peak_channel, site_x, site_y, sp
     yDist = site_y[sites_to_sample] - site_y[peak_channel]
     yDist = yDist[points_above_thresh]
     
-    numpts = yDist.size
     # debug print to understand what sites are selected
 #    for i in range(numpts):
 #        print('i, ydist:' + repr(i) + ', ' + repr(yDist[i]))
-    spread = np.max(yDist) - np.min(yDist)
+    if len(yDist) > 0:
+        spread = np.max(yDist) - np.min(yDist)
+    else:
+        spread = 0
 
     # original channel based calculation of spread
     

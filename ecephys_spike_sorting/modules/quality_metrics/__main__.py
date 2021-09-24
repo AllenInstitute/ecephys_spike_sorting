@@ -51,8 +51,7 @@ def calculate_quality_metrics(args):
                         include_pcs = include_pcs)
             pc_features = []
             pc_feature_ind = []
-            
-
+                    
         metrics = calculate_metrics(spike_times, spike_clusters, spike_templates, amplitudes, channel_map, channel_pos, templates, pc_features, pc_feature_ind, args['quality_metrics_params'])
 
     except FileNotFoundError:

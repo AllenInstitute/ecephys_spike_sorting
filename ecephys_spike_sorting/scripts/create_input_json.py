@@ -307,6 +307,7 @@ def createInputJson(output_file,
         "quality_metrics_params" : {
             "isi_threshold" : qm_isi_thresh,
             "min_isi" : 0.000166,
+            "tbin_sec" : 0.001,
             "max_radius_um" : 68,
             "max_spikes_for_unit" : 500,
             "max_spikes_for_nn" : 10000,
@@ -314,7 +315,7 @@ def createInputJson(output_file,
             'n_silhouette' : 10000,
             "drift_metrics_interval_s" : 51,
             "drift_metrics_min_spikes_per_interval" : 10,
-            "include_pcs" : include_pcs
+            "include_pcs" : 1
         },
         
         "catGT_helper_params" : {

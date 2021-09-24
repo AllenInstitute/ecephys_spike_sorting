@@ -17,7 +17,7 @@ from create_input_json import createInputJson
 # -------------------------------
 # Full path to log file
 # If this file exists, new run data is appended to it
-logFullPath = r'D:\ecephys_fork\test_data\file_list_test\pipeline_log.csv'
+logFullPath = r'E:\SC045\SC045_121520_g0_imec0\pipeline_log.csv'
 
 # brain region specific params
 # can add a new brain region by adding the key and value for each param
@@ -44,8 +44,8 @@ npx_directory = r'D:\ecephys_fork\test_data\SC_10trial'
 # for each recording, specfiy a full path the the binary and a brain region
 
 recording_specs = [									
-				[r'D:\ecephys_fork\test_data\file_list_test\SC011_022319_g0_tcat.imec3.ap.bin', ['default'] ],
-                [r'D:\ecephys_fork\test_data\file_list_test\SC024_092319_NP1.0_Midbrain_g0_tcat.imec0.ap.bin', ['default'] ]              
+				[r'E:\SC045\SC045_121520_g0_imec0\SC045_121520_g0_tcat.imec0.ap.bin', ['default'] ]
+
 ]
 
 
@@ -79,7 +79,6 @@ modules = [
 			'kilosort_helper',
             'kilosort_postprocessing',
             'noise_templates',
-            #'psth_events',
             'mean_waveforms',
             'quality_metrics'
 			]

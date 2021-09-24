@@ -1,6 +1,6 @@
 Depth Estimation
 ==============
-Creates a JSON file with information about the DC offset of each channel, as well as the channel closest to the brain surface. This information is needed to perform the median subtraction step.
+Creates a JSON file with information about the DC offset of each channel, as well as the channel closest to the brain surface. In the current SpikeGLX pipeline version this information is not fed forward into kilosort.
 
 Implementation
 --------------
@@ -21,8 +21,7 @@ See the `_schemas.py` file for detailed information about the contents of the in
 
 Input data
 ----------
-- **AP band and LFP band .dat or .bin files** : int16 binary files written by [Open Ephys](https://github.com/open-ephys/plugin-GUI), [SpikeGLX](https://github.com/billkarsh/spikeglx), or the `extract_from_npx` module.
-
+- LFP band .bin file matching the ap band file currently beign processed. With the standard pipeline script, the LFP must have been processed by CatGT.
 
 Output data
 -----------

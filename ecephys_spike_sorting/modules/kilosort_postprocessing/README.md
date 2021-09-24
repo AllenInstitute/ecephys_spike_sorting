@@ -10,6 +10,7 @@ Note that the data in the phy directory will be overwritten, and can’t be fully 
 
 The module takes the paramters:
 
+--align_avg_waveform: Offset spike times so that the average waveform minima are aligned with the spike times. Set to false to disable. This can help identify duplicate clusters due to multiple templates fitting the same spikes.
 -overlap_window: Maximum time window for counting two spikes as duplicates
 -between_unit_distance_um: Maximum radius in um for counting two spikes as duplicates
 -deletion_mode: Delete all duplicates from the lower amplitude cluster or delete the spike of each pair that occurs later in time.
