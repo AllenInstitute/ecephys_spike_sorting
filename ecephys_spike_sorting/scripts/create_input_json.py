@@ -273,7 +273,7 @@ def createInputJson(output_file,
 
 # as implemented, "within_unit_overlap window" must be >= "between unit overlap window"
         "ks_postprocessing_params" : {
-            "align_avg_waveform" : True,              
+            "align_avg_waveform" : False,              
             "remove_duplicates" : True,
             "cWaves_path" : cWaves_path,
             "within_unit_overlap_window" : 0.000333,
