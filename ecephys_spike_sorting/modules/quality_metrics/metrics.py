@@ -520,7 +520,7 @@ def calculate_drift_metrics(spike_times,
 
     for max_drift, cumulative_drift in meas:
         max_drifts.append(max_drift)
-        cumulative_drifts.append(max_drift)
+        cumulative_drifts.append(cumulative_drift)
     return np.array(max_drifts), np.array(cumulative_drifts)
 
 
