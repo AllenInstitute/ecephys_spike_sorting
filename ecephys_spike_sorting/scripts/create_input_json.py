@@ -66,6 +66,7 @@ def createInputJson(output_file,
     # location of kilosor respository and kilosort version
 
     kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS3_fork\Kilosort2'
+
     KS2ver = '2.0'      # must equal '3.0', '2.5' or '2.0', and match the kiilosort_repository
     
     # KS 3.0 does not yet output pcs.
@@ -155,7 +156,7 @@ def createInputJson(output_file,
     nrows = np.sqrt((np.square(ks_templateRadius_um) - np.square(hpitch.get(probe_type))))/vpitch.get(probe_type)
     ks_nNeighbors = int(round(2*nrows*nColumn.get(probe_type)))
     if ks_nNeighbors > 64:
-        ks_nNeighbors = 64          #max allowed in CUDA
+        ks_nNeighbors = 64          #max allowed in CUDA for standard KS2
     print('ks_nNeighbors: ' + repr(ks_nNeighbors))
     
     c_waves_radius_sites = int(round(c_Waves_snr_um/vpitch.get(probe_type)))

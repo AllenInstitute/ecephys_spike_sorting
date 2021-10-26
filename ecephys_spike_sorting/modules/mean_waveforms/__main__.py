@@ -149,7 +149,7 @@ def calculate_mean_waveforms(args):
            # save new metrics as _version number
            wm_fullpath = os.path.join(pathlib.Path(wm_fullpath).parent, pathlib.Path(wm_fullpath).stem + '_' + repr(clu_version) + '.csv')
     
-        metrics.to_csv(wm_fullpath)
+        metrics.to_csv(wm_fullpath, index=False)
             
         
     else:

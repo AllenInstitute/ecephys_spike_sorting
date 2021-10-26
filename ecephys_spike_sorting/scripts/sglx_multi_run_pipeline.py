@@ -67,7 +67,7 @@ run_specs = [
 # Set to an existing directory; all output will be written here.
 # Output will be in the standard SpikeGLX directory structure:
 # run_folder/probe_folder/*.bin
-catGT_dest = r'D:\ecephys_fork\test_data\SC_10trial\test_depth'
+catGT_dest = r'D:\ecephys_fork\test_data\SC_10trial\test_events'
 
 # ------------
 # CatGT params
@@ -126,7 +126,7 @@ c_Waves_snr_um = 160
 # extract param string for psth events -- copy the CatGT params used to extract
 # events that should be exported with the phy output for PSTH plots
 # If not using, remove psth_events from the list of modules
-event_ex_param_str = 'XD=-1,1,50'
+event_ex_param_str = 'XD=4,1,50'
 
 # -----------------
 # TPrime parameters
@@ -143,7 +143,8 @@ niStream_sync_params = 'XA=0,1,3,500'   # copy from ni_extract_string, set to No
 modules = [
             'kilosort_helper',
             'kilosort_postprocessing',
-            'noise_templates',          
+            'noise_templates',    
+            'psth_events',
             'mean_waveforms',
             'quality_metrics'
 			]
