@@ -178,7 +178,7 @@ def calculate_mean_waveforms(args):
                     args['mean_waveform_params'])
     
         writeDataAsNpy(waveforms, args['mean_waveform_params']['mean_waveforms_file'])
-        metrics.to_csv(args['waveform_metrics']['waveform_metrics_file'])
+        metrics.to_csv(args['waveform_metrics']['waveform_metrics_file'], index=False)
 
 
     # if the cluster metrics have already been run, merge the waveform metrics into that file
@@ -193,7 +193,7 @@ def calculate_mean_waveforms(args):
                      on='cluster_id',
                      suffixes=('_quality_metrics','_waveform_metrics'))  
         print("Saving merged quality metrics ...")
-        qmetrics.to_csv(metrics_curr)
+        qmetrics.to_csv(metrics_curr, index=False)
         
     execution_time = time.time() - start
 
