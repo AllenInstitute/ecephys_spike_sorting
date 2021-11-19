@@ -49,7 +49,8 @@ class Kilosort2Parameters(DefaultSchema):
     gain = Float(required=False, default=1, help='uV/bit to report amplitudes in uV')
     CSBseed = Int(required=False, default=1, help='random seed for clusterSingleBatches')
     LTseed = Int(required=False, default=1, help='random seed for learnTemplates')
-    nNeighbors = Int(required=False, default=32, help='number of channels to include in template') 
+    nNeighbors = Int(required=False, default=32, help='number of channels to include in template')
+    CAR = Int(required=False, default=1, help='1 to use CAR, 0 to skip')
 
 class KilosortHelperParameters(DefaultSchema):
 

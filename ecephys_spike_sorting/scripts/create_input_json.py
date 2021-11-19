@@ -57,7 +57,8 @@ def createInputJson(output_file,
                     ks_LTseed = 1,
                     ks_templateRadius_um = 163,
                     c_Waves_snr_um = 160,
-                    qm_isi_thresh = 1.5/1000                    
+                    qm_isi_thresh = 1.5/1000,
+                    include_pcs = True
                     ):
 
     # hard coded paths to code on your computer and system
@@ -72,8 +73,6 @@ def createInputJson(output_file,
     # KS 3.0 does not yet output pcs.
     if KS2ver == '3.0':
         include_pcs = False  # set to false for KS2ver = '3.0'
-    else:
-        include_pcs = True
     
     npy_matlab_repository = r'C:\Users\labadmin\Documents\jic\npy-matlab-master'
     catGTPath = r'C:\Users\labadmin\Documents\jic\CatGT-win'
@@ -100,6 +99,7 @@ def createInputJson(output_file,
     num_channels = 385    
     reference_channels = [191]
     uVPerBit = 2.34375
+    probe_type = 'NP1100'
     acq_system = 'PXI'
      
     
@@ -123,7 +123,7 @@ def createInputJson(output_file,
 
         
     else:
-       print('currently only supporting spikeGLX data')
+       print('using default values for probe params')
         
 
             
@@ -153,10 +153,11 @@ def createInputJson(output_file,
     
     # nNeighbors is the number of sites kilosort includes in a template.
     # Calculate the number of sites within that radisu.
+    maxNeighbors = 64 # 64 for standard build of KS
     nrows = np.sqrt((np.square(ks_templateRadius_um) - np.square(hpitch.get(probe_type))))/vpitch.get(probe_type)
     ks_nNeighbors = int(round(2*nrows*nColumn.get(probe_type)))
-    if ks_nNeighbors > 64:
-        ks_nNeighbors = 64          #max allowed in CUDA for standard KS2
+    if ks_nNeighbors > maxNeighbors:
+        ks_nNeighbors = maxNeighbors          
     print('ks_nNeighbors: ' + repr(ks_nNeighbors))
     
     c_waves_radius_sites = int(round(c_Waves_snr_um/vpitch.get(probe_type)))
@@ -268,7 +269,8 @@ def createInputJson(output_file,
                 "CSBseed" : ks_CSBseed,
                 "LTseed" : ks_LTseed,
                 "whiteningRange" : ks_whiteningRange,
-                "nNeighbors" : ks_nNeighbors
+                "nNeighbors" : ks_nNeighbors,
+                "CAR" : 0
             }
         },
 
@@ -316,7 +318,7 @@ def createInputJson(output_file,
             'n_silhouette' : 10000,
             "drift_metrics_interval_s" : 51,
             "drift_metrics_min_spikes_per_interval" : 10,
-            "include_pcs" : 1
+            "include_pcs" : include_pcs
         },
         
         "catGT_helper_params" : {
