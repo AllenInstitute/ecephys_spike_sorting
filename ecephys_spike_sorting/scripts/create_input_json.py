@@ -34,7 +34,7 @@ def createInputJson(output_file,
                     catGT_car_mode = 'gbldmx',
                     catGT_loccar_min_um = 40,
                     catGT_loccar_max_um = 160,
-                    catGT_cmd_string = '-prb_fld -out_prb_fld -aphipass=300-gfix=0.40,0.10,0.02',
+                    catGT_cmd_string = '-prb_fld -out_prb_fld',
                     noise_template_use_rf = True,
                     event_ex_param_str = 'XD=4,1,50',
                     tPrime_im_ex_list = 'SY=0,384,6,500',
@@ -130,9 +130,9 @@ def createInputJson(output_file,
 
     # geometry params by probe type. expand the dictoionaries to add types
     # vertical probe pitch vs probe type
-    vpitch = {'3A': 20, 'NP1': 20, 'NP21': 15, 'NP24': 15, 'NP1100': 6}  
-    hpitch = {'3A': 32, 'NP1': 32, 'NP21': 32, 'NP24': 32, 'NP1100': 6} 
-    nColumn = {'3A': 2, 'NP1': 2, 'NP21': 2, 'NP24': 2, 'NP1100': 8} 
+    vpitch = {'3A': 20, 'NP1': 20, 'NP21': 15, 'NP24': 15, 'NP1100': 6, 'NP1300':20}  
+    hpitch = {'3A': 32, 'NP1': 32, 'NP21': 32, 'NP24': 32, 'NP1100': 6, 'NP1300':48} 
+    nColumn = {'3A': 2, 'NP1': 2, 'NP21': 2, 'NP24': 2, 'NP1100': 8,'NP1300':2} 
     
     
     # CatGT needs the inner and outer redii for local common average referencing
