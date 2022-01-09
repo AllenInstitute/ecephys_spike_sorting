@@ -38,4 +38,3 @@ h5py = "*"
 urllib3 = ">=1.24.2"
 requests = ">=2.20.0"
 marshmallow = "==2.19.2"
-psutil

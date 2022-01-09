@@ -34,6 +34,6 @@ setup(
         'xmljson',
         'xarray',
         'scikit-learn',
-	'psutil'
+
     ],
 )
