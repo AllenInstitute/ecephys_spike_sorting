@@ -64,14 +64,14 @@ All of the components of the SpikeGLX pipeline are available in Windows and Linu
 
 ### Install pipenv
 
-If the machine doesn't already have python, install it; the currently tested version is 3.8.10. Download the Windows x86-64 executable installer and run the exe, selecting the "Add Python to PATH" checkbox at the bottom of the dialog.
+If the computer doesn't already have python, install it; the currently tested version is 3.8.10; the current version of the pipeline environmet requires at least 3.8. Download the Windows x86-64 executable installer and run the exe, selecting the "Add Python to PATH" checkbox at the bottom of the dialog.
 
 If you forget to check the the "Add to PATH" box, it can be added afterward by editing the Environment Variables (under Advanced system settings). The two paths to add are to the Python folder containing the exe, and the scripts folder, e.g.:
 
 C:\Users\labadmin\AppData\Local\Programs\Python\Python38
 C:\Users\labadmin\AppData\Local\Programs\Python\Python38\Scripts
 
-If you have another version of Python installed, this version can be installed side by side.
+If you have another version of Python installed, this version can be installed side by side. For this install, the 3.8 version will need to have priority in the environment PATH variable.
 
 Open the Windows command prompt as administrator, and install pipenv:
 
@@ -94,14 +94,14 @@ In the command window navigate to the ecephys_spike_sorting directory at the top
 
 cd \Users\labadmin\Documents\ecephys_clone\ecephys_spike_sorting
 
-Build the environment -- it will use the Pipfile located in this directory, and create the virtual environment in the local directory. Currently (January 2022) the latest version of setuptools appears to not function with installation of MATLAB, so after the install, use pip to uninstall setuptools and install 58.9.0. Then activate the environment and install the ecephys code in the environment.
+Build the environment -- it will use the Pipfile located in this directory, and create the virtual environment in the local directory. Currently (January 2022) the latest version of setuptools appears to not function with installation of MATLAB, so after the install, we activate the environment and use pip to uninstall setuptools and install 59.8.0.  Finally, install the ecephys code in the environment.
 
 ```shell
     $ set PIPENV_VENV_IN_PROJECT=1
     $ pipenv install
-    $ pip uninstall setuptools
-    $ pip install setuptools==59.8.0
     $ pipenv shell
+    (.venv) $ pip uninstall setuptools
+    (.venv) $ pip install setuptools==59.8.0
     (.venv) $ pip install .
 ```
 ### Set up to run MATLAB from Python
@@ -124,7 +124,7 @@ $ pipenv shell
 
 Replace <matlabroot> with the root directory of your MATLAB 2021b installation, for example: 
 
-C:\Program Files\MATLAB\2021b
+C:\Program Files\MATLAB\R2021b
 
 For more details about installing the python engine, see the MATAB documentation:
 
