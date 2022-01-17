@@ -64,14 +64,14 @@ All of the components of the SpikeGLX pipeline are available in Windows and Linu
 
 ### Install pipenv
 
-If the computer doesn't already have python, install it; the currently tested version is 3.8.10; the current version of the pipeline environmet requires at least 3.8. Download the Windows x86-64 executable installer and run the exe, selecting the "Add Python to PATH" checkbox at the bottom of the dialog.
+If the computer doesn't already have python, install it; the current version of the pipeline environmet requires at least 3.8. The currently tested version is 3.8.10.  Download the Windows x86-64 executable installer and run the exe, selecting the "Add Python to PATH" checkbox at the bottom of the dialog.
 
 If you forget to check the the "Add to PATH" box, it can be added afterward by editing the Environment Variables (under Advanced system settings). The two paths to add are to the Python folder containing the exe, and the scripts folder, e.g.:
 
 C:\Users\labadmin\AppData\Local\Programs\Python\Python38
 C:\Users\labadmin\AppData\Local\Programs\Python\Python38\Scripts
 
-If you have another version of Python installed, this version can be installed side by side. For this install, the 3.8 version will need to have priority in the environment PATH variable.
+If you have another version of Python installed, this version can be installed side by side. To use these installation instructions, version 3.8 will need to have priority in the environment PATH variable.
 
 Open the Windows command prompt as administrator, and install pipenv:
 
