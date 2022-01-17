@@ -1,18 +1,14 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
 [[source]]
-
 url = "http://aibs-artifactory.corp.alleninstitute.org/artifactory/api/pypi/pypi-local/simple"
 verify_ssl = false
 name = "local"
 
-
 [dev-packages]
-
 bumpversion = "*"
 tox = "*"
 coverage = "*"
@@ -23,14 +19,14 @@ pytest = "*"
 "ruamel.yaml" = "*"
 
 [packages]
-
 matplotlib = "*"
 scipy = "*"
 numpy = "*"
 pandas = "*"
 GitPython = "*"
 pillow = ">=6.2.0"
-argschema = "*"
+psutil = "*"
+argschema = "==1.17.5"
 xmljson= "*"
 xarray= "*"
 scikit-learn = "*"
@@ -38,3 +34,5 @@ h5py = "*"
 urllib3 = ">=1.24.2"
 requests = ">=2.20.0"
 marshmallow = "==2.19.2"
+joblib = "*"
+ecephys-spike-sorting = {path = "."}
