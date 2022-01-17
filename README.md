@@ -55,7 +55,7 @@ Further documentation can be found in each module's README file. For more inform
 
 ## Installation and Usage for the SpikeGLX pipeline
 
-These modules have been tested with Python 3.7.
+These modules have been tested with Python 3.8.10.
 
 We recommend using [pipenv](https://github.com/pypa/pipenv) to run these modules.
 
@@ -64,12 +64,14 @@ All of the components of the SpikeGLX pipeline are available in Windows and Linu
 
 ### Install pipenv
 
-If the machine doesn't already have python, install it. For the ecephys code, the latest python that's been tested is 3.7; install the latest 3.7.*. Download the Windows x86-64 executable installer and run the exe, selecting the "Add Python to PATH" checkbox at the bottom of the dialog.
+If the machine doesn't already have python, install it; the currently tested version is 3.8.10. Download the Windows x86-64 executable installer and run the exe, selecting the "Add Python to PATH" checkbox at the bottom of the dialog.
 
 If you forget to check the the "Add to PATH" box, it can be added afterward by editing the Environment Variables (under Advanced system settings). The two paths to add are to the Python folder containing the exe, and the scripts folder, e.g.:
 
-C:\Users\labadmin\AppData\Local\Programs\Python\Python37
-C:\Users\labadmin\AppData\Local\Programs\Python\Python37\Scripts
+C:\Users\labadmin\AppData\Local\Programs\Python\Python38
+C:\Users\labadmin\AppData\Local\Programs\Python\Python38\Scripts
+
+If you have another version of Python installed, this version can be installed side by side.
 
 Open the Windows command prompt as administrator, and install pipenv:
 
@@ -78,13 +80,13 @@ Open the Windows command prompt as administrator, and install pipenv:
 ```
 The pipenv executable will be in:
 
-C:\Users\labadmin\AppData\Roaming\Python\Python37\Scripts
+C:\Users\labadmin\AppData\Roaming\Python\Python38\Scripts
 
-Add this path to the PATH environment variable.
+Add this path to the PATH environment variable. If you have paths to other versions in PATH, this one will need to be first in the search list for pipenv to use the correct version.
 
-You may need to close and reopen the command prompt for the new path to be acknowledged.
+Close the command prompt, and reopen as a user (not as administrator) for the next steps.
 
-### Install ecephys
+### Install ecephys environment and code
 
 Clone (or download and unzip) the repo. (https://github.com/jenniferColonell/ecephys_spike_sorting)
 
@@ -92,23 +94,25 @@ In the command window navigate to the ecephys_spike_sorting directory at the top
 
 cd \Users\labadmin\Documents\ecephys_clone\ecephys_spike_sorting
 
-Build the environment -- it will use the Pipfile located in this directory, and create the virtual environment in the local directory. Then activate the environment and install.
+Build the environment -- it will use the Pipfile located in this directory, and create the virtual environment in the local directory. Currently (January 2022) the latest version of setuptools appears to not function with installation of MATLAB, so after the install, use pip to uninstall setuptools and install 58.9.0. Then activate the environment and install the ecephys code in the environment.
 
 ```shell
     $ set PIPENV_VENV_IN_PROJECT=1
     $ pipenv install
+    $ pip uninstall setuptools
+    $ pip install setuptools==59.8.0
     $ pipenv shell
     (.venv) $ pip install .
 ```
 ### Set up to run MATLAB from Python
 
-The python version and MATLAB version need to be compatible. For Python 3.7, this requires MATLAB 2019a or later. The code has been tested only with MATLAB 2019b.
+The python version and MATLAB version need to be compatible. For Python 3.8, this requires MATLAB 2020b or later. The code has been tested only with MATLAB 2021b.
 
-Install MATLAB 2019b – side by side installations of MATLAB are fine, so there is no need to delete earlier versions, and running code specific to an earlier version should be possible.
+Install MATLAB 2021b – side by side installations of MATLAB are fine, so there is no need to delete earlier versions, and running code specific to an earlier version should be possible.
 
-Open MATLAB 2019b, and enter the command gpuDevice(). You make get a message that there are no GPU devices with compatible drivers. Later versions of MATLAB also require more recent drivers for the GPU card – MATLAB 2019b requires version 10.1 or later of the Nvidia drivers. 
+Open MATLAB 2021b, and enter the command gpuDevice(). You make get a message that there are no GPU devices with compatible drivers. Later versions of MATLAB also require more recent drivers for the GPU card – MATLAB 2021b requires version 10.1 or later of the Nvidia drivers. 
 
-If you get that message, quit MATLAB. Update the drivers for the GPU card – for Windows, go to the device manager, select the GPU card from the list of display drivers, and update. After updating, reopen MATLAB and run gpuDevice(); the GPU should now be found, and the driver version (as of 1/4/2020) will be 10.1.
+If you get that message, quit MATLAB. Update the drivers for the GPU card -- this can be done with the Device Manager in Windows 10, and will also happen automatically if you update the CUDA Toolkit. The pipeline has been tested with CUDA Toolkit 11, which is compatible with GPUs back to the NVIDIA Maxwell architecture. After updating, restart MATLAB and enter gpuDevice() again to make sure it is recognized.
 
 The MATLAB engine for python must be installed in the local instance of python run by the virtual environment. Open the command prompt as administrator, navigate to the ecephys directory, and enter:
 
@@ -118,9 +122,9 @@ $ pipenv shell
 (.venv) $ python setup.py install
 ```
 
-Replace <matlabroot> with the root directory of your MATLAB 2019b installation, for example: 
+Replace <matlabroot> with the root directory of your MATLAB 2021b installation, for example: 
 
-C:\Program Files\MATLAB\2019b
+C:\Program Files\MATLAB\2021b
 
 For more details about installing the python engine, see the MATAB documentation:
 
