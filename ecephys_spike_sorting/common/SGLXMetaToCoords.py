@@ -589,6 +589,10 @@ def MetaToCoords(metaFullPath, outType, badChan= np.zeros((0), dtype = 'int'), d
     
 # Sample calling program to get a metadata file from the user,
 # output a file set by outType
+#   0 = tab delimited text file of coordinates in um, index, x, y, shank index
+#   1 = KS2 chan map .mat file
+#   2 = strings of channel map, shank index, and x,y pairs for JRClust
+# file is saved to the same path as the metadata file.
 #
 def main():
     
