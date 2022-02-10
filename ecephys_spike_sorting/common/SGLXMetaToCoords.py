@@ -4,7 +4,7 @@ Requires python 3
 
 The main() function at the bottom of this file can run from an
 interpreter, or, the helper functions can be imported into a
-new module or Jupyter notebook (an example is included).
+new module or Jupyter notebook.
 
 Standalone program to generate a coordinate file from a SpikeGLX
 metadata file for 3A, NP1.0, or NP2 single shank or multishank probes.
