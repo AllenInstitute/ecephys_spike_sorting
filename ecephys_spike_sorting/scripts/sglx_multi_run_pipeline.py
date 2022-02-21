@@ -114,6 +114,13 @@ ks_templateRadius_um = 163
 ks_whiteningRadius_um = 163
 ks_minfr_goodchannels = 0.1
 
+# If running KS20_for_preprocessed_data:
+# (https://github.com/jenniferColonell/KS20_for_preprocessed_data)
+# can skip filtering with the doFilter parameter.
+# Useful for speed when data has been filtered with CatGT.
+# This parameter is not implemented in standard versions of kilosort.
+ks_doFilter = 0
+
 
 # ----------------------
 # C_Waves snr radius, um
@@ -316,6 +323,7 @@ for spec in run_specs:
                                        ks_copy_fproc = ks_copy_fproc,
                                        ks_minfr_goodchannels = ks_minfr_goodchannels,                  
                                        ks_whiteningRadius_um = ks_whiteningRadius_um,
+                                       ks_doFilter = ks_doFilter,
                                        ks_Th = ks_Th,
                                        ks_CSBseed = 1,
                                        ks_LTseed = 1,

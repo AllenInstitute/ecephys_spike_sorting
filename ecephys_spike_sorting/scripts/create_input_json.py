@@ -45,6 +45,7 @@ def createInputJson(output_file,
                     tPrime_3A = False,
                     toStream_path_3A = None,
                     fromStream_list_3A = None,
+                    ks_doFilter = 0,
                     ks_remDup = 0,                   
                     ks_finalSplits = 1,
                     ks_labelGood = 1,
@@ -66,7 +67,7 @@ def createInputJson(output_file,
     
     # location of kilosor respository and kilosort version
 
-    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS3_fork\Kilosort2'
+    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS20_for_preprocessed_data'
 
     KS2ver = '2.0'      # must equal '3.0', '2.5' or '2.0', and match the kiilosort_repository
     
@@ -256,6 +257,7 @@ def createInputJson(output_file,
                 "copy_fproc" : ks_copy_fproc,
                 "fproc" : fproc_str,
                 "chanMap" : "'chanMap.mat'",
+                "doFilter" : ks_doFilter,
                 "fshigh" : 150,
                 "minfr_goodchannels" : ks_minfr_goodchannels,
                 "Th" : ks_Th,
