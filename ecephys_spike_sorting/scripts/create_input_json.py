@@ -67,9 +67,9 @@ def createInputJson(output_file,
     
     # location of kilosor respository and kilosort version
 
-    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS20_for_preprocessed_data'
+    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS25_release'
 
-    KS2ver = '2.0'      # must equal '3.0', '2.5' or '2.0', and match the kiilosort_repository
+    KS2ver = '2.5'      # must equal '3.0', '2.5' or '2.0', and match the kiilosort_repository
     
     # KS 3.0 does not yet output pcs.
     if KS2ver == '3.0':
@@ -100,7 +100,6 @@ def createInputJson(output_file,
     num_channels = 385    
     reference_channels = [191]
     uVPerBit = 2.34375
-    probe_type = 'NP1100'
     acq_system = 'PXI'
      
     
