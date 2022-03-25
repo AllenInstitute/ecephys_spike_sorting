@@ -96,9 +96,6 @@ catGT_cmd_string = '-prb_fld -out_prb_fld -apfilter=butter,12,300,10000 -lffilte
 ni_present = True
 ni_extract_string = '-XA=0,1,3,500 -iXA=1,3,3,0  -XD=-1,1,50 -XD=-1,2,1.7 -XD=-1,3,5 -iXD=-1,3,5'
 
-# flag to process lf. The depth estimation module assumes lf has been processed.
-process_lf = True
-
 
 
 # ----------------------
