@@ -347,6 +347,7 @@ def calculate_pc_metrics(spike_clusters,
 #            else half_spread
 
         # which templates have pcs on the peak channel of the current unit?
+        # channel index -- which of the channel swithin the set for a single template -- i snot used
         templates_for_channel, channel_index = np.unravel_index(np.where(pc_feature_ind.flatten() == peak_channel)[0], pc_feature_ind.shape)
 
 
@@ -372,14 +373,13 @@ def calculate_pc_metrics(spike_clusters,
         if len(units_in_range) > 1 :
 
             units_for_channel = np.asarray(units_for_channel[units_in_range])
-            
-            channel_index = channel_index[units_in_range]
+                    
     
 # OLDER calculatioon assuming linear array
 #           channels_to_use = np.arange(peak_channel - half_spread_down, peak_channel + half_spread_up + 1)
             
             channels_to_use = np.where(chan_dist < max_radius_um)[0]
-    
+
     
             spike_counts = np.zeros(units_for_channel.shape, dtype = 'int')
     
