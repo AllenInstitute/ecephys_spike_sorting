@@ -25,7 +25,6 @@ if strcmp(rP.KSver, '2.5')
     % main parameter changes from Kilosort2 to v2.5
     ops.sig        = 20;  % spatial smoothness constant for registration
     ops.fshigh     = 300; % high-pass more aggresively
-    ops.nblocks    = 5; % blocks for registration. 0 turns it off, 1 does rigid registration. Replaces "datashift" option.;
     % random number generator is used in datashift and to set order of batches
     % set seed and initialize here.
     iseed = 1;
@@ -34,8 +33,6 @@ elseif strcmp(rP.KSver, '3.0')
     % main parameter changes from Kilosort2 to v2.5
     ops.sig        = 20;  % spatial smoothness constant for registration
     ops.fshigh     = 300; % high-pass more aggresively
-    ops.nblocks    = 5; % blocks for registration. 0 turns it off, 1 does rigid registration. Replaces "datashift" option. 
-
     % main parameter changes from Kilosort2.5 to v3.0
     % if using KS3, set ops.Th appropriately from the calling program
     % ops.Th       = [9, 9];

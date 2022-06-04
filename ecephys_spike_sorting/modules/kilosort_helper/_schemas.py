@@ -52,6 +52,7 @@ class Kilosort2Parameters(DefaultSchema):
     LTseed = Int(required=False, default=1, help='random seed for learnTemplates')
     nNeighbors = Int(required=False, default=32, help='number of channels to include in template')
     CAR = Int(required=False, default=1, help='1 to use CAR, 0 to skip')
+    nblocks = Int(required=False, default=5, help='for KS2.5 and KS3.0, set to 0 for rigid registration in drift correction, higher values non-rigid')
 
 class KilosortHelperParameters(DefaultSchema):
 

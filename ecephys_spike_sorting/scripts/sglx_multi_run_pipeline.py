@@ -67,7 +67,7 @@ run_specs = [
 # Set to an existing directory; all output will be written here.
 # Output will be in the standard SpikeGLX directory structure:
 # run_folder/probe_folder/*.bin
-catGT_dest = r'D:\ecephys_fork\test_data\SC_10trial\test_events'
+catGT_dest = r'D:\ecephys_fork\test_data\SC_10trial\KS3'
 
 # ------------
 # CatGT params
@@ -110,6 +110,9 @@ ks_copy_fproc = 0
 ks_templateRadius_um = 163
 ks_whiteningRadius_um = 163
 ks_minfr_goodchannels = 0.1
+ks_CAR = 0          # CAR already done in catGT
+ks_nblocks = 0      # for KS2.5 and KS3; 0 for rigid registration in drift correction, 
+                    # higher numbers to allow different drift for different 'blocks' of the probe
 
 # If running KS20_for_preprocessed_data:
 # (https://github.com/jenniferColonell/KS20_for_preprocessed_data)
@@ -325,6 +328,8 @@ for spec in run_specs:
                                        ks_CSBseed = 1,
                                        ks_LTseed = 1,
                                        ks_templateRadius_um = ks_templateRadius_um,
+                                       ks_nblocks = ks_nblocks,
+                                       ks_CAR = ks_CAR,
                                        extracted_data_directory = data_directory[i],
                                        event_ex_param_str = event_ex_param_str,
                                        c_Waves_snr_um = c_Waves_snr_um,                               
