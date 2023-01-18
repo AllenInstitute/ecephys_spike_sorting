@@ -518,14 +518,24 @@ def get_velocity(yDist, times):
     
     above_soma = yDist >= 0
     below_soma = yDist <= 0
-
+    
     if np.sum(above_soma) > 1:
+        spread = np.max(yDist[above_soma]) - np.min(yDist[above_soma])  
+    else:
+        spread = 0
+        
+    if spread > 0:
         slope_above, intercept, r_value, p_value, std_err = linregress(yDist[above_soma], times[above_soma])
         velocity_above = slope_above * 1e6     #convert slope to s / m
     else:
         velocity_above = np.nan
-
-    if np.sum(below_soma) > 1:
+    
+    if np.sum(below_soma) > 1:  
+        spread = np.max(yDist[below_soma]) - np.min(yDist[below_soma])
+    else:
+        spread = 0
+        
+    if spread > 0:
         slope_below, intercept, r_value, p_value, std_err = linregress(yDist[below_soma], times[below_soma])
         velocity_below = slope_below * 1e6     #convert slope to s / m
     else:
