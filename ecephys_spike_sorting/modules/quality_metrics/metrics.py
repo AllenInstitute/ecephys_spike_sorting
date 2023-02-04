@@ -1139,7 +1139,7 @@ def ccg(st1, st2, nbins, tbin, auto):
     Ri = np.zeros((11,))
     for i in range(1,11):
         irange = np.arange(nbins-i,nbins+i)
-        Qi[i] = (sum(K[irange])/(2*i*tbin+1))/mean_firing_rate    #rate in this time period/mean rate
+        Qi[i] = (sum(K[irange])/(n_st1 * (2*i+1)*tbin))/mean_firing_rate    #rate in this time period/mean rate
         #print( 'K[nbins-i], Qi: ' + repr(K[nbins-i]) + ', ' + repr( Qi[i]))
         
 
