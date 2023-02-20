@@ -119,6 +119,10 @@ if rP.saveRez
     [~, isort]   = sortrows(rez.st3);
     rez.st3      = rez.st3(isort, :);
 
+    if isfield(rez,'xy')
+        fprintf('sorting xy for KS3\n')
+        rez.xy = rez.xy(isort,:);
+    end
     % Ensure all GPU arrays are transferred to CPU side before saving to .mat
     rez_fields = fieldnames(rez);
     for i = 1:numel(rez_fields)
