@@ -60,6 +60,8 @@ def createInputJson(output_file,
                     ks_nblocks = 5,
                     ks_CAR = 0,
                     c_Waves_snr_um = 160,
+                    wm_spread_thresh = 0.12,
+                    wm_site_range = 16,
                     qm_isi_thresh = 1.5/1000,
                     include_pcs = True
                     ):
@@ -69,9 +71,9 @@ def createInputJson(output_file,
     
     # location of kilosor respository and kilosort version
 
-    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS3_release\Kilosort'
+    kilosort_repository = r'C:\Users\labadmin\Documents\jic\KS25_release'
 
-    KS2ver = '3.0'      # must equal '3.0', '2.5' or '2.0', and match the kiilosort_repository
+    KS2ver = '2.5'      # must equal '3.0', '2.5' or '2.0', and match the kiilosort_repository
     
     # KS 3.0 does not yet output pcs.
     if KS2ver == '3.0':
@@ -297,8 +299,8 @@ def createInputJson(output_file,
             "pre_samples" : 20,
             "num_epochs" : 1,           #epochs not implemented for c_waves
             "spikes_per_epoch" : 1000,
-            "spread_threshold" : 0.12,
-            "site_range" : 16,    
+            "spread_threshold" : wm_spread_thresh,
+            "site_range" : wm_site_range,    
             "cWaves_path" : cWaves_path,
             "use_C_Waves" : True,
             "snr_radius" : c_waves_radius_sites       

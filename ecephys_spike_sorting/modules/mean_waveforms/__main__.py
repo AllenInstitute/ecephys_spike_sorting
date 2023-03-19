@@ -86,7 +86,7 @@ def calculate_mean_waveforms(args):
         print(cwaves_cmd)
         
         # make the C_Waves call
-        subprocess.call(cwaves_cmd)
+        subprocess.Popen(cwaves_cmd,shell='False').wait()
         
         # for first version, retain original names
         if clu_version == 0:
