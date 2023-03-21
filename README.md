@@ -94,7 +94,7 @@ In the command window navigate to the ecephys_spike_sorting directory at the top
 
 cd \Users\labadmin\Documents\ecephys_clone\ecephys_spike_sorting
 
-Build the environment -- it will use the Pipfile located in this directory, and create the virtual environment in the local directory. Currently (January 2022) the latest version of setuptools appears to not function with installation of MATLAB, so after the install, we activate the environment and use pip to uninstall setuptools and install 59.8.0.  Finally, install the ecephys code in the environment.
+Build the environment -- it will use the Pipfile located in this directory, and create the virtual environment in the local directory. Currently (January 2023) the latest version of setuptools appears to not function with installation of MATLAB, so after the install, we activate the environment and use pip to uninstall setuptools and install 59.8.0.  Finally, install the ecephys code in the environment.
 
 ```shell
     $ set PIPENV_VENV_IN_PROJECT=1
@@ -134,11 +134,11 @@ NOTE: This install needs to be repeated whenenver the virtual environment is reb
 
 After completing the install, close the command window and reopen as a normal user (not administrator) to run scripts.
 
-### Install CatGT version 2.5, TPrime, and C_Waves
+### Install CatGT, TPrime, and C_Waves
 
 [CatGT](http://billkarsh.github.io/SpikeGLX/#catgt), [TPrime](http://billkarsh.github.io/SpikeGLX/#tprime), and [C_Waves](http://billkarsh.github.io/SpikeGLX/#post-processing-tools) are each available on the SpikeGLX download page. To install, simply download each zipped folder and extract to a convenient location, see the instructions [here](http://billkarsh.github.io/SpikeGLX/#command-line-tool-installation). The paths to these executables must then be set in **create_input_json.py**. 
 
-NOTE: The pipeline is currently compatible only with CatGT 2.5; a 3.0 compatible version will be released soon.
+NOTE: The pipeline is now compatible with the latest CatGT. If you are updating the pipeline, make sure you also get the most recent versions of CatGT, TPrime, and C_Waves.
 
 
 ## Usage
