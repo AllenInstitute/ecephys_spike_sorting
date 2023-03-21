@@ -16,12 +16,14 @@ def run_CatGT(args):
 
     catGTPath = args['catGT_helper_params']['catGTPath']
     if sys.platform.startswith('win'):
+        os_str = 'win'
         # build windows command line
         # catGTexe_fullpath = catGTPath.replace('\\', '/') + "/runit.bat"
         # call catGT directly with params. CatGT.log file will be saved lcoally
         # in current working directory (with the calling script)
         catGTexe_fullpath = catGTPath.replace('\\', '/') + "/CatGT"
     elif sys.platform.startswith('linux'):
+        os_str = 'linux'
         catGTexe_fullpath = catGTPath.replace('\\', '/') + "/runit.sh"
     else:
         print('unknown system, cannot run CatGt')
@@ -93,13 +95,14 @@ def run_CatGT(args):
     fyi_path = os.path.join(catgt_runDir, (run_name + '_fyi.txt'))
     all_fyi_path =  os.path.join(catgt_runDir, (run_name + '_all_fyi.txt'))
     temp_path = os.path.join(catgt_runDir, 'temp.txt')
-    print(fyi_path)
-    print(all_fyi_path)
-    if Path(fyi_path).is_file():
-        print(Path(all_fyi_path).is_file())
+    if Path(fyi_path).is_file():        
         if Path(all_fyi_path).is_file():
             # append current fyi
-            cat_fyi_cmd = 'cat ' + all_fyi_path + ' ' + fyi_path + ' > ' + temp_path            
+            if os_str == 'linux':
+                cat_fyi_cmd = 'cat ' + all_fyi_path + ' ' + fyi_path + ' > ' + temp_path
+            else:
+                cat_fyi_cmd = 'type ' + all_fyi_path + ' ' + fyi_path + ' > ' + temp_path
+            print(cat_fyi_cmd)
             subprocess.Popen(cat_fyi_cmd, shell='False').wait()
             os.remove(all_fyi_path)
             shutil.copyfile(temp_path, all_fyi_path)
