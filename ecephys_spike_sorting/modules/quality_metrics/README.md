@@ -9,6 +9,7 @@ Computes quality metrics for sorted units. Similar to the `mean_waveforms` modul
 | Firing rate        |                          | Mean spike rate in an epoch                        |                  |
 | Presence ratio     |                          | Fraction of epoch in which spikes are present      |                  |
 | ISI violations     |![](images/isi_viol.png)  | Rate of refractory-period violations               |                  |
+| ISI violations (corrected)     |  | Alternative calculation of refractory-period violations that is more accurate for low levels of contamination but undefined for high levels of contamination               | [Llobet et al. (2022) _bioRxiv_](https://www.biorxiv.org/content/10.1101/2022.02.08.479192v1)                 |
 | Amplitude cutoff   |![](images/amp_cut.png)   | Estimate of miss rate based on amplitude histogram |                  |
 | Isolation distance |![](images/isol_dist.png) | Distance to nearest cluster in Mahalanobis space   | Schmitzer-Torbert et al. (2005) _Neuroscience_ **131**, 1-11 |
 | L-ratio<sup>1</sup>            |                          | The Mahalanobis distance and chi-squared inverse cdf (given the assumption that the spikes in the cluster distribute normally in each dimension) are used to find the probability of cluster membership for each spike.                                                    |         "         |
