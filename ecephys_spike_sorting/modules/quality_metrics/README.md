@@ -20,10 +20,39 @@ Computes quality metrics for sorted units. Similar to the `mean_waveforms` modul
 
 <sup>1</sup> algorithm updated on Aug 11, 2020 to fix normalization factor
 
-### A Note on Calculations
+### A note on calculations
 
 For metrics based on waveform principal components (isolation distance, L-ratio, _d'_, and nearest neighbors hit rate and false alarm rate), it is typical to compute the metrics for all pairs of units and report the "worst-case" value. We have found that this tends to under- or over-estimate the degree of contamination when there are large firing rate differences between pairs of units that are being compared. Instead, we compute metrics by sub-selecting spikes from _all_ other units on the same set of channels, which seems to give a more accurate picture of isolation quality. We would appreciate feedback on whether this approach makes sense.
 
+### SpikeInterface implementation
+
+All of the quality metrics in `ecephys_spike_sorting` (and more) have been ported to SpikeInterface. Example code for computing quality metrics is shown here:
+
+```python
+import spikeinterface.full as si
+
+from spikeinterface.qualitymetrics import compute_quality_metrics
+from spikeinterface.postprocessing import compute_principal_components
+
+# extract waveforms from a recording and sorting object
+we = si.extract_waveforms(recording=recording, 
+                          sorting=sorting, 
+                          folder='waveforms')
+
+# or load waveforms that have already been extracted:
+we = si.load_waveforms(folder='waveforms')
+
+# calculate metrics that don't require principal components:
+metrics = compute_quality_metrics(waveform_extractor=we)
+
+# or compute principal components before passing on the waveform extractor:
+pca = compute_principal_components(waveform_extractor=we, 
+                                   n_components=5, 
+                                   mode='by_channel_local')
+metrics = compute_quality_metrics(waveform_extractor=we)
+```
+
+More information can be found in the documentation for the [Quality Metrics module](https://spikeinterface.readthedocs.io/en/latest/modules/qualitymetrics.html).
 
 ## Running
 

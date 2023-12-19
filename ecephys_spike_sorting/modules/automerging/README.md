@@ -1,12 +1,39 @@
-Automerging
-==============
-Looks for clusters that likely belong to the same cell, and merges them automatically.
+# Automerging
 
-This is not currently part of our pipeline since switching to Kilosort2, but we're keeping the code around in case others find it useful. For example, it could be helpful for matching units across a series of chronic recordings.
+Searches for clusters that likely belong to the same cell, and merges them automatically.
+
+This module has not been used since switching to Kilosort 2, which has far fewer split units than Kilosort 1. We're keeping the code around in case others find it useful. For example, it could be helpful for matching units across a series of chronic recordings. However, much more complete implementations of this functionality exist elsewhere ([UnitMatch](https://github.com/EnnyvanBeest/UnitMatch), for example).
 
 
-Running
--------
+### SpikeInterface implementation
+
+SpikeInterface does not currently include the ability to automatically merge units, but this is under active development. Information that is helpful for making merge decisions, such as waveform similarity and cross-correlograms, can be computed using the `postprocessing` module:
+
+```python
+import spikeinterface.full as si
+
+from spikeinterface.postprocessing import (compute_template_similarity,
+                                           compute_correlograms)
+
+# run a sorter and extract waveforms
+# note that this omits some important pre-processing steps for brevity
+recording = si.read_openephys('/path/to/data')
+sorting = si.run_sorter('kilosort2_5', recording)
+waveform_extractor = si.extract_waveforms(recording=recording, 
+                                          sorting=sorting, 
+                                          folder='waveforms')
+
+# run post-processing steps
+_ = compute_template_similarity(waveform_extractor)
+_ = compute_correlograms(waveform_extractor)
+
+```
+
+More information can be found in the documentation for the [Curation module](https://spikeinterface.readthedocs.io/en/latest/modules/curation.html).
+
+
+## Running
+
 ```
 python -m ecephys_spike_sorting.modules.automerging --input_json <path to input json> --output_json <path to output json>
 ```
@@ -16,12 +43,12 @@ Two arguments must be included:
 
 See the `_schemas.py` file for detailed information about the contents of the input JSON.
 
-Input data
-----------
+## Input data
+
 - **Kilosort outputs** : includes spike times, spike clusters, cluster quality, etc.
 
 
-Output data
------------
+## Output data
+
 - **spike_clusters.npy** : updated with new cluster labels
 - **cluster_group.tsv** : updated with new cluster labels

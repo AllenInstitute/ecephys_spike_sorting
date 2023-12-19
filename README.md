@@ -11,16 +11,30 @@ Modules for processing **e**xtra**c**ellular **e**lectro**phys**iology data from
 
 ## Overview
 
-The first three modules take data saved by the [Open Ephys GUI](https://github.com/open-ephys/plugin-gui) and prepare it for spike sorting by [Kilosort2](https://github.com/MouseLand/Kilosort2). Following the spike-sorting step (using the [kilosort_helper](ecephys_spike_sorting/modules/kilosort_helper/README.md) module), we clean up the outputs and calculate mean waveforms and quality metrics for each unit.
+This repository contains code used by the Allen Institute to run spike sorting pipelines from the Allen Brain Observatory. Public datasets that have used `ecephys_spike_sorting` include [**Visual Coding - Neuropixels**](https://allensdk.readthedocs.io/en/latest/visual_coding_neuropixels.html) and [**Visual Behavior - Neuropixels**](https://allensdk.readthedocs.io/en/latest/visual_behavior_neuropixels.html). The code has been used to process data for a number of publications, including:
 
-This code is still under development, and we welcome feedback about any step in the pipeline.
+- Siegle, Jia et al. (2021) [Survey of spiking in the mouse visual system reveals functional hierarchy.](https://doi.org/10.1038/s41586-020-03171-x)
 
-Further documentation can be found in each module's README file. For more information on Kilosort2, please read through the [GitHub wiki](https://github.com/MouseLand/Kilosort2/wiki).
+- Siegle, Ledochowitsch et al. (2021) [Reconciling functional differences in populations of neurons recorded with two-photon imaging and electrophysiology.](https://doi.org/10.7554/eLife.69068)
 
+- Jia et al. (2022) [Multi-regional module-based signal transmission in mouse visual cortex.](https://doi.org/10.1016/j.neuron.2022.01.027)
+
+## Compatibility
+
+This code is designed to ingest data collected with the [Open Ephys GUI](https://open-ephys.org/gui). [@jenniferColonell](https://github.com/jenniferColonell) from HHMI Janelia Research Campus [maintains a fork](https://github.com/jenniferColonell/ecephys_spike_sorting) that is compatible with data recorded by [SpikeGLX](https://billkarsh.github.io/SpikeGLX/). For the spike sorting step, both versions rely on Kilosort 2 or 2.5.  For more information on Kilosort, please read through the [GitHub wiki](https://github.com/MouseLand/Kilosort/wiki).
+
+
+## Level of Support
+
+This repository is **no longer under development**, and we recommend that new users base their spike sorting pipelines on [SpikeInterface](https://spikeinterface.readthedocs.io/en/latest/) instead. Even existing `ecephys_spike_sorting` users would benefit from migrating to SpikeInterface. The Allen Institute has already converted most of its spike sorting workflows to use SpikeInterface, which is actively maintained, works with a range of modern spike sorters, and includes up-to-date implementations of the most important pre- and post-processing methods. The SpikeInterface syntax needed to reproduce the functionality of `ecephys_spike_sorting` can be found in each module's README file.
+
+To get started with SpikeInterface, we recommend reading through [this tutorial on analyzing Neuropixels data](https://spikeinterface.readthedocs.io/en/latest/how_to/analyse_neuropixels.html).
 
 ## Modules
 
-1. [extract_from_npx](ecephys_spike_sorting/modules/extract_from_npx/README.md): Calls a binary executable that converts data from compressed NPX format into .dat files (continuous data) and .npy files (event data)
+The first three modules take data saved by the [Open Ephys GUI](https://github.com/open-ephys/plugin-gui) and prepare it for spike sorting by [Kilosort2](https://github.com/MouseLand/Kilosort2). Following the spike-sorting step (using the [kilosort_helper](ecephys_spike_sorting/modules/kilosort_helper/README.md) module), we clean up the outputs and calculate mean waveforms and quality metrics for each unit.
+
+1. [extract_from_npx](ecephys_spike_sorting/modules/extract_from_npx/README.md) (*deprecated*): Calls a binary executable that converts data from compressed NPX format into .dat files (continuous data) and .npy files (event data). The NPX format is no longer used by Open Ephys (or any other software), so this module can be skipped.
 
 2. [depth_estimation](ecephys_spike_sorting/modules/depth_estimation/README.md): Uses the LFP data to identify the surface channel, which is required by the median subtraction and kilosort modules.
 
@@ -116,10 +130,6 @@ To leave the pipenv virtual environment, simply type:
 ```shell
     (.venv) $ exit
 ```
-
-## Level of Support
-
-This code is an important part of the internal Allen Institute code base and we are actively using and maintaining it. The implementation is not yet finalized, so we welcome feedback about any aspects of the software. If you'd like to submit changes to this repository, we encourage you to create an issue beforehand, so we know what others are working on.
 
 
 ## Terms of Use

@@ -1,5 +1,5 @@
-Kilosort Post-Processing
-==============
+# Kilosort Post-Processing
+
 Clean up Kilosort outputs by removing putative double-counted spikes.
 
 Kilosort occasionally fits a spike template to the residual of another spike. See [this discussion](https://github.com/MouseLand/Kilosort2/issues/29) for more information.
@@ -8,8 +8,35 @@ This module aims to correct for this by removing spikes from the same unit or ne
 
 We are not currently taking into account spike amplitude when removing spikes; the module just deletes one spike from an overlapping pair that occurs later in time.
 
-Running
--------
+### SpikeInterface implementation
+
+There is not currently a function for removing putative double-counted spikes with SpikeInterface. Instead, you can use the `export_to_phy()` method to save the data in a format that can be loaded by this module:
+
+```python
+import spikeinterface.full as si
+
+from spikeinterface.postprocessing import (compute_spike_amplitudes,
+                                           compute_principal_components)
+
+from spikeinterface.exporters import export_to_phy
+
+# the waveforms are sparse so it is faster to export to phy
+we = si.extract_waveforms(recording=recording, sorting=sorting, folder='waveforms')
+
+# compute some metrics needed for this module:
+_ = compute_spike_amplitudes(waveform_extractor=we)
+_ = compute_principal_components(waveform_extractor=we, 
+                                 n_components=3, 
+                                 mode='by_channel_global')
+
+# save the data in a specified location
+export_to_phy(waveform_extractor=we, 
+              output_folder='path/to/phy_folder')
+
+```
+
+## Running
+
 ```
 python -m ecephys_spike_sorting.modules.kilosort_postprocessing --input_json <path to input json> --output_json <path to output json>
 ```
@@ -19,10 +46,10 @@ Two arguments must be included:
 
 See the `_schemas.py` file for detailed information about the contents of the input JSON.
 
-Input data
-----------
+## Input data
+
 - **Kilosort output files** : .npy files containing spike times, cluster labels, templates, etc.
 
-Output data
------------
+## Output data
+
 - **Updated Kilosort output files** : overwrites .npy files for spike times, cluster labels, amplitudes, and PC features. The original outputs can be extracted from the `rez.mat` file if necessary.
