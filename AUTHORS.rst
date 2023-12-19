@@ -5,9 +5,11 @@ Credits
 Contributors
 ----------------
 
-* Josh Siegle <joshs@alleninstitute.org>
-* Nile Graddis <nileg@alleninstitute.org>
-* Xiaoxuan Jia <xiaoxuanj@alleninstitute.org)
-* Gregg Heller <greggh@alleninstitute.org)
-* Chris Mochizuki <chrism@alleninstitute.org)
-* Dan Denman <danield@alleninstitute.org)
+* Josh Siegle (@jsiegle)
+* Nile Graddis (@NileGraddis)
+* Xiaoxuan Jia (@jiaxx)
+* Gregg Heller (@GreggHeller1)
+* Chris Mochizuki (@mochic)
+* Dan Denman (@danieljdenman)
+* Max Myroshnychenko (@mmyros)
+* Jingjie Li (@jingjie-li)
