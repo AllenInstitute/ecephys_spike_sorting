@@ -11,6 +11,7 @@ This function returns both the `bad_channel_ids` and `channel_labels`, which can
 ```python
 from spikeinterface.preprocessing import detect_bad_channels
 
+# detect noisy, dead, and out-of-brain channels
 bad_channel_ids, channel_labels = detect_bad_channels(recording)
 rec_clean = recording.remove_channels(remove_channel_ids=bad_channel_ids)
 

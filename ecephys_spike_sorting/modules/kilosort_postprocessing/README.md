@@ -10,30 +10,19 @@ We are not currently taking into account spike amplitude when removing spikes; t
 
 ### SpikeInterface implementation
 
-There is not currently a function for removing putative double-counted spikes with SpikeInterface. Instead, you can use the `export_to_phy()` method to save the data in a format that can be loaded by this module:
+Putative double-counted spikes can be deleted using the `remove_duplicated_spikes` method in the `curation` module:
 
 ```python
-import spikeinterface.full as si
+from spikeinterface.curation import remove_duplicated_spikes
 
-from spikeinterface.postprocessing import (compute_spike_amplitudes,
-                                           compute_principal_components)
-
-from spikeinterface.exporters import export_to_phy
-
-# the waveforms are sparse so it is faster to export to phy
-we = si.extract_waveforms(recording=recording, sorting=sorting, folder='waveforms')
-
-# compute some metrics needed for this module:
-_ = compute_spike_amplitudes(waveform_extractor=we)
-_ = compute_principal_components(waveform_extractor=we, 
-                                 n_components=3, 
-                                 mode='by_channel_global')
-
-# save the data in a specified location
-export_to_phy(waveform_extractor=we, 
-              output_folder='path/to/phy_folder')
+# returns a new sorting object with putative double-counted spikes removed
+cleaned_sorting = remove_duplicated_spikes(sorting=sorting, 
+                                           censored_period=0.3, # in ms
+                                           method='keep_first') # determines which spike to remove
 
 ```
+
+More information can be found in the documentation for [`remove_duplicated_spikes`](https://spikeinterface.readthedocs.io/en/latest/api.html#spikeinterface.curation.remove_duplicated_spikes).
 
 ## Running
 

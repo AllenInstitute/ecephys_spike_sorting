@@ -7,7 +7,7 @@ This module has not been used since switching to Kilosort 2, which has far fewer
 
 ### SpikeInterface implementation
 
-SpikeInterface does not currently include the ability to automatically merge units, but this is under active development. Information that is helpful for making merge decisions, such as waveform similarity and cross-correlograms, can be computed using the `postprocessing` module:
+The SpikeInterface `postprocessing` module can compute information that is helpful for making merge decisions, such as waveform similarity and cross-correlograms:
 
 ```python
 import spikeinterface.full as si
@@ -16,7 +16,7 @@ from spikeinterface.postprocessing import (compute_template_similarity,
                                            compute_correlograms)
 
 # run a sorter and extract waveforms
-# note that this omits some important pre-processing steps for brevity
+# note that this omits some important pre-processing steps and parameters for brevity
 recording = si.read_openephys('/path/to/data')
 sorting = si.run_sorter('kilosort2_5', recording)
 waveform_extractor = si.extract_waveforms(recording=recording, 
@@ -29,7 +29,18 @@ _ = compute_correlograms(waveform_extractor)
 
 ```
 
-More information can be found in the documentation for the [Curation module](https://spikeinterface.readthedocs.io/en/latest/modules/curation.html).
+In addition, the `curation` module includes a function for identifying units that likely need to be merged:
+
+```python
+
+from spikeinterface.curation import get_potential_auto_merge
+
+# Returns a list of unit pairs that should be merged
+potential_merges = get_potential_auto_merge(waveform_extractor)
+
+```
+
+More information can be found in the documentation for the [Curation module](https://spikeinterface.readthedocs.io/en/latest/modules/curation.html) and the [`get_potential_auto_merge`](https://spikeinterface.readthedocs.io/en/latest/api.html#spikeinterface.curation.get_potential_auto_merge) method.
 
 
 ## Running

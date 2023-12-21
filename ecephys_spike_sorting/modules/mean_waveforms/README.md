@@ -35,7 +35,8 @@ waveform_extractor = si.extract_waveforms(recording=recording,
                                           sorting=sorting, 
                                           folder='waveforms')
 
-_ = compute_template_metrics(waveform_extractor)
+template_metrics = compute_template_metrics(waveform_extractor)
+display(template_metrics)
 
 ```
 
