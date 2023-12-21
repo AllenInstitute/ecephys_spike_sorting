@@ -1,16 +1,34 @@
-Kilosort Helper
-==============
+## Kilosort Helper
+
 Python wrapper for Matlab-based spike sorting with Kilosort.
 
 This module auto-generates the channel map, configuration file, and master file for Kilosort, and runs everything via the Matlab engine for Python.
 
-Dependencies
-------------
+### SpikeInterface implementation
+
+SpikeInterface makes it much easier to run the spike sorting step, which only requires a single line of code. We recommend running Kilosort in a [Docker container](https://spikeinterface.readthedocs.io/en/latest/modules/sorters.html#running-sorters-in-docker-singularity-containers) to avoid the need for a Matlab license or complex installation procedures.
+
+After you've installed Docker, you can run Kilosort on a pre-loaded and pre-processed `Recording` object by running:
+
+```python
+import spikeinterface.full as si
+
+sorting = run_sorter(sorter_name='kilosort2_5', 
+                     recording=recording,
+                     output_folder="/tmp/kilosort", 
+                     docker_image=True)
+
+```
+
+More information can be found in the documentation for the [Sorters module](https://spikeinterface.readthedocs.io/en/latest/modules/sorters.html).
+
+## Dependencies
+
 Kilosort [v1](https://github.com/cortex-lab/Kilosort), [v2, v2.5, or v3](https://github.com/MouseLand/kilosort) - requires Matlab >=R2016b with Signal Processing and Parallel Computing Toolboxes, Visual Studio Community 2013, and a CUDA-compatible GPU
 [Matlab Engine API for Python](https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html) - this may restrict the Python version you're able to use
 
-Running
--------
+## Running
+
 ```
 python -m ecephys_spike_sorting.modules.kilosort_helper --input_json <path to input json> --output_json <path to output json>
 ```
@@ -20,10 +38,10 @@ Two arguments must be included:
 
 See the `_schemas.py` file for detailed information about the contents of the input JSON.
 
-Input data
-----------
+## Input data
+
 - **AP band .dat or .bin file** : int16 binary files written by [Open Ephys](https://github.com/open-ephys/plugin-GUI), [SpikeGLX](https://github.com/billkarsh/spikeglx), or the `extract_from_npx` module.
 
-Output data
------------
+## Output data
+
 - **Kilosort output files** : .npy files containing spike times, cluster labels, templates, etc.

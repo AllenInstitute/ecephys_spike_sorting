@@ -1,5 +1,5 @@
-Kilosort Post-Processing
-==============
+# Kilosort Post-Processing
+
 Clean up Kilosort outputs by removing putative double-counted spikes.
 
 Kilosort occasionally fits a spike template to the residual of another spike. See [this discussion](https://github.com/MouseLand/Kilosort2/issues/29) for more information.
@@ -8,8 +8,24 @@ This module aims to correct for this by removing spikes from the same unit or ne
 
 We are not currently taking into account spike amplitude when removing spikes; the module just deletes one spike from an overlapping pair that occurs later in time.
 
-Running
--------
+### SpikeInterface implementation
+
+Putative double-counted spikes can be deleted using the `remove_duplicated_spikes` method in the `curation` module:
+
+```python
+from spikeinterface.curation import remove_duplicated_spikes
+
+# returns a new sorting object with putative double-counted spikes removed
+cleaned_sorting = remove_duplicated_spikes(sorting=sorting, 
+                                           censored_period=0.3, # in ms
+                                           method='keep_first') # determines which spike to remove
+
+```
+
+More information can be found in the documentation for [`remove_duplicated_spikes`](https://spikeinterface.readthedocs.io/en/latest/api.html#spikeinterface.curation.remove_duplicated_spikes).
+
+## Running
+
 ```
 python -m ecephys_spike_sorting.modules.kilosort_postprocessing --input_json <path to input json> --output_json <path to output json>
 ```
@@ -19,10 +35,10 @@ Two arguments must be included:
 
 See the `_schemas.py` file for detailed information about the contents of the input JSON.
 
-Input data
-----------
+## Input data
+
 - **Kilosort output files** : .npy files containing spike times, cluster labels, templates, etc.
 
-Output data
------------
+## Output data
+
 - **Updated Kilosort output files** : overwrites .npy files for spike times, cluster labels, amplitudes, and PC features. The original outputs can be extracted from the `rez.mat` file if necessary.

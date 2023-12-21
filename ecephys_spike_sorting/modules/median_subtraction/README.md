@@ -1,15 +1,55 @@
-Median Subtraction
-==============
+# Median Subtraction
+
 Calls an executable that removes the DC offset and common-mode noise from a spike-band continuous file.
 
 Because noise on Neuropixels probes is highly correlated across sites that share an ADC, we compute the median of every 24th channel, rather than using the median across all sites. This ends up creating a residual on the order of a few microvolts for large spikes, which can appear in the mean waveform. However, this is well below the probe's noise floor, and shouldn't affect spike sorting or data analysis.
 
-Dependencies
-------------
+### SpikeInterface implementation
+
+Performing median subtraction (and other preprocessing steps) is much easier with SpikeInterface. For Neuropixels data, we recommend using the "phase shift" to align the samples across channels, followed by median subtraction for the whole probe. This removes noise more effectively than just computing the median for simultaneously sampled channels.
+
+Here is the code needed to preprocess Neuropixels data:
+
+```python
+import spikeinterface.full as si
+
+# read Open Ephys dataset
+raw_rec = si.read_openephys('/path/to/data',
+                            block_index=0,
+                            stream_name='ProbeA-AP')
+
+# or SpikeGLX, by changing one line of code:
+raw_rec = si.read_spikeglx('/path/to/data', 
+                           stream_name='imec0.ap',     
+                           load_sync_channel=False)
+
+# perform high-pass filtering (especially important for Neuropixels 2.0 data):
+rec_filt = si.highpass_filter(raw_rec, 
+                              freq_min=400.)
+
+# remove channels outside the brain
+bad_channel_ids, channel_labels = si.detect_bad_channels(rec_filt)
+rec_cleaned = rec_filt.remove_channels(bad_channel_ids)
+
+# perform the phase shift (similar to IBL destriping or `tshift` option in CatGT):
+rec_shifted = si.phase_shift(rec_cleaned)
+
+# subtract the median across all channels
+rec = si.common_reference(rec_shifted, 
+                          operator="median", 
+                          reference="global")
+```
+
+The `rec` object can now be passed to the `run_sorter()` function to perform spike sorting.
+
+More information can be found in the [tutorial for analyzing Neuropixels data](https://spikeinterface.readthedocs.io/en/latest/how_to/analyse_neuropixels.html).
+
+## Dependencies
+
 C++ source code for the median subtraction binary is available in the [SpikeBandMedianSubtraction](SpikeBandMedianSubtraction/) folder. This must be compiled prior to running this module.
 
-Running
--------
+## Running
+
 ```
 python -m ecephys_spike_sorting.modules.depth_estimation --input_json <path to input json> --output_json <path to output json>
 ```
@@ -20,12 +60,12 @@ Two arguments must be included:
 See the `_schemas.py` file for detailed information about the contents of the input JSON.
 
 
-Input data
-----------
+## Input data
+
 - **AP band .dat or .bin file** : int16 binary files written by [Open Ephys](https://github.com/open-ephys/plugin-GUI), [SpikeGLX](https://github.com/billkarsh/spikeglx), or the `extract_from_npx` module.
 - **probe_info.json** : file written by `depth_estimation` module.
 
-Output data
------------
+## Output data
+
 - **AP band .dat or .bin file** : overwrites the existing file with the median-subtracted data.
 - **residuals.dat** : contains the subtracted signals, which makes it possible to reconstruct the original data if necessary.

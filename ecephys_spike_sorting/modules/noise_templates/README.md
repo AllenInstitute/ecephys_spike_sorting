@@ -1,5 +1,5 @@
-Noise Templates
-==============
+## Noise Templates
+
 Identifies "noise" units based on template shape
 
 [Kilosort2](https://github.com/MouseLand/Kilosort2) generates templates of a fixed length (2 ms) that matches the time coures of an extracellularly detected spike waveform. However, there are no constraints on template shape, which means that the algorithm often fits templates to voltage fluctuations that could not physically result from the current flow associated with an action potential. The units associated with these templates are considered "noise," and must be filtered out prior to analysis. This is true for other spike sorters as well, but the characteristics of the noise waveforms may be highly algorithm-dependent.
@@ -12,8 +12,39 @@ This module contains code for two different approaches to noise template identif
 
 Because there's so much variation in the shape of noise templates, we've found it hard to get the false negative rate down to zero with either approach (i.e., there are always some obvious noise units that pass through). Therefore, we still need a manual curation step to remove the remaining noise units. Any suggestions for how to improve the classifier's performance are welcome.
 
-Running
--------
+### SpikeInterface implementation
+
+SpikeInterface does not yet include a noise template classifier, but this is under active development. Until that is available, we recommend exporting the data into a format that can read by `phy` and manually labeling units with abnormal waveforms.
+
+```python
+import spikeinterface.full as si
+
+from spikeinterface.postprocessing import (compute_spike_amplitudes,
+                                           compute_principal_components)
+
+from spikeinterface.exporters import export_to_phy
+
+# the waveforms are sparse so it is faster to export to phy
+we = si.extract_waveforms(recording=recording, sorting=sorting, folder='waveforms')
+
+# compute some metrics needed for this module:
+_ = compute_spike_amplitudes(waveform_extractor=we)
+_ = compute_principal_components(waveform_extractor=we, 
+                                 n_components=3, 
+                                 mode='by_channel_global')
+
+# save the data in a specified location
+export_to_phy(waveform_extractor=we, 
+              output_folder='path/to/phy_folder')
+
+```
+
+More information on manual curation be found in the documentation for [Phy](https://phy.readthedocs.io/en/latest/).
+
+
+
+## Running
+
 ```
 python -m ecephys_spike_sorting.modules.noise_templates --input_json <path to input json> --output_json <path to output json>
 ```
@@ -24,11 +55,11 @@ Two arguments must be included:
 See the `_schemas.py` file for detailed information about the contents of the input JSON.
 
 
-Input data
-----------
+## Input data
+
 - **Kilosort outputs** : includes spike times, spike clusters, templates, etc.
 
 
-Output data
------------
+## Output data
+
 - **cluster_group.tsv** : labels for each cluster in spike_clusters.npy
