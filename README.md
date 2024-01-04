@@ -11,7 +11,7 @@ Modules for processing **e**xtra**c**ellular **e**lectro**phys**iology data from
 
 ## Overview
 
-This repository contains code used by the Allen Institute to run spike sorting pipelines from the Allen Brain Observatory. Public datasets that have used `ecephys_spike_sorting` include [**Visual Coding - Neuropixels**](https://allensdk.readthedocs.io/en/latest/visual_coding_neuropixels.html) and [**Visual Behavior - Neuropixels**](https://allensdk.readthedocs.io/en/latest/visual_behavior_neuropixels.html). The code has been used to process data for a number of publications, including:
+This repository contains code for running spike sorting pipelines for the **Allen Brain Observatory.** Public datasets that have been processed with `ecephys_spike_sorting` include [**Visual Coding - Neuropixels**](https://allensdk.readthedocs.io/en/latest/visual_coding_neuropixels.html) and [**Visual Behavior - Neuropixels**](https://allensdk.readthedocs.io/en/latest/visual_behavior_neuropixels.html). Electrophysiology that was spike sorted with this code has appeared in a number of publications, including:
 
 - Siegle, Jia et al. (2021) [Survey of spiking in the mouse visual system reveals functional hierarchy.](https://doi.org/10.1038/s41586-020-03171-x)
 
@@ -26,7 +26,7 @@ This code is designed to ingest data collected with the [Open Ephys GUI](https:/
 
 ## Level of Support
 
-This repository is **no longer under development**, and we recommend that new users base their spike sorting pipelines on [SpikeInterface](https://spikeinterface.readthedocs.io/en/latest/) instead. Even existing `ecephys_spike_sorting` users would benefit from migrating to SpikeInterface. The Allen Institute has already converted most of its spike sorting workflows to use SpikeInterface, which is actively maintained, works with a range of modern spike sorters, and includes up-to-date implementations of the most important pre- and post-processing methods. The SpikeInterface syntax needed to reproduce the functionality of `ecephys_spike_sorting` can be found in each module's README file.
+This repository is **no longer under development**, and we recommend that new users base their spike sorting pipelines on [SpikeInterface](https://spikeinterface.readthedocs.io/en/latest/) instead. We believe that even existing `ecephys_spike_sorting` users would benefit from migrating to SpikeInterface. The Allen Institute has already converted its spike sorting workflows to use SpikeInterface, which is actively maintained, works with a range of modern spike sorters, and includes up-to-date implementations of the most important pre- and post-processing methods. The SpikeInterface syntax needed to reproduce the functionality of `ecephys_spike_sorting` can be found in each module's README file.
 
 To get started with SpikeInterface, we recommend reading through [this tutorial on analyzing Neuropixels data](https://spikeinterface.readthedocs.io/en/latest/how_to/analyse_neuropixels.html).
 
