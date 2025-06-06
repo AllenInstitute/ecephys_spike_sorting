@@ -313,6 +313,26 @@ def load_kilosort_data(folder,
     else:
         return spike_times, spike_clusters, spike_templates, amplitudes, unwhitened_temps, channel_map, cluster_ids, cluster_quality, pc_features, pc_feature_ind
 
+def load_channel_positions(folder):
+    """
+    Loads Kilosort output files from a directory
+
+    Inputs:
+    -------
+    folder : String
+        Location of Kilosort output directory
+
+    Outputs:
+    --------
+    channel_positions : numpy.ndarray 
+        x,y positions of each channel
+    """
+
+    channel_positions = np.squeeze(load(folder,'channel_positions.npy'))
+
+    return channel_positions
+
+
 
 def get_spike_depths(spike_templates, pc_features, pc_feature_ind):
 

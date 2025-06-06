@@ -9,6 +9,7 @@ def calculate_waveform_metrics(waveforms,
                                cluster_id, 
                                peak_channel, 
                                channel_map, 
+                               channel_positions,
                                sample_rate, 
                                upsampling_factor, 
                                spread_threshold,
@@ -75,7 +76,7 @@ def calculate_waveform_metrics(waveforms,
         mean_1D_waveform, timestamps)
     recovery_slope = calculate_waveform_recovery_slope(
         mean_1D_waveform, timestamps)
-
+    site_spacing = (channel_positions[2,1] - channel_positions[0,1])/2 * 10e-7 # calculate site spacing, compatible for both npx 1.0 and npx 2.0
     amplitude, spread, velocity_above, velocity_below = calculate_2D_features(
         mean_2D_waveform, timestamps, local_peak, spread_threshold, site_range, site_spacing)
 

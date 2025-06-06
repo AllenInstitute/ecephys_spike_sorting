@@ -6,7 +6,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from ...common.utils import load_kilosort_data
+from ...common.utils import load_kilosort_data,load_channel_positions
 
 from .extract_waveforms import extract_waveforms, writeDataAsNpy
 from .waveform_metrics import calculate_waveform_metrics
@@ -26,6 +26,8 @@ def calculate_mean_waveforms(args):
             load_kilosort_data(args['directories']['kilosort_output_directory'], \
                 args['ephys_params']['sample_rate'], \
                 convert_to_seconds = False)
+    
+    channel_positions = load_channel_positions(args['directories']['kilosort_output_directory'])
 
     print("Calculating mean waveforms...")
 
@@ -34,6 +36,7 @@ def calculate_mean_waveforms(args):
                 spike_templates,
                 templates,
                 channel_map,
+                channel_positions,
                 args['ephys_params']['bit_volts'], \
                 args['ephys_params']['sample_rate'], \
                 args['ephys_params']['vertical_site_spacing'], \
